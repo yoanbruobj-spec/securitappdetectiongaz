@@ -15,7 +15,13 @@
       "Bash(wc:*)",
       "Bash(npx supabase:*)",
       "Bash(mkdir:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git remote remove:*)",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": []

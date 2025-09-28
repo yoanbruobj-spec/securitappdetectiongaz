@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react'
@@ -48,7 +48,7 @@ interface Portable {
   pieces_remplacees: string
 }
 
-export default function InterventionPortablePage() {
+function InterventionPortablePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
@@ -1176,5 +1176,13 @@ export default function InterventionPortablePage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function InterventionPortablePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center"><div className="text-white">Chargement...</div></div>}>
+      <InterventionPortablePageContent />
+    </Suspense>
   )
 }
