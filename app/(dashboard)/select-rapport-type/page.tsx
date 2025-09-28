@@ -5,8 +5,11 @@ import { motion } from 'framer-motion'
 import { Building2, Radio, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Suspense } from 'react'
 
-export default function SelectRapportType() {
+export const dynamic = 'force-dynamic'
+
+function SelectRapportTypeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const planningId = searchParams.get('planning_id')
@@ -123,5 +126,13 @@ export default function SelectRapportType() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function SelectRapportType() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center"><div className="text-white">Chargement...</div></div>}>
+      <SelectRapportTypeContent />
+    </Suspense>
   )
 }
