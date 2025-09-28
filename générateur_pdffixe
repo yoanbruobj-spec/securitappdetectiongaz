@@ -1,0 +1,1396 @@
+const data = $('🔄 Traitement Données').first().json;
+const now = new Date();
+
+// Fonction pour formater les dates
+function formatDate(dateString) {
+  if (!dateString) return 'Non renseigné';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  } catch (e) {
+    return 'Non renseigné';
+  }
+}
+
+// Fonction pour formater l'heure
+function formatTime(timeString) {
+  if (!timeString) return '--:--';
+  return timeString;
+}
+
+// Fonction pour nettoyer le texte et éviter les problèmes d'encodage
+function cleanText(text) {
+  if (!text || text === null || text === undefined) return '';
+  // Convertir en string et nettoyer
+  return String(text)
+    .replace(/'/g, '&#39;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/&/g, '&amp;')
+    .trim();
+}
+
+// Fonction pour obtenir la classe CSS selon l'état
+function getStatusClass(status) {
+  const statusMap = {
+    'Bon': 'status-good',
+    'OK': 'status-good',
+    'Oui': 'status-good',
+    'Acceptable': 'status-acceptable',
+    'Dérive acceptable': 'status-acceptable',
+    'À surveiller': 'status-warning',
+    'Vieillissante': 'status-warning',
+    'Vieillissantes': 'status-warning',
+    'Dérive limite': 'status-warning',
+    'À remplacer': 'status-danger',
+    'Défaillant': 'status-danger',
+    'Défaillante': 'status-danger',
+    'HS': 'status-danger',
+    'Non': 'status-danger',
+    'Dérive': 'status-warning'
+  };
+  return statusMap[status] || 'status-neutral';
+}
+
+// Calcul durée intervention
+function calculateDuration(debut, fin) {
+  if (!debut || !fin) return null;
+  try {
+    const d = new Date(`2000-01-01T${debut}:00`);
+    const f = new Date(`2000-01-01T${fin}:00`);
+    const diff = (f - d) / (1000 * 60 * 60);
+    return Math.round(diff * 100) / 100;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Logs de débogage
+console.log('=== DONNÉES REÇUES POUR PDF ===');
+console.log('Nombre de centrales:', data.centrales?.length || 0);
+console.log('Client:', data.client?.nom);
+console.log('Signatures présentes:', !!data.signatures);
+
+// Filtrer les centrales vides AVANT de calculer les statistiques
+const centralesValides = (data.centrales || []).filter(centrale => {
+    return centrale && (
+        centrale.marque || 
+        centrale.modele || 
+        (centrale.detecteurs_gaz && centrale.detecteurs_gaz.length > 0) ||
+        (centrale.detecteurs_flamme && centrale.detecteurs_flamme.length > 0) ||
+        (centrale.observations && (
+            centrale.observations.travaux_effectues ||
+            centrale.observations.anomalies ||
+            centrale.observations.recommandations ||
+            centrale.observations.pieces_remplacees
+        ))
+    );
+});
+
+// Recalculer les statistiques avec les centrales valides
+const statsCorrigees = {
+    nombre_centrales: centralesValides.length,
+    nombre_detecteurs_gaz_total: centralesValides.reduce((sum, c) => sum + (c.detecteurs_gaz?.length || 0), 0),
+    nombre_detecteurs_flamme_total: centralesValides.reduce((sum, c) => sum + (c.detecteurs_flamme?.length || 0), 0),
+    duree_intervention: data.statistiques?.duree_intervention || calculateDuration(data.intervention?.heure_debut, data.intervention?.heure_fin)
+};
+
+// HTML du rapport professionnel avec CSS corrigé
+const htmlContent = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport SÉCUR'IT - ${data.rapport_id}</title>
+    <style>
+        @page { 
+            margin: 15mm 10mm 15mm 10mm;
+            size: A4 portrait;
+        }
+        
+        @media print {
+            body { margin: 0; }
+            .page-break { page-break-after: always; }
+            .no-break { page-break-inside: avoid; }
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body { 
+            font-family: Arial, Helvetica, sans-serif; 
+            font-size: 9pt;
+            line-height: 1.4;
+            color: #333;
+            background: white;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        /* Container principal */
+        .main-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Header principal */
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            margin: 0 0 10px 0;
+            position: relative;
+            border-radius: 0 0 10px 10px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .company-section h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .company-section p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .report-info {
+            text-align: right;
+        }
+        
+        .report-id {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 15px;
+            display: inline-block;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        /* Résumé */
+        .summary-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .summary-box h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: normal;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+        
+        .summary-item {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 5px;
+            border-radius: 6px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .summary-value {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .summary-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+        
+        /* Sections */
+        .section {
+            margin: 15px 0;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-bottom: 2px solid #e74c3c;
+        }
+        
+        .section-header h2 {
+            color: #2c3e50;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .section-content {
+            padding: 15px;
+        }
+        
+        /* Grille d'informations */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+            min-width: 110px;
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+        
+        .info-value {
+            flex: 1;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 10px;
+        }
+        
+        /* Centrale */
+        .centrale-section {
+            margin: 25px 0;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+        
+        .centrale-header {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 20px;
+        }
+        
+        .centrale-header h3 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        
+        .centrale-info {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+        
+        .centrale-content {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        /* Tableaux */
+        .pro-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: white;
+        }
+        
+        .pro-table thead {
+            background: #34495e;
+            color: white;
+        }
+        
+        .pro-table th {
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        
+        .pro-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 11px;
+        }
+        
+        .pro-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Détecteur détail */
+        .detecteur-detail {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            page-break-inside: avoid;
+        }
+        
+        .detecteur-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .detecteur-detail-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        /* États et badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-good {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-acceptable {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-neutral {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        
+        /* Étalonnage */
+        .etalonnage-box {
+            background: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .etalonnage-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0c5460;
+            margin-bottom: 15px;
+        }
+        
+        /* Seuils */
+        .seuil-item {
+            background: white;
+            border: 1px solid #e74c3c;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            position: relative;
+            padding-left: 60px;
+        }
+        
+        .seuil-number {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #e74c3c;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        /* Observations */
+        .observation-card {
+            background: white;
+            border-left: 4px solid #3498db;
+            border-radius: 0 8px 8px 0;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .observation-card h4 {
+            color: #2c3e50;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .observation-card p {
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+        
+        .observation-card.anomalie {
+            border-left-color: #e74c3c;
+        }
+        
+        .observation-card.recommandation {
+            border-left-color: #f39c12;
+        }
+        
+        .observation-card.travaux {
+            border-left-color: #27ae60;
+        }
+        
+        /* Signatures */
+        .signature-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .signature-block {
+            text-align: center;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .signature-title {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .signature-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        
+        .signature-image {
+            width: 200px;
+            height: 80px;
+            margin: 15px auto;
+            display: block;
+            border: 2px solid #ecf0f1;
+            border-radius: 4px;
+            background: white;
+        }
+        
+        .signature-date {
+            font-size: 11px;
+            color: #95a5a6;
+            margin-top: 10px;
+        }
+        
+        /* Footer compact */
+        .footer {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .footer-company {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .footer-info {
+            font-size: 9px;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        /* Corrections spécifiques */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .detail-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .detail-label {
+            font-size: 10px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            font-size: 12px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        /* Fix pour les tableaux vides */
+        .empty-message {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+    <!-- Header principal -->
+    <div class="header">
+        <div class="header-content">
+            <div class="company-section">
+                <h1>🔧 SÉCUR'IT</h1>
+                <p>Rapport d'Intervention Multi-Sites</p>
+            </div>
+            <div class="report-info">
+                <div class="report-id">N° ${data.rapport_id}</div>
+                <div style="margin-top: 5px; font-size: 12px;">
+                    ${formatDate(data.date_generation)}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Résumé exécutif avec stats corrigées -->
+    <div class="summary-box">
+        <h2>Résumé de l'Intervention</h2>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <div class="summary-value">${statsCorrigees.nombre_centrales}</div>
+                <div class="summary-label">Centrales</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">${statsCorrigees.nombre_detecteurs_gaz_total}</div>
+                <div class="summary-label">Détecteurs Gaz</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">${statsCorrigees.nombre_detecteurs_flamme_total}</div>
+                <div class="summary-label">Détecteurs Flamme</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">${statsCorrigees.duree_intervention || '--'}h</div>
+                <div class="summary-label">Durée</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Informations Intervention -->
+    <div class="section">
+        <div class="section-header">
+            <h2>📋 Détails de l'Intervention</h2>
+        </div>
+        <div class="section-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Date d'intervention</span>
+                    <span class="info-value">${formatDate(data.intervention?.date)}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Technicien</span>
+                    <span class="info-value">${cleanText(data.intervention?.technicien)}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Type d'intervention</span>
+                    <span class="info-value">${cleanText(data.intervention?.type_intervention) || 'Non spécifié'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Horaires</span>
+                    <span class="info-value">
+                        ${formatTime(data.intervention?.heure_debut)} - ${formatTime(data.intervention?.heure_fin)}
+                        ${data.statistiques?.duree_intervention ? '(' + data.statistiques.duree_intervention + 'h)' : ''}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Informations Client -->
+    <div class="section">
+        <div class="section-header">
+            <h2>🏢 Informations Client</h2>
+        </div>
+        <div class="section-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Raison sociale</span>
+                    <span class="info-value">${cleanText(data.client?.nom)}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Site d'intervention</span>
+                    <span class="info-value">${cleanText(data.client?.site) || 'Non spécifié'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Local/Zone</span>
+                    <span class="info-value">${cleanText(data.client?.local) || 'Non spécifié'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Contact sur site</span>
+                    <span class="info-value">${cleanText(data.client?.contact) || 'Non spécifié'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Téléphone</span>
+                    <span class="info-value">${cleanText(data.client?.telephone) || 'Non spécifié'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">${data.client?.email_rapport || 'Non spécifié'}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- BOUCLE SUR CHAQUE CENTRALE -->
+    ${centralesValides.map((centrale, indexCentrale) => {
+        return `
+    <div class="centrale-section">
+        <div class="centrale-header">
+            <h3>⚡ Centrale N°${indexCentrale + 1}</h3>
+            <div class="centrale-info">
+                ${cleanText(centrale.marque || '')} ${cleanText(centrale.modele || '')}
+                ${centrale.modele_autre ? ' - ' + cleanText(centrale.modele_autre) : ''}
+            </div>
+        </div>
+        
+        <div class="centrale-content">
+            <!-- Informations de la centrale -->
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: #2c3e50; margin-bottom: 15px; font-size: 16px;">
+                    📊 Caractéristiques de la Centrale
+                </h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Marque</span>
+                        <span class="info-value">${cleanText(centrale.marque) || 'Non spécifié'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Modèle</span>
+                        <span class="info-value">
+                            ${cleanText(centrale.modele) || 'Non spécifié'}
+                            ${centrale.modele_autre ? ' (' + cleanText(centrale.modele_autre) + ')' : ''}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">N° Série</span>
+                        <span class="info-value">${cleanText(centrale.serie) || 'Non spécifié'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Firmware</span>
+                        <span class="info-value">${cleanText(centrale.firmware) || 'Non spécifié'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">État général</span>
+                        <span class="info-value">
+                            <span class="status-badge ${getStatusClass(centrale.etat)}">
+                                ${cleanText(centrale.etat) || 'Non évalué'}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Détecteurs</span>
+                        <span class="info-value">
+                            ${centrale.detecteurs_gaz?.length || 0} gaz / 
+                            ${centrale.detecteurs_flamme?.length || 0} flamme
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- AES si présente -->
+                ${centrale.aes?.presente ? `
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin-top: 20px;">
+                    <h5 style="color: #856404; margin-bottom: 15px; font-size: 14px;">
+                        🔋 Alimentation de Secours (AES)
+                    </h5>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Modèle batterie</span>
+                            <span class="info-value">${cleanText(centrale.aes.modele) || 'Non spécifié'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Statut</span>
+                            <span class="info-value">
+                                <span class="status-badge ${getStatusClass(centrale.aes.statut)}">
+                                    ${cleanText(centrale.aes.statut) || 'Non évalué'}
+                                </span>
+                            </span>
+                        </div>
+                        ${centrale.aes.alimentation_ondulee ? `
+                        <div class="info-item">
+                            <span class="info-label">Type</span>
+                            <span class="info-value">✅ Alimentation ondulée</span>
+                        </div>
+                        ` : ''}
+                        ${centrale.aes.date_remplacement ? `
+                        <div class="info-item">
+                            <span class="info-label">Dernier remplacement</span>
+                            <span class="info-value">${formatDate(centrale.aes.date_remplacement)}</span>
+                        </div>
+                        ` : ''}
+                        ${centrale.aes.prochaine_echeance ? `
+                        <div class="info-item">
+                            <span class="info-label">Prochaine échéance</span>
+                            <span class="info-value">${formatDate(centrale.aes.prochaine_echeance)}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+            
+            <!-- DÉTECTEURS GAZ -->
+            ${centrale.detecteurs_gaz && centrale.detecteurs_gaz.length > 0 ? `
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: #2c3e50; margin-bottom: 20px; font-size: 16px;">
+                    🔍 Détecteurs de Gaz - Centrale ${indexCentrale + 1}
+                </h4>
+                
+                <!-- Tableau récapitulatif -->
+                <table class="pro-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Ligne</th>
+                            <th>Modèle</th>
+                            <th>Gaz</th>
+                            <th>Position</th>
+                            <th>État</th>
+                            <th>Opérationnel</th>
+                            <th>Dernier Étal.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${centrale.detecteurs_gaz.map(d => `
+                        <tr>
+                            <td><strong>${d.numero || '-'}</strong></td>
+                            <td>${cleanText(d.ligne) || '-'}</td>
+                            <td>${cleanText(d.marque || '')} ${cleanText(d.modele || '')}</td>
+                            <td><strong>${cleanText(d.gaz) || '-'}</strong></td>
+                            <td>${cleanText(d.position) || '-'}</td>
+                            <td>
+                                <span class="status-badge ${getStatusClass(d.cellule?.etat)}">
+                                    ${cleanText(d.cellule?.etat) || '-'}
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="status-badge ${getStatusClass(d.etalonnage?.operationnel)}">
+                                    ${cleanText(d.etalonnage?.operationnel) || '-'}
+                                </span>
+                            </td>
+                            <td>${formatDate(d.etalonnage?.date_dernier) || '-'}</td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <!-- Détails de chaque détecteur -->
+                ${centrale.detecteurs_gaz.map(d => `
+                <div class="detecteur-detail">
+                    <div class="detecteur-detail-header">
+                        <div class="detecteur-detail-title">
+                            Détecteur ${d.numero || '-'} - ${cleanText(d.gaz) || 'Non spécifié'}
+                            ${d.etalonnage?.non_teste_demande_client ? ' ⚠️ Non testé (demande client)' : ''}
+                        </div>
+                        <span class="status-badge ${d.connexion === '4-20mA' ? 'status-good' : 'status-neutral'}">
+                            ${cleanText(d.connexion || '4-20mA')}${d.connexion_autre ? ' - ' + cleanText(d.connexion_autre) : ''}
+                        </span>
+                    </div>
+                    
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Modèle</div>
+                            <div class="detail-value">
+                                ${cleanText(d.marque || '')} ${cleanText(d.modele || '')}
+                                ${d.modele_autre ? ' - ' + cleanText(d.modele_autre) : ''}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">N° Série</div>
+                            <div class="detail-value">${cleanText(d.serie) || 'Non spécifié'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Ligne</div>
+                            <div class="detail-value">${cleanText(d.ligne) || 'Non spécifiée'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Position</div>
+                            <div class="detail-value">${cleanText(d.position) || 'Non spécifiée'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Gamme de mesure</div>
+                            <div class="detail-value">${cleanText(d.gamme) || 'Non spécifiée'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">État cellule</div>
+                            <div class="detail-value">
+                                <span class="status-badge ${getStatusClass(d.cellule?.etat)}">
+                                    ${cleanText(d.cellule?.etat) || 'Non évalué'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dates cellule -->
+                    ${(d.cellule?.date_installation || d.cellule?.date_remplacement_theorique) ? `
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <div style="display: flex; gap: 30px; font-size: 12px;">
+                            ${d.cellule?.date_installation ? `
+                            <div>
+                                <strong>Installation cellule:</strong> ${formatDate(d.cellule.date_installation)}
+                            </div>
+                            ` : ''}
+                            ${d.cellule?.date_remplacement_theorique ? `
+                            <div>
+                                <strong>Remplacement théorique:</strong> ${formatDate(d.cellule.date_remplacement_theorique)}
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Étalonnage détaillé -->
+                    ${d.etalonnage && !d.etalonnage.non_teste_demande_client ? `
+                    <div class="etalonnage-box">
+                        <div class="etalonnage-header">
+                            🧪 Étalonnage et Calibration
+                        </div>
+                        
+                        <!-- Dates et valeurs -->
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                            ${d.etalonnage.date_dernier ? `
+                            <div style="background: white; padding: 12px; border-radius: 5px;">
+                                <div class="detail-label">Dernier étalonnage</div>
+                                <div class="detail-value">${formatDate(d.etalonnage.date_dernier)}</div>
+                            </div>
+                            ` : ''}
+                            ${d.etalonnage.prochaine_echeance ? `
+                            <div style="background: white; padding: 12px; border-radius: 5px;">
+                                <div class="detail-label">Prochaine échéance</div>
+                                <div class="detail-value">${formatDate(d.etalonnage.prochaine_echeance)}</div>
+                            </div>
+                            ` : ''}
+                            ${d.etalonnage.temps_reponse ? `
+                            <div style="background: white; padding: 12px; border-radius: 5px;">
+                                <div class="detail-label">Temps de réponse</div>
+                                <div class="detail-value">${cleanText(d.etalonnage.temps_reponse)}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${(d.etalonnage.valeur_avant_calibration || d.etalonnage.valeur_apres_calibration) ? `
+                        <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-around; text-align: center;">
+                                ${d.etalonnage.valeur_avant_calibration ? `
+                                <div>
+                                    <div class="detail-label">Avant calibration</div>
+                                    <div class="detail-value" style="font-size: 16px; color: #e74c3c;">
+                                        ${cleanText(d.etalonnage.valeur_avant_calibration)}
+                                    </div>
+                                </div>
+                                ` : ''}
+                                ${d.etalonnage.valeur_apres_calibration ? `
+                                <div>
+                                    <div class="detail-label">Après calibration</div>
+                                    <div class="detail-value" style="font-size: 16px; color: #27ae60;">
+                                        ${cleanText(d.etalonnage.valeur_apres_calibration)}
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                            <!-- Calibrage du zéro -->
+                            <div style="background: white; padding: 15px; border-radius: 8px;">
+                                <h5 style="margin: 0 0 10px 0; color: #0c5460; font-size: 13px;">Calibrage du Zéro</h5>
+                                ${d.etalonnage.calibrage_zero?.gaz_etalon ? `
+                                <div style="margin-bottom: 8px;">
+                                    <span class="detail-label">Gaz étalon:</span>
+                                    <span style="font-weight: 600;">${cleanText(d.etalonnage.calibrage_zero.gaz_etalon)}</span>
+                                </div>
+                                ` : ''}
+                                ${d.etalonnage.calibrage_zero?.statut ? `
+                                <div>
+                                    <span class="detail-label">Statut:</span>
+                                    <span class="status-badge ${getStatusClass(d.etalonnage.calibrage_zero.statut)}">
+                                        ${cleanText(d.etalonnage.calibrage_zero.statut)}
+                                    </span>
+                                </div>
+                                ` : ''}
+                            </div>
+                            
+                            <!-- Calibrage de la sensibilité -->
+                            <div style="background: white; padding: 15px; border-radius: 8px;">
+                                <h5 style="margin: 0 0 10px 0; color: #0c5460; font-size: 13px;">Calibrage de la Sensibilité</h5>
+                                ${d.etalonnage.calibrage_sensibilite?.gaz_etalon ? `
+                                <div style="margin-bottom: 8px;">
+                                    <span class="detail-label">Gaz étalon:</span>
+                                    <span style="font-weight: 600;">${cleanText(d.etalonnage.calibrage_sensibilite.gaz_etalon)}</span>
+                                </div>
+                                ` : ''}
+                                ${d.etalonnage.calibrage_sensibilite?.valeur_mesuree && d.etalonnage.calibrage_sensibilite?.concentration_theorique ? `
+                                <div style="margin-bottom: 8px;">
+                                    <span class="detail-label">Mesure:</span>
+                                    <span style="font-weight: 600;">
+                                        ${d.etalonnage.calibrage_sensibilite.valeur_mesuree} / 
+                                        ${d.etalonnage.calibrage_sensibilite.concentration_theorique} 
+                                        ${d.etalonnage.calibrage_sensibilite.unite || 'ppm'}
+                                    </span>
+                                </div>
+                                ` : ''}
+                                ${d.etalonnage.calibrage_sensibilite?.coefficient ? `
+                                <div style="margin-bottom: 8px;">
+                                    <span class="detail-label">Coefficient:</span>
+                                    <span style="font-weight: 600;">${d.etalonnage.calibrage_sensibilite.coefficient}</span>
+                                </div>
+                                ` : ''}
+                                ${d.etalonnage.calibrage_sensibilite?.statut ? `
+                                <div>
+                                    <span class="detail-label">Statut:</span>
+                                    <span class="status-badge ${getStatusClass(d.etalonnage.calibrage_sensibilite.statut)}">
+                                        ${cleanText(d.etalonnage.calibrage_sensibilite.statut)}
+                                    </span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Seuils d'alarme -->
+                    ${d.seuils_alarme && d.seuils_alarme.length > 0 ? `
+                    <div style="background: #ffe4e1; border: 1px solid #ff6b6b; border-radius: 8px; padding: 20px; margin: 15px 0;">
+                        <h5 style="color: #e74c3c; margin-bottom: 15px; font-size: 14px;">
+                            ⚠️ Seuils d'Alarme Configurés
+                        </h5>
+                        ${d.seuils_alarme.map(s => `
+                        <div class="seuil-item">
+                            <div class="seuil-number">${s.niveau || '-'}</div>
+                            <div>
+                                <div style="margin-bottom: 8px;">
+                                    <strong>Valeur:</strong> ${cleanText(s.valeur) || '--'} ${cleanText(s.unite) || 'ppm'}
+                                    ${s.asservissements ? ' • <strong>Asservissements:</strong> ' + cleanText(s.asservissements) : ''}
+                                </div>
+                                <div style="display: flex; gap: 20px; font-size: 11px;">
+                                    ${s.asservissement_operationnel ? `
+                                    <span>
+                                        <strong>Opérationnel:</strong>
+                                        <span class="status-badge ${getStatusClass(s.asservissement_operationnel)}">
+                                            ${s.asservissement_operationnel}
+                                        </span>
+                                    </span>
+                                    ` : ''}
+                                    ${s.remontee_supervision ? `
+                                    <span style="color: #27ae60;">✅ Remontée supervision</span>
+                                    ` : ''}
+                                    ${s.non_teste_demande_client ? `
+                                    <span style="color: #e74c3c;">⚠️ Non testé (demande client)</span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+                `).join('')}
+            </div>
+            ` : ''}
+            
+            <!-- DÉTECTEURS FLAMME -->
+            ${centrale.detecteurs_flamme && centrale.detecteurs_flamme.length > 0 ? `
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: #e74c3c; margin-bottom: 20px; font-size: 16px;">
+                    🔥 Détecteurs de Flamme - Centrale ${indexCentrale + 1}
+                </h4>
+                
+                <table class="pro-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Ligne</th>
+                            <th>Modèle</th>
+                            <th>Position</th>
+                            <th>Connexion</th>
+                            <th>Asservissements</th>
+                            <th>Opérationnel</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${centrale.detecteurs_flamme.map(d => `
+                        <tr>
+                            <td><strong>${d.numero || '-'}</strong></td>
+                            <td>${cleanText(d.ligne) || '-'}</td>
+                            <td>${cleanText(d.marque || '')} ${cleanText(d.modele || '')}</td>
+                            <td>${cleanText(d.position) || '-'}</td>
+                            <td>${cleanText(d.connexion || '4-20mA')}${d.connexion_autre ? ' - ' + cleanText(d.connexion_autre) : ''}</td>
+                            <td>${cleanText(d.asservissements) || '-'}</td>
+                            <td style="text-align: center;">
+                                <span class="status-badge ${getStatusClass(d.asservissement_operationnel)}">
+                                    ${cleanText(d.asservissement_operationnel) || '-'}
+                                </span>
+                                ${d.non_teste_demande_client ? '<br><small style="color: #e74c3c; font-size: 9px;">Non testé</small>' : ''}
+                            </td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            ` : ''}
+            
+            <!-- Observations de la centrale -->
+            ${(centrale.observations?.travaux_effectues || centrale.observations?.anomalies || 
+               centrale.observations?.recommandations || centrale.observations?.pieces_remplacees) ? `
+            <div style="background: white; padding: 20px; border-radius: 8px;">
+                <h4 style="color: #2c3e50; margin-bottom: 20px; font-size: 16px;">
+                    📝 Observations - Centrale ${indexCentrale + 1}
+                </h4>
+                
+                ${centrale.observations.travaux_effectues ? `
+                <div class="observation-card travaux">
+                    <h4>✅ Travaux Effectués</h4>
+                    <p>${cleanText(centrale.observations.travaux_effectues)}</p>
+                </div>
+                ` : ''}
+                
+                ${centrale.observations.anomalies ? `
+                <div class="observation-card anomalie">
+                    <h4>⚠️ Anomalies Constatées</h4>
+                    <p>${cleanText(centrale.observations.anomalies)}</p>
+                </div>
+                ` : ''}
+                
+                ${centrale.observations.recommandations ? `
+                <div class="observation-card recommandation">
+                    <h4>💡 Recommandations</h4>
+                    <p>${cleanText(centrale.observations.recommandations)}</p>
+                </div>
+                ` : ''}
+                
+                ${centrale.observations.pieces_remplacees ? `
+                <div class="observation-card">
+                    <h4>🔧 Pièces Remplacées</h4>
+                    <p>${cleanText(centrale.observations.pieces_remplacees)}</p>
+                </div>
+                ` : ''}
+            </div>
+            ` : ''}
+        </div>
+    </div>
+    `;
+    }).filter(html => html !== '').join('') || '<p class="empty-message">Aucune centrale configurée</p>'}
+    
+    <!-- Signatures -->
+    <div class="section no-break">
+        <div class="section-header">
+            <h2>✍️ Validation du Rapport</h2>
+        </div>
+        <div class="signature-section">
+            <div class="signature-block">
+                <div class="signature-title">Technicien SÉCUR'IT</div>
+                <div class="signature-name">${cleanText(data.signatures?.technicien?.nom) || 'Non signé'}</div>
+                ${data.signatures?.technicien?.signature_data ? 
+                    '<img src="' + data.signatures.technicien.signature_data + '" class="signature-image" alt="Signature technicien">' :
+                    '<div class="signature-image" style="display: flex; align-items: center; justify-content: center; color: #bdc3c7; font-style: italic;">Non signé</div>'
+                }
+                <div class="signature-date">Date: ${formatDate(data.intervention?.date)}</div>
+            </div>
+            
+            <div class="signature-block">
+                <div class="signature-title">Responsable Client</div>
+                <div class="signature-name">${cleanText(data.signatures?.client?.nom) || 'Non signé'}</div>
+                ${data.signatures?.client?.signature_data ? 
+                    '<img src="' + data.signatures.client.signature_data + '" class="signature-image" alt="Signature client">' :
+                    '<div class="signature-image" style="display: flex; align-items: center; justify-content: center; color: #bdc3c7; font-style: italic;">Non signé</div>'
+                }
+                <div class="signature-date">Date: ${formatDate(data.intervention?.date)}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-company">SÉCUR'IT</div>
+        <div class="footer-info">
+            Solutions Professionnelles de Détection de Gaz<br>
+            Ce rapport a été généré automatiquement le ${formatDate(new Date().toISOString())}<br>
+            Document confidentiel - Usage professionnel uniquement<br>
+            N° Rapport: ${data.rapport_id}
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+// Email professionnel amélioré
+const emailBody = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            color: #333; 
+            line-height: 1.6; 
+            background: #f4f4f4; 
+            margin: 0; 
+            padding: 0; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+        }
+        .header { 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+            color: white; 
+            padding: 40px 30px; 
+            text-align: center; 
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: normal;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        .content { 
+            padding: 30px; 
+        }
+        .info-box { 
+            background: #f8f9fa; 
+            border-left: 4px solid #3498db; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 0 8px 8px 0; 
+        }
+        .summary-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 15px 0; 
+        }
+        .summary-table td { 
+            padding: 10px; 
+            border-bottom: 1px solid #e0e0e0; 
+        }
+        .summary-table td:first-child { 
+            font-weight: bold; 
+            color: #7f8c8d; 
+            width: 40%;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .warning-box h4 {
+            color: #856404;
+            margin-top: 0;
+        }
+        .footer { 
+            background: #2c3e50; 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+            font-size: 12px; 
+        }
+        .button {
+            background: #e74c3c;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 SÉCUR'IT</h1>
+            <p>Rapport d'Intervention</p>
+        </div>
+        
+        <div class="content">
+            <p>Bonjour,</p>
+            
+            <p>Suite à notre intervention sur votre site, nous avons le plaisir de vous transmettre le rapport détaillé complet.</p>
+            
+            <div class="info-box">
+                <h3 style="margin-top: 0; color: #2c3e50;">📋 Résumé de l'intervention</h3>
+                <table class="summary-table">
+                    <tr>
+                        <td>Client</td>
+                        <td>${cleanText(data.client?.nom)}</td>
+                    </tr>
+                    <tr>
+                        <td>Site</td>
+                        <td>${cleanText(data.client?.site) || 'Non spécifié'}</td>
+                    </tr>
+                    <tr>
+                        <td>Date</td>
+                        <td>${formatDate(data.intervention?.date)}</td>
+                    </tr>
+                    <tr>
+                        <td>Technicien</td>
+                        <td>${cleanText(data.intervention?.technicien)}</td>
+                    </tr>
+                    <tr>
+                        <td>Type d'intervention</td>
+                        <td>${cleanText(data.intervention?.type_intervention) || 'Non spécifié'}</td>
+                    </tr>
+                    <tr>
+                        <td>N° Rapport</td>
+                        <td><strong>${data.rapport_id}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Centrales inspectées</td>
+                        <td>${data.statistiques?.nombre_centrales || 0}</td>
+                    </tr>
+                    <tr>
+                        <td>Détecteurs contrôlés</td>
+                        <td>${(data.statistiques?.nombre_detecteurs_gaz_total || 0) + (data.statistiques?.nombre_detecteurs_flamme_total || 0)}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <p style="font-size: 16px; color: #7f8c8d; margin-bottom: 20px;">
+                    Vous trouverez en pièce jointe le rapport complet au format PDF.
+                </p>
+            </div>
+            
+            ${(() => {
+                // Vérifier s'il y a des anomalies ou des recommandations
+                const hasAnomalies = data.centrales?.some(c => c.observations?.anomalies);
+                const hasRecommandations = data.centrales?.some(c => c.observations?.recommandations);
+                const hasUrgentItems = data.centrales?.some(c => 
+                    c.detecteurs_gaz?.some(d => d.cellule?.etat === 'À remplacer' || d.etalonnage?.operationnel === 'Non') ||
+                    c.detecteurs_flamme?.some(d => d.asservissement_operationnel === 'Non')
+                );
+                
+                if (hasAnomalies || hasRecommandations || hasUrgentItems) {
+                    return `
+                    <div class="warning-box">
+                        <h4>⚠️ Points d'attention</h4>
+                        <p style="color: #856404; margin: 0;">
+                            ${hasAnomalies ? 'Des anomalies ont été constatées lors de cette intervention.<br>' : ''}
+                            ${hasRecommandations ? 'Des recommandations ont été formulées pour optimiser votre installation.<br>' : ''}
+                            ${hasUrgentItems ? 'Certains équipements nécessitent une attention particulière.<br>' : ''}
+                            <br>
+                            Nous vous invitons à consulter le rapport détaillé pour plus d'informations.
+                        </p>
+                    </div>
+                    `;
+                }
+                return '';
+            })()}
+            
+            <h3 style="color: #2c3e50; margin-top: 40px;">📞 Nous restons à votre disposition</h3>
+            <p>
+                Pour toute question concernant ce rapport ou pour planifier une prochaine intervention, 
+                n'hésitez pas à nous contacter.
+            </p>
+            
+            <p style="margin-top: 30px;">
+                Cordialement,<br>
+                <strong>${cleanText(data.intervention?.technicien)}</strong><br>
+                Technicien SÉCUR'IT
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p style="margin: 0;">
+                <strong>SÉCUR'IT</strong> - Solutions Professionnelles de Détection de Gaz<br>
+                Ce message et ses pièces jointes sont confidentiels<br>
+                ${new Date().getFullYear()} © Tous droits réservés
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+// Logs finaux
+console.log('=== GÉNÉRATION PDF TERMINÉE ===');
+console.log('Longueur HTML:', htmlContent.length);
+console.log('Longueur Email:', emailBody.length);
+
+// Retour des données
+return {
+    pdf_html: htmlContent,
+    email_html: emailBody,
+    email_subject: `[SÉCUR'IT] Rapport d'intervention - ${cleanText(data.client?.nom)} - ${formatDate(data.intervention?.date)}`,
+    email_body_html: emailBody,
+    rapport_id: data.rapport_id,
+    destinataire: data.client?.email_rapport || data.email_rapport || 'yoanbru.obj@gmail.com',
+    email_destinataire: data.client?.email_rapport || data.email_rapport || 'yoanbru.obj@gmail.com',
+    copie_technicien: true,
+    client_nom: cleanText(data.client?.nom),
+    date_intervention: formatDate(data.intervention?.date),
+    html_content: htmlContent,
+    filename: `Rapport_SECURIT_${data.rapport_id}.pdf`
+};

@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(npm run dev:*)",
+      "Bash(dir:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(ls:*)",
+      "Read(//c/Users/yoanb/Downloads/**)",
+      "Bash(cat:*)",
+      "Bash(npm install:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(npx supabase:*)",
+      "Bash(mkdir:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

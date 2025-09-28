@@ -1,0 +1,1927 @@
+const htmlContent = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sécur'IT - Rapport d'Intervention Multi-Centrales</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #E74C3C, #c0392b);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .top-actions {
+            background: #34495e;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .btn-submit-top {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit-top:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
+        
+        .load-report-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+        
+        .form-container {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+        
+        label .required {
+            color: #E74C3C;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #E74C3C;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #E74C3C, #c0392b);
+            color: white;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #3498db;
+            padding: 12px 20px;
+            font-size: 14px;
+            margin: 10px 0;
+            width: auto;
+        }
+        
+        .btn-add-centrale {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            padding: 15px 30px;
+            font-size: 16px;
+            margin: 20px auto;
+            display: block;
+            width: auto;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .section {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #E74C3C;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .section h3 {
+            margin-bottom: 20px;
+            color: #E74C3C;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .centrale-container {
+            background: #fff;
+            border: 2px solid #9b59b6;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .centrale-header {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            padding: 15px;
+            margin: -25px -25px 20px -25px;
+            border-radius: 13px 13px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .row .form-group {
+            flex: 1;
+            margin-bottom: 10px;
+        }
+        
+        .detecteur-item {
+            background: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            position: relative;
+        }
+        
+        .detecteur-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #E74C3C;
+        }
+        
+        .signature-pad {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+            cursor: crosshair;
+            touch-action: none;
+            display: block;
+            margin: 10px auto;
+        }
+        
+        .signature-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        
+        .signature-controls button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .clear-btn {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .aes-section {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.2);
+        }
+        
+        .seuil-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            position: relative;
+        }
+        
+        .etalonnage-section {
+            background: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .etalonnage-section h4 {
+            color: #0c5460;
+            margin-bottom: 15px;
+        }
+        
+        .asservissement-section {
+            background: #f0f8ff;
+            border: 1px solid #b0d4ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .asservissement-section h4 {
+            color: #004085;
+            margin-bottom: 15px;
+        }
+        
+        .signature-section {
+            text-align: center;
+        }
+        
+        .signature-group {
+            margin-bottom: 30px;
+        }
+        
+        .success-message, .error-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #E74C3C;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        .info-text {
+            color: #666;
+            font-size: 14px;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        
+        .photo-upload {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            background: #ecf8ff;
+            margin: 10px 0;
+        }
+        
+        .photo-upload input[type="file"] {
+            display: none;
+        }
+        
+        .photo-upload-label {
+            cursor: pointer;
+            color: #3498db;
+            font-weight: 600;
+        }
+        
+        .detecteur-flamme-section {
+            background: #ffe4e1;
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .detecteur-flamme-item {
+            background: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 1px solid #ff6b6b;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .other-input {
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .other-input.active {
+            display: block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 600px) {
+            .row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            body {
+                padding: 5px;
+            }
+            
+            .form-container {
+                padding: 15px;
+            }
+            
+            .section {
+                padding: 15px;
+                margin: 15px 0;
+            }
+            
+            .detecteur-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .signature-pad {
+                width: 280px;
+            }
+            
+            .top-actions {
+                flex-direction: column;
+            }
+            
+            .btn-submit-top {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 SÉCUR'IT</h1>
+            <p>Rapport d'Intervention Multi-Centrales V3</p>
+        </div>
+        
+        <!-- BOUTON ENVOI EN HAUT -->
+        <div class="top-actions">
+            <div class="load-report-section">
+                <input type="checkbox" id="loadExisting" name="loadExisting">
+                <label for="loadExisting" style="color: white; margin: 0;">Charger un rapport existant</label>
+                <select id="existingReports" class="hidden" style="width: 200px; padding: 8px;">
+                    <option value="">Sélectionner un rapport...</option>
+                </select>
+            </div>
+            <button type="button" class="btn-submit-top" onclick="submitForm()">
+                📤 ENVOYER LE RAPPORT
+            </button>
+        </div>
+        
+        <div class="form-container">
+            <div class="success-message" id="successMessage">
+                ✅ Formulaire bien envoyé ! Rapport traité avec succès.
+            </div>
+            
+            <div class="error-message" id="errorMessage">
+                ❌ Erreur lors du traitement. Veuillez réessayer.
+            </div>
+            
+            <div class="loading" id="loadingMessage">
+                <div class="spinner"></div>
+                <p>Traitement en cours...</p>
+            </div>
+            
+            <form id="rapportForm">
+                
+                <!-- Informations Intervention -->
+                <div class="section">
+                    <h3>📋 Informations Intervention</h3>
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Date <span class="required">*</span></label>
+                            <input type="date" name="date" id="dateIntervention" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Technicien <span class="required">*</span></label>
+                            <select name="technicien" required>
+                                <option value="">Sélectionner un technicien</option>
+                                <option value="Christophe Agnus">Christophe Agnus</option>
+                                <option value="Yoan Brû">Yoan Brû</option>
+                                <option value="Amine El Yasse">Amine El Yasse</option>
+                                <option value="Jérémy Berruee">Jérémy Berruee</option>
+                                <option value="Gérald Leloir">Gérald Leloir</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Heure début</label>
+                            <input type="time" name="heure_debut">
+                        </div>
+                        <div class="form-group">
+                            <label>Heure fin</label>
+                            <input type="time" name="heure_fin">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Type d'intervention</label>
+                        <select name="type_intervention">
+                            <option value="">Sélectionner</option>
+                            <option value="Maintenance préventive">Maintenance préventive</option>
+                            <option value="Maintenance corrective">Maintenance corrective</option>
+                            <option value="Installation">Installation</option>
+                            <option value="Étalonnage">Étalonnage</option>
+                            <option value="Dépannage">Dépannage</option>
+                            <option value="Mise en service">Mise en service</option>
+                            <option value="Formation">Formation</option>
+                            <option value="Audit">Audit</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Informations Client -->
+                <div class="section">
+                    <h3>🏢 Informations Client</h3>
+                    <div class="form-group">
+                        <label>Nom du client <span class="required">*</span></label>
+                        <input type="text" name="client_nom" required placeholder="Nom de l'entreprise">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Site</label>
+                            <input type="text" name="client_site" placeholder="Site/Adresse">
+                        </div>
+                        <div class="form-group">
+                            <label>Local</label>
+                            <input type="text" name="client_local" placeholder="Atelier, Bureau...">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Contact sur site</label>
+                            <input type="text" name="client_contact" placeholder="Nom du contact">
+                        </div>
+                        <div class="form-group">
+                            <label>Téléphone</label>
+                            <input type="tel" name="client_tel" placeholder="Numéro de téléphone">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Email pour rapport</label>
+                        <input type="email" name="email_rapport" placeholder="email@client.com">
+                    </div>
+                </div>
+                
+                <!-- Conteneur pour les centrales -->
+                <div id="centralesContainer">
+                    <!-- Les centrales seront ajoutées ici dynamiquement -->
+                </div>
+                
+                <!-- Bouton ajouter centrale -->
+                <button type="button" class="btn btn-add-centrale" onclick="ajouterCentrale()">
+                    ➕ AJOUTER UNE CENTRALE
+                </button>
+                
+                <!-- Signatures -->
+                <div class="section">
+                    <h3>✍️ Signatures</h3>
+                    
+                    <div class="signature-section">
+                        <div class="signature-group">
+                            <label>Nom Technicien <span class="required">*</span></label>
+                            <input type="text" name="signature_technicien_nom" required placeholder="Nom pour signature">
+                            <label style="margin-top: 15px;">Signature Technicien</label>
+                            <canvas id="signatureTechnicien" class="signature-pad" width="300" height="150"></canvas>
+                            <div class="signature-controls">
+                                <button type="button" class="clear-btn" onclick="clearSignature('signatureTechnicien')">Effacer</button>
+                            </div>
+                        </div>
+                        
+                        <div class="signature-group">
+                            <label>Nom Client <span class="required">*</span></label>
+                            <input type="text" name="signature_client_nom" required placeholder="Nom du responsable client">
+                            <label style="margin-top: 15px;">Signature Client</label>
+                            <canvas id="signatureClient" class="signature-pad" width="300" height="150"></canvas>
+                            <div class="signature-controls">
+                                <button type="button" class="clear-btn" onclick="clearSignature('signatureClient')">Effacer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+    
+    <!-- Template pour centrale -->
+    <div style="display: none;">
+        <div id="centraleTemplate">
+            <div class="centrale-container" data-centrale-id="">
+                <div class="centrale-header">
+                    <h3>⚡ Centrale <span class="centrale-numero"></span></h3>
+                    <button type="button" class="btn btn-danger supprimer-centrale" onclick="supprimerCentrale(this)">
+                        🗑️ Supprimer cette centrale
+                    </button>
+                </div>
+                
+                <!-- Informations centrale -->
+                <div class="section">
+                    <h3>📝 Informations de la centrale</h3>
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Marque <span class="required">*</span></label>
+                            <select class="centrale-marque" onchange="updateModeles(this)" required>
+                                <option value="">Sélectionner une marque</option>
+                                <option value="Oldham">Oldham</option>
+                                <option value="MSA">MSA</option>
+                                <option value="Honeywell">Honeywell</option>
+                                <option value="Dräger">Dräger</option>
+                                <option value="Hesion">Hesion</option>
+                                <option value="Tecnocontrol">Tecnocontrol</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Modèle <span class="required">*</span></label>
+                            <select class="centrale-modele" onchange="checkAutreModele(this)" required>
+                                <option value="">Sélectionner d'abord une marque</option>
+                            </select>
+                            <input type="text" class="centrale-modele-autre other-input" placeholder="Préciser le modèle">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label>N° Série</label>
+                            <input type="text" class="centrale-serie" placeholder="Numéro de série">
+                        </div>
+                        <div class="form-group">
+                            <label>Version Firmware</label>
+                            <input type="text" class="centrale-firmware" placeholder="Version firmware">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>État général</label>
+                        <select class="centrale-etat">
+                            <option value="Bon">Bon</option>
+                            <option value="Acceptable">Acceptable</option>
+                            <option value="À surveiller">À surveiller</option>
+                            <option value="Défaillant">Défaillant</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Photo centrale -->
+                    <div class="photo-upload">
+                        <label class="photo-upload-label">
+                            📷 Ajouter photos de la centrale
+                            <input type="file" class="centrale-photos" accept="image/*" multiple onchange="handlePhotoUpload(this)">
+                        </label>
+                        <div class="photo-preview"></div>
+                    </div>
+                </div>
+                
+                <!-- AES -->
+                <div class="section aes-section">
+                    <h3>🔋 AES (Alimentation Emergency Secours)</h3>
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="aes-presente" onchange="toggleAES(this)">
+                        <label style="margin: 0;">AES présente sur l'installation</label>
+                    </div>
+                    
+                    <div class="aes-details hidden">
+                        <div class="row">
+                            <div class="form-group">
+                                <label>Modèle batterie</label>
+                                <select class="aes-modele">
+                                    <option value="">Sélectionner</option>
+                                    <option value="2x 12V 7Ah">2x 12V 7Ah</option>
+                                    <option value="2x 12V 12Ah">2x 12V 12Ah</option>
+                                    <option value="2x 12V 18Ah">2x 12V 18Ah</option>
+                                    <option value="2x 12V 24Ah">2x 12V 24Ah</option>
+                                    <option value="2x 24V 7Ah">2x 24V 7Ah</option>
+                                    <option value="2x 24V 12Ah">2x 24V 12Ah</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Statut AES</label>
+                                <select class="aes-statut">
+                                    <option value="Bon">Bon</option>
+                                    <option value="À surveiller">À surveiller</option>
+                                    <option value="Vieillissantes">Vieillissantes</option>
+                                    <option value="À remplacer">À remplacer</option>
+                                    <option value="Défaillant">Défaillant</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <input type="checkbox" class="aes-ondulee">
+                            <label style="margin: 0;">Alimentation ondulée</label>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="form-group">
+                                <label>Date dernier remplacement</label>
+                                <input type="date" class="aes-date-remplacement">
+                            </div>
+                            <div class="form-group">
+                                <label>Prochaine échéance</label>
+                                <input type="date" class="aes-prochaine-echeance">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Détecteurs Gaz -->
+                <div class="section">
+                    <h3>🔍 Détecteurs de Gaz</h3>
+                    <p class="info-text">Nombre de détecteurs gaz : <span class="detecteur-gaz-count">0</span> / 256 maximum</p>
+                    
+                    <div class="detecteurs-gaz-container">
+                        <!-- Les détecteurs gaz seront ajoutés ici -->
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary" onclick="ajouterDetecteurGaz(this)">
+                        ➕ Ajouter un détecteur gaz
+                    </button>
+                </div>
+                
+                <!-- Détecteurs Flamme -->
+                <div class="detecteur-flamme-section">
+                    <h3>🔥 Détecteurs de Flamme</h3>
+                    <p class="info-text">Nombre de détecteurs flamme : <span class="detecteur-flamme-count">0</span></p>
+                    
+                    <div class="detecteurs-flamme-container">
+                        <!-- Les détecteurs flamme seront ajoutés ici -->
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary" onclick="ajouterDetecteurFlamme(this)">
+                        ➕ Ajouter un détecteur flamme
+                    </button>
+                </div>
+                
+                <!-- Observations par centrale -->
+                <div class="section">
+                    <h3>📝 Observations et Remarques - Centrale <span class="centrale-numero"></span></h3>
+                    <div class="form-group">
+                        <label>Travaux effectués</label>
+                        <textarea class="centrale-travaux" rows="3" placeholder="Détailler les travaux réalisés sur cette centrale..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Anomalies constatées</label>
+                        <textarea class="centrale-anomalies" rows="3" placeholder="Décrire les éventuelles anomalies sur cette centrale..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Recommandations</label>
+                        <textarea class="centrale-recommandations" rows="3" placeholder="Recommandations pour cette centrale..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Pièces remplacées</label>
+                        <textarea class="centrale-pieces" rows="2" placeholder="Liste des pièces changées sur cette centrale..."></textarea>
+                    </div>
+                    
+                    <!-- Photos anomalies -->
+                    <div class="photo-upload">
+                        <label class="photo-upload-label">
+                            📷 Ajouter photos des anomalies
+                            <input type="file" class="centrale-photos-anomalies" accept="image/*" multiple onchange="handlePhotoUpload(this)">
+                        </label>
+                        <div class="photo-preview"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Template détecteur gaz -->
+        <div id="detecteurGazTemplate">
+            <div class="detecteur-item" data-detecteur-id="">
+                <div class="detecteur-header">
+                    <span>Détecteur Gaz N°<span class="detecteur-numero"></span></span>
+                    <button type="button" class="btn btn-danger" onclick="supprimerDetecteur(this)">🗑️</button>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label>Ligne</label>
+                        <input type="text" class="detecteur-ligne" placeholder="N° ligne">
+                    </div>
+                    <div class="form-group">
+                        <label>Type de connexion</label>
+                        <select class="detecteur-connexion" onchange="checkAutreConnexion(this)">
+                            <option value="4-20mA">4-20mA</option>
+                            <option value="Numérique">Numérique</option>
+                            <option value="Modbus">Modbus</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                        <input type="text" class="detecteur-connexion-autre other-input" placeholder="Préciser le type de connexion">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label>Marque détecteur</label>
+                        <select class="detecteur-marque" onchange="updateModelesDetecteur(this)">
+                            <option value="">Sélectionner une marque</option>
+                            <option value="Oldham">Oldham</option>
+                            <option value="MSA">MSA</option>
+                            <option value="Honeywell">Honeywell</option>
+                            <option value="Dräger">Dräger</option>
+                            <option value="Hesion">Hesion</option>
+                            <option value="Tecnocontrol">Tecnocontrol</option>
+                            <option value="Danfoss">Danfoss</option>
+                            <option value="Carel">Carel</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Modèle détecteur</label>
+                        <select class="detecteur-modele" onchange="checkAutreModeleDetecteur(this)">
+                            <option value="">Sélectionner d'abord une marque</option>
+                        </select>
+                        <input type="text" class="detecteur-modele-autre other-input" placeholder="Préciser le modèle">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label>N° Série</label>
+                        <input type="text" class="detecteur-serie" placeholder="Numéro de série">
+                    </div>
+                    <div class="form-group">
+                        <label>Gaz détecté</label>
+                        <select class="detecteur-gaz">
+                            <option value="">Sélectionner</option>
+                            <optgroup label="Gaz Toxiques">
+                                <option value="CO">CO (Monoxyde de carbone)</option>
+                                <option value="H2S">H2S (Sulfure d'hydrogène)</option>
+                                <option value="NH3">NH3 (Ammoniac)</option>
+                                <option value="SO2">SO2 (Dioxyde de soufre)</option>
+                                <option value="NO2">NO2 (Dioxyde d'azote)</option>
+                                <option value="NO">NO (Monoxyde d'azote)</option>
+                                <option value="Cl2">Cl2 (Chlore)</option>
+                                <option value="HCl">HCl (Chlorure d'hydrogène)</option>
+                                <option value="HCN">HCN (Cyanure d'hydrogène)</option>
+                                <option value="PH3">PH3 (Phosphine)</option>
+                                <option value="HF">HF (Fluorure d'hydrogène)</option>
+                                <option value="COCl2">COCl2 (Phosgène)</option>
+                                <option value="SiH4">SiH4 (Silane)</option>
+                                <option value="AsH3">AsH3 (Arsine)</option>
+                                <option value="B2H6">B2H6 (Diborane)</option>
+                            </optgroup>
+                            <optgroup label="Gaz Explosifs/Combustibles">
+                                <option value="CH4">CH4 (Méthane)</option>
+                                <option value="C3H8">C3H8 (Propane)</option>
+                                <option value="C4H10">C4H10 (Butane)</option>
+                                <option value="H2">H2 (Hydrogène)</option>
+                                <option value="C2H4">C2H4 (Éthylène)</option>
+                                <option value="C2H6">C2H6 (Éthane)</option>
+                                <option value="C2H2">C2H2 (Acétylène)</option>
+                                <option value="Essence">Essence (Vapeurs)</option>
+                                <option value="GPL">GPL (Gaz de pétrole liquéfié)</option>
+                                <option value="Gaz Naturel">Gaz Naturel</option>
+                                <option value="Pentane">Pentane</option>
+                                <option value="Hexane">Hexane</option>
+                                <option value="Heptane">Heptane</option>
+                                <option value="Octane">Octane</option>
+                            </optgroup>
+                            <optgroup label="Gaz Asphyxiants">
+                                <option value="O2">O2 (Oxygène)</option>
+                                <option value="CO2">CO2 (Dioxyde de carbone)</option>
+                                <option value="N2">N2 (Azote)</option>
+                                <option value="Ar">Ar (Argon)</option>
+                                <option value="He">He (Hélium)</option>
+                            </optgroup>
+                            <optgroup label="Vapeurs Organiques">
+                                <option value="COV">COV (Composés organiques volatils)</option>
+                                <option value="Benzène">Benzène</option>
+                                <option value="Toluène">Toluène</option>
+                                <option value="Xylène">Xylène</option>
+                                <option value="Acétone">Acétone</option>
+                                <option value="Méthanol">Méthanol</option>
+                                <option value="Éthanol">Éthanol</option>
+                                <option value="Styrène">Styrène</option>
+                            </optgroup>
+                            <optgroup label="Gaz Réfrigérants">
+                                <option value="R32">R32</option>
+                                <option value="R410A">R410A</option>
+                                <option value="R134a">R134a</option>
+                                <option value="R404A">R404A</option>
+                                <option value="R407C">R407C</option>
+                                <option value="R717">R717 (Ammoniac)</option>
+                                <option value="R744">R744 (CO2)</option>
+                                <option value="R290">R290 (Propane)</option>
+                                <option value="R600a">R600a (Isobutane)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label>Position</label>
+                        <input type="text" class="detecteur-position" placeholder="Localisation précise">
+                    </div>
+                    <div class="form-group">
+                        <label>Gamme de mesure</label>
+                        <input type="text" class="detecteur-gamme" placeholder="Ex: 0-300 ppm">
+                    </div>
+                </div>
+                
+                <!-- Gestion cellule -->
+                <div class="row">
+                    <div class="form-group">
+                        <label>État cellule</label>
+                        <select class="detecteur-etat-cellule">
+                            <option value="Bon">Bon</option>
+                            <option value="Acceptable">Acceptable</option>
+                            <option value="Vieillissante">Vieillissante</option>
+                            <option value="À remplacer">À remplacer</option>
+                            <option value="Défaillante">Défaillante</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date installation cellule</label>
+                        <input type="date" class="detecteur-date-install">
+                    </div>
+                    <div class="form-group">
+                        <label>Date remplacement théorique</label>
+                        <input type="date" class="detecteur-date-remplacement">
+                    </div>
+                </div>
+                
+                <!-- Étalonnage -->
+                <div class="etalonnage-section">
+                    <h4>🧪 Étalonnage</h4>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Date dernier étalonnage</label>
+                            <input type="date" class="detecteur-date-etal">
+                        </div>
+                        <div class="form-group">
+                            <label>Prochaine échéance</label>
+                            <input type="date" class="detecteur-prochaine-etal">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Valeur AVANT calibration</label>
+                            <input type="text" class="detecteur-valeur-avant" placeholder="Ex: 2 ppm">
+                        </div>
+                        <div class="form-group">
+                            <label>Valeur APRÈS calibration</label>
+                            <input type="text" class="detecteur-valeur-apres" placeholder="Ex: 0 ppm">
+                        </div>
+                        <div class="form-group">
+                            <label>Temps de réponse</label>
+                            <input type="text" class="detecteur-temps-reponse" placeholder="Ex: T90 < 30s">
+                        </div>
+                    </div>
+                    
+                    <h5 style="margin: 15px 0 10px 0; color: #0c5460;">Calibrage du Zéro</h5>
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Gaz étalon zéro</label>
+                            <select class="detecteur-gaz-zero">
+                                <option value="">Sélectionner</option>
+                                <option value="Air synthétique 20,9%vol O2">Air synthétique 20,9%vol O2</option>
+                                <option value="100%N2">100%N2 (Azote pur)</option>
+                                <option value="Air ambiant">Air ambiant</option>
+                                <option value="Air sec">Air sec</option>
+                                <option value="N2 technique">N2 technique</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Statut zéro</label>
+                            <select class="detecteur-etal-zero">
+                                <option value="OK">OK</option>
+                                <option value="Dérive">Dérive</option>
+                                <option value="HS">HS</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <h5 style="margin: 15px 0 10px 0; color: #0c5460;">Calibrage de la Sensibilité</h5>
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Gaz étalon</label>
+                            <input type="text" class="detecteur-gaz-sensi" placeholder="Ex: CO 150 ppm">
+                        </div>
+                        <div class="form-group">
+                            <label>Concentration théorique</label>
+                            <input type="number" step="0.1" class="detecteur-valeur-theorique" placeholder="Ex: 150">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Unité</label>
+                            <select class="detecteur-unite-etal">
+                                <option value="ppm">ppm</option>
+                                <option value="%vol">%vol</option>
+                                <option value="%LIE">%LIE</option>
+                                <option value="mg/m³">mg/m³</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Valeur mesurée</label>
+                            <input type="number" step="0.1" class="detecteur-valeur-mesuree" placeholder="Ex: 148">
+                        </div>
+                        <div class="form-group">
+                            <label>Coefficient</label>
+                            <input type="number" step="0.001" class="detecteur-coefficient" placeholder="Ex: 1.250">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Statut sensibilité</label>
+                            <select class="detecteur-etal-sensi">
+                                <option value="OK">OK</option>
+                                <option value="Dérive acceptable">Dérive acceptable</option>
+                                <option value="Dérive limite">Dérive limite</option>
+                                <option value="HS">HS</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Détecteur opérationnel ?</label>
+                            <select class="detecteur-etal-operationnel">
+                                <option value="Oui">Oui</option>
+                                <option value="Non">Non</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="detecteur-etal-non-teste">
+                        <label style="margin: 0;">Non testé à la demande du client</label>
+                    </div>
+                </div>
+                
+                <!-- Seuils d'alarme -->
+                <h4 style="margin: 15px 0 10px 0; color: #E74C3C;">⚠️ Seuils d'Alarme</h4>
+                <div class="seuils-container">
+                    <!-- Les seuils seront ajoutés ici -->
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="ajouterSeuil(this)">➕ Ajouter un seuil</button>
+                
+                <!-- Photos détecteur -->
+                <div class="photo-upload">
+                    <label class="photo-upload-label">
+                        📷 Ajouter photos du détecteur
+                        <input type="file" class="detecteur-photos" accept="image/*" multiple onchange="handlePhotoUpload(this)">
+                    </label>
+                    <div class="photo-preview"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Template détecteur flamme -->
+        <div id="detecteurFlammeTemplate">
+            <div class="detecteur-flamme-item" data-detecteur-id="">
+                <div class="detecteur-header">
+                    <span>Détecteur Flamme N°<span class="detecteur-flamme-numero"></span></span>
+                    <button type="button" class="btn btn-danger" onclick="supprimerDetecteurFlamme(this)">🗑️</button>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label>Ligne</label>
+                        <input type="text" class="flamme-ligne" placeholder="N° ligne">
+                    </div>
+                    <div class="form-group">
+                        <label>Marque</label>
+                        <select class="flamme-marque" onchange="updateModelesFlamme(this)">
+                            <option value="">Sélectionner une marque</option>
+                            <option value="MSA">MSA</option>
+                            <option value="Honeywell">Honeywell</option>
+                            <option value="Dräger">Dräger</option>
+                            <option value="Oldham">Oldham/Simtronics</option>
+                            <option value="Tecnocontrol">Tecnocontrol</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Modèle</label>
+                        <select class="flamme-modele" onchange="checkAutreModeleFlamme(this)">
+                            <option value="">Sélectionner d'abord une marque</option>
+                        </select>
+                        <input type="text" class="flamme-modele-autre other-input" placeholder="Préciser le modèle">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label>Position/Zone surveillée</label>
+                        <input type="text" class="flamme-position" placeholder="Ex: Zone stockage hydrocarbures">
+                    </div>
+                    <div class="form-group">
+                        <label>Type de connexion</label>
+                        <select class="flamme-connexion" onchange="checkAutreConnexionFlamme(this)">
+                            <option value="4-20mA">4-20mA</option>
+                            <option value="Numérique">Numérique</option>
+                            <option value="Modbus">Modbus</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                        <input type="text" class="flamme-connexion-autre other-input" placeholder="Préciser le type">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Asservissements</label>
+                    <input type="text" class="flamme-asservissements" placeholder="Ex: Coupure gaz, Alarme incendie...">
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label>Asservissement opérationnel ?</label>
+                        <select class="flamme-asserv-operationnel">
+                            <option value="Oui">Oui</option>
+                            <option value="Non">Non</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" class="flamme-asserv-non-teste">
+                    <label style="margin: 0;">Non testé à la demande du client</label>
+                </div>
+                
+                <!-- Photos détecteur flamme -->
+                <div class="photo-upload">
+                    <label class="photo-upload-label">
+                        📷 Ajouter photos du détecteur
+                        <input type="file" class="flamme-photos" accept="image/*" multiple onchange="handlePhotoUpload(this)">
+                    </label>
+                    <div class="photo-preview"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Template seuil -->
+        <div id="seuilTemplate">
+            <div class="seuil-item">
+                <button type="button" class="btn-danger" style="position: absolute; top: 10px; right: 10px; padding: 5px 10px;" onclick="supprimerSeuil(this)">×</button>
+                <div class="row">
+                    <div class="form-group">
+                        <label>Seuil <span class="seuil-numero"></span> (valeur)</label>
+                        <input type="number" class="seuil-valeur" placeholder="Ex: 50">
+                    </div>
+                    <div class="form-group">
+                        <label>Unité</label>
+                        <select class="seuil-unite">
+                            <option value="ppm">ppm</option>
+                            <option value="%vol">%vol</option>
+                            <option value="%LIE">%LIE</option>
+                            <option value="mg/m³">mg/m³</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Asservissements Seuil <span class="seuil-numero"></span></label>
+                    <input type="text" class="seuil-asserv" placeholder="Ex: Alarme sonore, Voyant">
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label>Asservissement opérationnel ?</label>
+                        <select class="seuil-asserv-operationnel">
+                            <option value="Oui">Oui</option>
+                            <option value="Non">Non</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" class="seuil-supervision">
+                    <label style="margin: 0;">Remontée supervision</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" class="seuil-non-teste">
+                    <label style="margin: 0;">Non testé à la demande du client</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variables globales
+        let centraleCount = 0;
+        const maxDetecteursParCentrale = 256;
+        
+        // Données des équipements par marque
+        const equipementData = {
+            centrales: {
+                'Oldham': ['MX 15', 'MX 16', 'MX 32', 'MX 32 V1', 'MX 32 V2', 'MX 32 V2 pont', 'MX 43', 'MX 48', 'MX 52', 'MX 62', 'MX 256', 'CPS', 'SV4B', 'WatchGas SSU'],
+                'MSA': ['GasGard XL', 'SUPREMA', 'SUPREMATouch', 'HazardWatch', 'HazardWatch FX-12', 'System 9010', 'System 9020', 'Chillgard'],
+                'Honeywell': ['TouchPoint Plus', 'TouchPoint Plus Wireless', 'TouchPoint Pro', 'TouchPoint 4', 'OELD'],
+                'Dräger': ['REGARD 3900', 'REGARD 3910', 'REGARD 3920', 'REGARD 7000', 'VarioGard', 'Unigard LT', 'QuadGard', 'Comytron 30RS'],
+                'Hesion': ['Distalarm 215', 'Distalarm 225', 'Distalarm 200', 'Distalarm 250', 'Distalarm 302', 'Distalarm 323', 'Sensoparc 400', 'Sensoparc 401', 'Sensoparc 402', 'Sensoparc 500', 'Sensoparc 600', 'EasySense', 'Eolparc'],
+                'Tecnocontrol': ['SE126K', 'SE127K', 'SE128K', 'SE139K', 'SE184K', 'SE194K', 'SE293K', 'CE100', 'CE100R', 'CE101', 'CE400', 'CE408P', 'CE424P', 'CE516P', 'ID250', 'AL100', 'AL101', 'BA100', 'PS175', 'PS180/24', 'PS185/24', 'KB408', 'ES404']
+            },
+            detecteurs: {
+                'Oldham': ['OLC 10', 'OLC 10 TWIN', 'OLC 20', 'OLC 40', 'OLC 50', 'OLC 60', 'OLC 80', 'OLC 100', 'OLCT 10', 'OLCT 10N', 'OLCT 20', 'OLCT 40', 'OLCT 50', 'OLCT 60', 'OLCT 80', 'OLCT 100', 'OLCT 100 XP', 'OLCT 100 XP HT', 'OLCT 100 XP IR', 'OLCT 100 IS', 'OLCT 200', 'OLCT IR', 'CTX 300', 'CEX 300', 'CPS 10', 'S-Gard', 'IT-X'],
+                'MSA': ['PrimaX P', 'PrimaX I', 'PrimaX IR', 'ULTIMA X', 'ULTIMA XE', 'ULTIMA X3', 'ULTIMA X5000', 'ULTIMA XIR', 'ULTIMA OPIR-5', 'ULTIMA MOS 5', 'S5000', 'TRIGARD', 'Series 47K', 'S47K', 'UltraSonic IS-5', 'GASSONIC OBSERVER-I'],
+                'Honeywell': ['Searchpoint Optima Plus', 'Searchline Excel', 'Searchline Excel Edge', 'SensePoint', 'SensePoint XRL', 'SensePoint XCD', 'Serie 3000', 'Serie 3000 MkII', 'OmniPoint', 'XNX', 'Vertex', 'Vertex Edge', 'SPM Flex', 'Eclipse', 'Zareba', 'Signalpoint', '705 HT Series', 'Unipoint'],
+                'Dräger': ['PIR 7000', 'PIR 7200', 'Polytron 2000', 'Polytron 3000', 'Polytron 5000', 'Polytron 5200', 'Polytron 5310', 'Polytron 5700', 'Polytron 5720', 'Polytron 7000', 'Polytron 8000', 'Polytron 8100 EC', 'Polytron 8200 CAT', 'Polytron 8310 IR', 'Polytron 8700 IR', 'Polytron 8720 IR', 'PointGard 2100', 'PointGard 2200', 'PointGard 3100', 'VarioGard 3000 EC', 'VarioGard 3300 IR', 'VarioGard 3320 IR', 'GS01'],
+                'Hesion': ['SA21A', 'SB21A', 'SH21A', 'EH21A', 'EA21A', 'SX21F', 'SX21X', 'SA22A', 'SB22A', 'SH22A', 'ES22A', 'EA22A', 'SX22F', 'SX22X', 'SA32A', 'SB32A', 'SH32A', 'ES32A', 'EA32A', 'SX32F', 'SX32X', 'SA32G', 'SB32G', 'SX32G', 'EA32T', 'SX32T', 'E*-43*'],
+                'Tecnocontrol': ['SE137K', 'SE137KM', 'SE137KG', 'SE137KB', 'SE137KI', 'SE137E', 'SE137EC', 'SE151NM', 'SE195K', 'SE230KM', 'SE230KG', 'SE233KM', 'SE233KG', 'SE296K', 'SE138K', 'SE138PX', 'SE138PE', 'SE138PS', 'SE138PX-H', 'SE192K', 'SE192KM', 'SE192KG', 'SE193K', 'SE193KM', 'SE193KG', 'SE237E', 'TS220EC', 'TS220EC-S', 'TS220E', 'TS255', 'TS255CB', 'TS282', 'TS282K', 'TS282SFx-H.SP01', 'TS292K', 'TS293K', 'TS293P', 'TS293PB', 'TS293PE', 'TS293PG', 'TS293PM', 'TS293EO', 'TS482', 'TS593', 'IR400'],
+                'Danfoss': ['DGS-SC', 'DGS-IR', 'DGS-PE', 'DGS-EC', 'DGS Basic', 'DST G54A', 'DST G54B', 'DST G54C', 'DST G55A', 'DST GR32', 'DST G200', 'DST G290', '080Z2801', '080Z2811', '080Z2817'],
+                'Carel': ['GDSBI20C00', 'GDSBE19C00', 'GDSBSMXC00', 'GDSBSHFC00', 'GDSBSHCC00', 'GDSRI20C00', 'GDSRE19C00', 'GDSRSMXC00', 'GDSRSHFC00', 'GDSRSHCC00']
+            },
+            flamme: {
+                'MSA': ['FL500 UV/IR', 'FL500-H2 UV/IR', 'FL3100', 'FL3110', 'FL4000H MSIR', 'FL5000 MSIR', 'FlameGard 5 MSIR'],
+                'Honeywell': ['FS10-R', 'FS20X UV/IR', 'FS24X IR3', 'FS24X Plus', 'FSL100', 'SS2', 'SS4'],
+                'Dräger': ['Ignis', 'Flame 2000', 'Flame 2100', 'Flame 2500', 'Flame 2570', 'Flame 2700', 'Flame 3000', 'Flame 5000'],
+                'Oldham': ['MultiFlame DF-TV7 IR3', 'MultiFlame DF-TV7 UV/2IR', 'Détecteur UV', 'Détecteur UV/IR', 'Détecteur IR3', 'Détecteur IR4'],
+                'Tecnocontrol': ['FL500 UV/IR', 'FL500-H2 UV/IR', 'FL3100', 'FL3110', 'FL4000H MSIR', 'FL5000 MSIR', 'FlameGard 5 MSIR']
+            }
+        };
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Date du jour
+            document.getElementById('dateIntervention').value = new Date().toISOString().split('T')[0];
+            
+            // Gestion rapport existant
+            document.getElementById('loadExisting').addEventListener('change', function(e) {
+                const selectReports = document.getElementById('existingReports');
+                if (e.target.checked) {
+                    selectReports.classList.
+                    remove('hidden');
+               } else {
+                   selectReports.classList.add('hidden');
+               }
+           });
+           
+           // Ajouter la première centrale automatiquement
+           ajouterCentrale();
+           
+           // Setup signatures
+           setupSignatures();
+       });
+       
+       // Fonction pour ajouter une centrale
+       function ajouterCentrale() {
+           centraleCount++;
+           
+           const template = document.getElementById('centraleTemplate');
+           const container = document.getElementById('centralesContainer');
+           
+           // Cloner le contenu du template
+           const newCentrale = template.cloneNode(true);
+           newCentrale.id = ''; // Enlever l'ID du template
+           
+           const centraleDiv = newCentrale.querySelector('.centrale-container');
+           centraleDiv.setAttribute('data-centrale-id', centraleCount);
+           
+           // Mettre à jour les numéros
+           newCentrale.querySelectorAll('.centrale-numero').forEach(el => {
+               el.textContent = centraleCount;
+           });
+           
+           // Cacher le bouton supprimer pour la première centrale
+           if (centraleCount === 1) {
+               newCentrale.querySelector('.supprimer-centrale').style.display = 'none';
+           }
+           
+           container.appendChild(centraleDiv);
+       }
+       
+       // Fonction pour supprimer une centrale
+       function supprimerCentrale(btn) {
+           if (centraleCount <= 1) {
+               alert('Vous devez garder au moins une centrale');
+               return;
+           }
+           
+           if (confirm('Êtes-vous sûr de vouloir supprimer cette centrale ?')) {
+               btn.closest('.centrale-container').remove();
+               centraleCount--;
+               
+               // Renuméroter les centrales
+               document.querySelectorAll('.centrale-container').forEach((centrale, index) => {
+                   centrale.setAttribute('data-centrale-id', index + 1);
+                   centrale.querySelectorAll('.centrale-numero').forEach(el => {
+                       el.textContent = index + 1;
+                   });
+               });
+           }
+       }
+       
+       // Fonction pour mettre à jour les modèles de centrale
+       function updateModeles(selectMarque) {
+           const centrale = selectMarque.closest('.centrale-container');
+           const selectModele = centrale.querySelector('.centrale-modele');
+           const inputAutre = centrale.querySelector('.centrale-modele-autre');
+           
+           const marque = selectMarque.value;
+           
+           // Réinitialiser
+           selectModele.innerHTML = '<option value="">Sélectionner un modèle</option>';
+           inputAutre.classList.remove('active');
+           selectModele.style.display = 'block';
+           
+           if (marque && marque !== 'Autre' && equipementData.centrales[marque]) {
+               equipementData.centrales[marque].forEach(modele => {
+                   const option = document.createElement('option');
+                   option.value = modele;
+                   option.textContent = modele;
+                   selectModele.appendChild(option);
+               });
+               
+               // Ajouter option Autre
+               const optionAutre = document.createElement('option');
+               optionAutre.value = 'Autre';
+               optionAutre.textContent = 'Autre';
+               selectModele.appendChild(optionAutre);
+           } else if (marque === 'Autre') {
+               inputAutre.classList.add('active');
+               selectModele.style.display = 'none';
+           }
+       }
+       
+       // Fonction pour vérifier si "Autre" est sélectionné pour le modèle
+       function checkAutreModele(selectModele) {
+           const inputAutre = selectModele.nextElementSibling;
+           if (selectModele.value === 'Autre') {
+               inputAutre.classList.add('active');
+           } else {
+               inputAutre.classList.remove('active');
+           }
+       }
+       
+       // Fonction toggle AES
+       function toggleAES(checkbox) {
+           const aesDetails = checkbox.closest('.aes-section').querySelector('.aes-details');
+           if (checkbox.checked) {
+               aesDetails.classList.remove('hidden');
+           } else {
+               aesDetails.classList.add('hidden');
+           }
+       }
+       
+       // Fonction pour ajouter un détecteur gaz
+       function ajouterDetecteurGaz(btn) {
+           const centrale = btn.closest('.centrale-container');
+           const container = centrale.querySelector('.detecteurs-gaz-container');
+           const count = container.querySelectorAll('.detecteur-item').length;
+           
+           if (count >= maxDetecteursParCentrale) {
+               alert('Maximum ' + maxDetecteursParCentrale + ' détecteurs par centrale atteint');
+               return;
+           }
+           
+           const template = document.getElementById('detecteurGazTemplate');
+           const newDetecteur = template.cloneNode(true);
+           newDetecteur.id = '';
+           
+           const detecteurDiv = newDetecteur.querySelector('.detecteur-item');
+           detecteurDiv.setAttribute('data-detecteur-id', count + 1);
+           
+           newDetecteur.querySelector('.detecteur-numero').textContent = count + 1;
+           
+           container.appendChild(detecteurDiv);
+           
+           // Mettre à jour le compteur
+           centrale.querySelector('.detecteur-gaz-count').textContent = count + 1;
+           
+           // Ajouter un premier seuil par défaut
+           const seuilsContainer = detecteurDiv.querySelector('.seuils-container');
+           ajouterSeuilDirect(seuilsContainer);
+       }
+       
+       // Fonction pour supprimer un détecteur
+       function supprimerDetecteur(btn) {
+           if (confirm('Supprimer ce détecteur ?')) {
+               const detecteur = btn.closest('.detecteur-item');
+               const centrale = detecteur.closest('.centrale-container');
+               const container = detecteur.parentElement;
+               
+               detecteur.remove();
+               
+               // Renuméroter
+               container.querySelectorAll('.detecteur-item').forEach((det, index) => {
+                   det.setAttribute('data-detecteur-id', index + 1);
+                   det.querySelector('.detecteur-numero').textContent = index + 1;
+               });
+               
+               // Mettre à jour le compteur
+               const count = container.querySelectorAll('.detecteur-item').length;
+               centrale.querySelector('.detecteur-gaz-count').textContent = count;
+           }
+       }
+       
+       // Fonction pour mettre à jour les modèles de détecteur
+       function updateModelesDetecteur(selectMarque) {
+           const detecteur = selectMarque.closest('.detecteur-item');
+           const selectModele = detecteur.querySelector('.detecteur-modele');
+           const inputAutre = detecteur.querySelector('.detecteur-modele-autre');
+           
+           const marque = selectMarque.value;
+           
+           // Réinitialiser
+           selectModele.innerHTML = '<option value="">Sélectionner un modèle</option>';
+           inputAutre.classList.remove('active');
+           selectModele.style.display = 'block';
+           
+           if (marque && marque !== 'Autre' && equipementData.detecteurs[marque]) {
+               equipementData.detecteurs[marque].forEach(modele => {
+                   const option = document.createElement('option');
+                   option.value = modele;
+                   option.textContent = modele;
+                   selectModele.appendChild(option);
+               });
+               
+               // Ajouter option Autre
+               const optionAutre = document.createElement('option');
+               optionAutre.value = 'Autre';
+               optionAutre.textContent = 'Autre';
+               selectModele.appendChild(optionAutre);
+           } else if (marque === 'Autre') {
+               inputAutre.classList.add('active');
+               selectModele.style.display = 'none';
+           }
+       }
+       
+       // Fonction pour vérifier "Autre" modèle détecteur
+       function checkAutreModeleDetecteur(selectModele) {
+           const inputAutre = selectModele.nextElementSibling;
+           if (selectModele.value === 'Autre') {
+               inputAutre.classList.add('active');
+           } else {
+               inputAutre.classList.remove('active');
+           }
+       }
+       
+       // Fonction pour vérifier "Autre" connexion
+       function checkAutreConnexion(selectConnexion) {
+           const inputAutre = selectConnexion.nextElementSibling;
+           if (selectConnexion.value === 'Autre') {
+               inputAutre.classList.add('active');
+           } else {
+               inputAutre.classList.remove('active');
+           }
+       }
+       
+       // Fonction pour ajouter un seuil
+       function ajouterSeuil(btn) {
+           const container = btn.previousElementSibling;
+           ajouterSeuilDirect(container);
+       }
+       
+       function ajouterSeuilDirect(container) {
+           const template = document.getElementById('seuilTemplate');
+           const newSeuil = template.cloneNode(true);
+           newSeuil.id = '';
+           
+           const seuilDiv = newSeuil.querySelector('.seuil-item');
+           const seuilCount = container.querySelectorAll('.seuil-item').length + 1;
+           
+           newSeuil.querySelectorAll('.seuil-numero').forEach(el => {
+               el.textContent = seuilCount;
+           });
+           
+           container.appendChild(seuilDiv);
+       }
+       
+       // Fonction pour supprimer un seuil
+       function supprimerSeuil(btn) {
+           const seuil = btn.closest('.seuil-item');
+           const container = seuil.parentElement;
+           
+           seuil.remove();
+           
+           // Renuméroter
+           container.querySelectorAll('.seuil-item').forEach((s, index) => {
+               s.querySelectorAll('.seuil-numero').forEach(el => {
+                   el.textContent = index + 1;
+               });
+           });
+       }
+       
+       // Fonction pour ajouter un détecteur flamme
+       function ajouterDetecteurFlamme(btn) {
+           const centrale = btn.closest('.centrale-container');
+           const container = centrale.querySelector('.detecteurs-flamme-container');
+           const count = container.querySelectorAll('.detecteur-flamme-item').length;
+           
+           const template = document.getElementById('detecteurFlammeTemplate');
+           const newDetecteur = template.cloneNode(true);
+           newDetecteur.id = '';
+           
+           const detecteurDiv = newDetecteur.querySelector('.detecteur-flamme-item');
+           detecteurDiv.setAttribute('data-detecteur-id', count + 1);
+           
+           newDetecteur.querySelector('.detecteur-flamme-numero').textContent = count + 1;
+           
+           container.appendChild(detecteurDiv);
+           
+           // Mettre à jour le compteur
+           centrale.querySelector('.detecteur-flamme-count').textContent = count + 1;
+       }
+       
+       // Fonction pour supprimer un détecteur flamme
+       function supprimerDetecteurFlamme(btn) {
+           if (confirm('Supprimer ce détecteur flamme ?')) {
+               const detecteur = btn.closest('.detecteur-flamme-item');
+               const centrale = detecteur.closest('.centrale-container');
+               const container = detecteur.parentElement;
+               
+               detecteur.remove();
+               
+               // Renuméroter
+               container.querySelectorAll('.detecteur-flamme-item').forEach((det, index) => {
+                   det.setAttribute('data-detecteur-id', index + 1);
+                   det.querySelector('.detecteur-flamme-numero').textContent = index + 1;
+               });
+               
+               // Mettre à jour le compteur
+               const count = container.querySelectorAll('.detecteur-flamme-item').length;
+               centrale.querySelector('.detecteur-flamme-count').textContent = count;
+           }
+       }
+       
+       // Fonction pour mettre à jour les modèles de détecteur flamme
+       function updateModelesFlamme(selectMarque) {
+           const detecteur = selectMarque.closest('.detecteur-flamme-item');
+           const selectModele = detecteur.querySelector('.flamme-modele');
+           const inputAutre = detecteur.querySelector('.flamme-modele-autre');
+           
+           const marque = selectMarque.value;
+           
+           // Réinitialiser
+           selectModele.innerHTML = '<option value="">Sélectionner un modèle</option>';
+           inputAutre.classList.remove('active');
+           selectModele.style.display = 'block';
+           
+           if (marque && marque !== 'Autre' && equipementData.flamme[marque]) {
+               equipementData.flamme[marque].forEach(modele => {
+                   const option = document.createElement('option');
+                   option.value = modele;
+                   option.textContent = modele;
+                   selectModele.appendChild(option);
+               });
+               
+               // Ajouter option Autre
+               const optionAutre = document.createElement('option');
+               optionAutre.value = 'Autre';
+               optionAutre.textContent = 'Autre';
+               selectModele.appendChild(optionAutre);
+           } else if (marque === 'Autre') {
+               inputAutre.classList.add('active');
+               selectModele.style.display = 'none';
+           }
+       }
+       
+       // Fonction pour vérifier "Autre" modèle flamme
+       function checkAutreModeleFlamme(selectModele) {
+           const inputAutre = selectModele.nextElementSibling;
+           if (selectModele.value === 'Autre') {
+               inputAutre.classList.add('active');
+           } else {
+               inputAutre.classList.remove('active');
+           }
+       }
+       
+       // Fonction pour vérifier "Autre" connexion flamme
+       function checkAutreConnexionFlamme(selectConnexion) {
+           const inputAutre = selectConnexion.nextElementSibling;
+           if (selectConnexion.value === 'Autre') {
+               inputAutre.classList.add('active');
+           } else {
+               inputAutre.classList.remove('active');
+           }
+       }
+       
+       // Gestion des photos
+       function handlePhotoUpload(input) {
+           const preview = input.closest('.photo-upload').querySelector('.photo-preview');
+           preview.innerHTML = '';
+           
+           Array.from(input.files).forEach(file => {
+               const reader = new FileReader();
+               reader.onload = function(e) {
+                   const img = document.createElement('img');
+                   img.src = e.target.result;
+                   img.style.width = '100px';
+                   img.style.height = '100px';
+                   img.style.objectFit = 'cover';
+                   img.style.margin = '5px';
+                   img.style.borderRadius = '5px';
+                   preview.appendChild(img);
+               };
+               reader.readAsDataURL(file);
+           });
+       }
+       
+       // Gestion des signatures
+       function setupSignatures() {
+           setupCanvas('signatureTechnicien');
+           setupCanvas('signatureClient');
+       }
+       
+       function setupCanvas(canvasId) {
+           const canvas = document.getElementById(canvasId);
+           if (!canvas) return;
+           
+           const ctx = canvas.getContext('2d');
+           let isDrawing = false;
+           let lastX = 0;
+           let lastY = 0;
+           
+           function getPos(e) {
+               const rect = canvas.getBoundingClientRect();
+               const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+               const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+               return {
+                   x: (clientX - rect.left) * (canvas.width / rect.width),
+                   y: (clientY - rect.top) * (canvas.height / rect.height)
+               };
+           }
+           
+           function start(e) {
+               e.preventDefault();
+               isDrawing = true;
+               const pos = getPos(e);
+               lastX = pos.x;
+               lastY = pos.y;
+           }
+           
+           function draw(e) {
+               if (!isDrawing) return;
+               e.preventDefault();
+               const pos = getPos(e);
+               ctx.lineWidth = 2;
+               ctx.lineCap = 'round';
+               ctx.strokeStyle = '#333';
+               ctx.beginPath();
+               ctx.moveTo(lastX, lastY);
+               ctx.lineTo(pos.x, pos.y);
+               ctx.stroke();
+               lastX = pos.x;
+               lastY = pos.y;
+           }
+           
+           function stop() {
+               isDrawing = false;
+           }
+           
+           // Mouse events
+           canvas.addEventListener('mousedown', start);
+           canvas.addEventListener('mousemove', draw);
+           canvas.addEventListener('mouseup', stop);
+           canvas.addEventListener('mouseout', stop);
+           
+           // Touch events
+           canvas.addEventListener('touchstart', start);
+           canvas.addEventListener('touchmove', draw);
+           canvas.addEventListener('touchend', stop);
+       }
+       
+       function clearSignature(canvasId) {
+           const canvas = document.getElementById(canvasId);
+           if (canvas) {
+               const ctx = canvas.getContext('2d');
+               ctx.clearRect(0, 0, canvas.width, canvas.height);
+           }
+       }
+       
+       // Fonction pour collecter toutes les données du formulaire
+       function collectFormData() {
+           const formData = {
+               rapport_id: 'RPT-' + Date.now(),
+               date_generation: new Date().toISOString(),
+               
+               // Informations intervention
+               intervention: {
+                   date: document.querySelector('[name="date"]').value,
+                   technicien: document.querySelector('[name="technicien"]').value,
+                   heure_debut: document.querySelector('[name="heure_debut"]').value,
+                   heure_fin: document.querySelector('[name="heure_fin"]').value,
+                   type_intervention: document.querySelector('[name="type_intervention"]').value
+               },
+               
+               // Informations client
+               client: {
+                   nom: document.querySelector('[name="client_nom"]').value,
+                   site: document.querySelector('[name="client_site"]').value,
+                   local: document.querySelector('[name="client_local"]').value,
+                   contact: document.querySelector('[name="client_contact"]').value,
+                   telephone: document.querySelector('[name="client_tel"]').value,
+                   email_rapport: document.querySelector('[name="email_rapport"]').value
+               },
+               
+               // Centrales
+               centrales: [],
+               
+               // Signatures
+               signatures: {
+                   technicien: {
+                       nom: document.querySelector('[name="signature_technicien_nom"]').value,
+                       signature_data: document.getElementById('signatureTechnicien').toDataURL(),
+                       date: document.querySelector('[name="date"]').value
+                   },
+                   client: {
+                       nom: document.querySelector('[name="signature_client_nom"]').value,
+                       signature_data: document.getElementById('signatureClient').toDataURL(),
+                       date: document.querySelector('[name="date"]').value
+                   }
+               }
+           };
+           
+           // Collecter les données de chaque centrale
+           document.querySelectorAll('.centrale-container').forEach((centrale, centraleIndex) => {
+               const centraleData = {
+                   numero: centraleIndex + 1,
+                   marque: centrale.querySelector('.centrale-marque').value,
+                   modele: centrale.querySelector('.centrale-modele').value,
+                   modele_autre: centrale.querySelector('.centrale-modele-autre.active') ? 
+                                 centrale.querySelector('.centrale-modele-autre').value : null,
+                   serie: centrale.querySelector('.centrale-serie').value,
+                   firmware: centrale.querySelector('.centrale-firmware').value,
+                   etat: centrale.querySelector('.centrale-etat').value,
+                   
+                   // AES
+                   aes: {
+                       presente: centrale.querySelector('.aes-presente').checked,
+                       modele: centrale.querySelector('.aes-modele').value,
+                       alimentation_ondulee: centrale.querySelector('.aes-ondulee').checked,
+                       statut: centrale.querySelector('.aes-statut').value,
+                       date_remplacement: centrale.querySelector('.aes-date-remplacement').value,
+                       prochaine_echeance: centrale.querySelector('.aes-prochaine-echeance').value
+                   },
+                   
+                   // Détecteurs gaz
+                   detecteurs_gaz: [],
+                   
+                   // Détecteurs flamme
+                   detecteurs_flamme: [],
+                   
+                   // Observations
+                   observations: {
+                       travaux_effectues: centrale.querySelector('.centrale-travaux').value,
+                       anomalies: centrale.querySelector('.centrale-anomalies').value,
+                       recommandations: centrale.querySelector('.centrale-recommandations').value,
+                       pieces_remplacees: centrale.querySelector('.centrale-pieces').value,
+                       photos_anomalies: [] // TODO: gérer les photos
+                   }
+               };
+               
+               // Collecter les détecteurs gaz
+               centrale.querySelectorAll('.detecteurs-gaz-container .detecteur-item').forEach((detecteur, detIndex) => {
+                   const detecteurData = {
+                       numero: detIndex + 1,
+                       ligne: detecteur.querySelector('.detecteur-ligne').value,
+                       connexion: detecteur.querySelector('.detecteur-connexion').value,
+                       connexion_autre: detecteur.querySelector('.detecteur-connexion-autre.active') ?
+                                       detecteur.querySelector('.detecteur-connexion-autre').value : null,
+                       marque: detecteur.querySelector('.detecteur-marque').value,
+                       modele: detecteur.querySelector('.detecteur-modele').value,
+                       modele_autre: detecteur.querySelector('.detecteur-modele-autre.active') ?
+                                    detecteur.querySelector('.detecteur-modele-autre').value : null,
+                       serie: detecteur.querySelector('.detecteur-serie').value,
+                       gaz: detecteur.querySelector('.detecteur-gaz').value,
+                       position: detecteur.querySelector('.detecteur-position').value,
+                       gamme: detecteur.querySelector('.detecteur-gamme').value,
+                       
+                       cellule: {
+                           etat: detecteur.querySelector('.detecteur-etat-cellule').value,
+                           date_installation: detecteur.querySelector('.detecteur-date-install').value,
+                           date_remplacement_theorique: detecteur.querySelector('.detecteur-date-remplacement').value
+                       },
+                       
+                       etalonnage: {
+                           date_dernier: detecteur.querySelector('.detecteur-date-etal').value,
+                           prochaine_echeance: detecteur.querySelector('.detecteur-prochaine-etal').value,
+                           valeur_avant_calibration: detecteur.querySelector('.detecteur-valeur-avant').value,
+                           valeur_apres_calibration: detecteur.querySelector('.detecteur-valeur-apres').value,
+                           temps_reponse: detecteur.querySelector('.detecteur-temps-reponse').value,
+                           calibrage_zero: {
+                               gaz_etalon: detecteur.querySelector('.detecteur-gaz-zero').value,
+                               statut: detecteur.querySelector('.detecteur-etal-zero').value
+                           },
+                           calibrage_sensibilite: {
+                               gaz_etalon: detecteur.querySelector('.detecteur-gaz-sensi').value,
+                               concentration_theorique: detecteur.querySelector('.detecteur-valeur-theorique').value,
+                               valeur_mesuree: detecteur.querySelector('.detecteur-valeur-mesuree').value,
+                               unite: detecteur.querySelector('.detecteur-unite-etal').value,
+                               coefficient: detecteur.querySelector('.detecteur-coefficient').value,
+                               statut: detecteur.querySelector('.detecteur-etal-sensi').value
+                           },
+                           operationnel: detecteur.querySelector('.detecteur-etal-operationnel').value,
+                           non_teste_demande_client: detecteur.querySelector('.detecteur-etal-non-teste').checked
+                       },
+                       
+                       seuils_alarme: [],
+                       
+                       photos: [] // TODO: gérer les photos
+                   };
+                   
+                   // Collecter les seuils
+                   detecteur.querySelectorAll('.seuil-item').forEach((seuil, seuilIndex) => {
+                       detecteurData.seuils_alarme.push({
+                           niveau: seuilIndex + 1,
+                           valeur: seuil.querySelector('.seuil-valeur').value,
+                           unite: seuil.querySelector('.seuil-unite').value,
+                           asservissements: seuil.querySelector('.seuil-asserv').value,
+                           asservissement_operationnel: seuil.querySelector('.seuil-asserv-operationnel').value,
+                           remontee_supervision: seuil.querySelector('.seuil-supervision').checked,
+                           non_teste_demande_client: seuil.querySelector('.seuil-non-teste').checked
+                       });
+                   });
+                   
+                   centraleData.detecteurs_gaz.push(detecteurData);
+               });
+               
+               // Collecter les détecteurs flamme
+               centrale.querySelectorAll('.detecteurs-flamme-container .detecteur-flamme-item').forEach((detecteur, detIndex) => {
+                   const flammeData = {
+                       numero: detIndex + 1,
+                       ligne: detecteur.querySelector('.flamme-ligne').value,
+                       marque: detecteur.querySelector('.flamme-marque').value,
+                       modele: detecteur.querySelector('.flamme-modele').value,
+                       modele_autre: detecteur.querySelector('.flamme-modele-autre.active') ?
+                                    detecteur.querySelector('.flamme-modele-autre').value : null,
+                       position: detecteur.querySelector('.flamme-position').value,
+                       connexion: detecteur.querySelector('.flamme-connexion').value,
+                       connexion_autre: detecteur.querySelector('.flamme-connexion-autre.active') ?
+                                       detecteur.querySelector('.flamme-connexion-autre').value : null,
+                       asservissements: detecteur.querySelector('.flamme-asservissements').value,
+                       asservissement_operationnel: detecteur.querySelector('.flamme-asserv-operationnel').value,
+                       non_teste_demande_client: detecteur.querySelector('.flamme-asserv-non-teste').checked,
+                       photos: [] // TODO: gérer les photos
+                   };
+                   
+                   centraleData.detecteurs_flamme.push(flammeData);
+               });
+               
+               formData.centrales.push(centraleData);
+           });
+           
+           return formData;
+       }
+       
+       // Fonction pour soumettre le formulaire
+       function submitForm() {
+           const form = document.getElementById('rapportForm');
+           
+           // Validation basique
+           if (!form.checkValidity()) {
+               form.reportValidity();
+               return;
+           }
+           
+           // Collecter les données
+           const formData = collectFormData();
+           
+           // Afficher le loader
+           document.getElementById('loadingMessage').style.display = 'block';
+           document.querySelector('.btn-submit-top').disabled = true;
+           
+           console.log('Données à envoyer:', formData);
+           
+           // Envoyer les données
+           fetch('https://yoanbru.app.n8n.cloud/webhook/rapport-securit', {
+               method: 'POST',
+               headers: {
+                   'Content-Type': 'application/json',
+                   'Accept': 'application/json'
+               },
+               body: JSON.stringify(formData)
+           })
+           .then(response => response.json())
+           .then(result => {
+               document.getElementById('loadingMessage').style.display = 'none';
+               document.querySelector('.btn-submit-top').disabled = false;
+               
+               if (result.success) {
+                   document.getElementById('successMessage').style.display = 'block';
+                   window.scrollTo(0, 0);
+                   
+                   // Optionnel: réinitialiser le formulaire après succès
+                   setTimeout(() => {
+                       if (confirm('Voulez-vous créer un nouveau rapport ?')) {
+                           location.reload();
+                       }
+                   }, 2000);
+               } else {
+                   document.getElementById('errorMessage').style.display = 'block';
+                   console.error('Erreur:', result);
+               }
+           })
+           .catch(error => {
+               document.getElementById('loadingMessage').style.display = 'none';
+               document.querySelector('.btn-submit-top').disabled = false;
+               document.getElementById('errorMessage').style.display = 'block';
+               console.error('Erreur:', error);
+           });
+       }
+   </script>
+</body>
+</html>`;
+
+return { body: htmlContent };
