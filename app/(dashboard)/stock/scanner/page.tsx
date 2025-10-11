@@ -40,25 +40,54 @@ export default function ScannerQRPage() {
   async function startScanner() {
     try {
       setError(null)
-      const scanner = new Html5Qrcode('qr-reader')
-      scannerRef.current = scanner
-
-      await scanner.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 }
-        },
-        onScanSuccess,
-        onScanError
-      )
-
-      setScanning(true)
+      setScanning(true) // Mettre scanning à true AVANT pour rendre l'élément
     } catch (err: any) {
       console.error('Erreur démarrage scanner:', err)
       setError('Impossible d\'accéder à la caméra. Vérifiez les permissions.')
     }
   }
+
+  // useEffect pour initialiser le scanner après le rendu de l'élément
+  useEffect(() => {
+    if (!scanning || scannerRef.current) return
+
+    async function initScanner() {
+      // Attendre que l'élément soit dans le DOM
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      const element = document.getElementById('qr-reader')
+      if (!element) {
+        console.error('Element qr-reader non trouvé')
+        setError('Erreur d\'initialisation du scanner')
+        setScanning(false)
+        return
+      }
+
+      try {
+        const scanner = new Html5Qrcode('qr-reader')
+        scannerRef.current = scanner
+
+        await scanner.start(
+          { facingMode: 'environment' },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+          },
+          onScanSuccess,
+          onScanError
+        )
+
+        console.log('✅ Scanner démarré avec succès')
+      } catch (err: any) {
+        console.error('❌ Erreur démarrage scanner:', err)
+        setError('Impossible d\'accéder à la caméra. Vérifiez les permissions.')
+        setScanning(false)
+        scannerRef.current = null
+      }
+    }
+
+    initScanner()
+  }, [scanning])
 
   async function stopScanner() {
     if (scannerRef.current && scanning) {
