@@ -153,20 +153,20 @@ export default function UtilisateursPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-white">Chargement...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-slate-800">Chargement...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <nav className="bg-slate-900 border-b border-slate-800">
+    <div className="min-h-screen bg-gray-50 text-slate-800">
+      <nav className="bg-white border-b border-gray-300 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.push('/admin')}
-              className="text-slate-400 hover:text-white"
+              className="text-slate-600 hover:text-slate-800"
             >
               ← Retour
             </button>
@@ -178,7 +178,7 @@ export default function UtilisateursPage() {
               setFormData({ email: '', password: '', full_name: '', role: 'technicien', phone: '' })
               setShowAddModal(true)
             }}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg"
+            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg"
           >
             + Nouvel utilisateur
           </button>
@@ -186,42 +186,42 @@ export default function UtilisateursPage() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+        <div className="bg-white border border-gray-300 rounded-lg overflow-hidden shadow-sm">
           <table className="w-full">
-            <thead className="bg-slate-800">
+            <thead className="bg-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Nom</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Rôle</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Téléphone</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase">Nom</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase">Rôle</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase">Téléphone</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-gray-200">
               {users.map(user => (
-                <tr key={user.id} className="hover:bg-slate-800/50">
+                <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">{user.full_name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-slate-400">{user.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-slate-600">{user.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-xs ${
-                      user.role === 'admin' ? 'bg-purple-500/20 text-purple-400' :
-                      user.role === 'technicien' ? 'bg-blue-500/20 text-blue-400' :
-                      'bg-green-500/20 text-green-400'
+                      user.role === 'admin' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+                      user.role === 'technicien' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                      'bg-green-100 text-green-700 border border-green-200'
                     }`}>
                       {user.role}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-slate-400">{user.phone || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-slate-600">{user.phone || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
                       onClick={() => openEditModal(user)}
-                      className="text-blue-400 hover:text-blue-300 mr-4"
+                      className="text-blue-600 hover:text-blue-800 mr-4"
                     >
                       Modifier
                     </button>
                     <button
                       onClick={() => handleDelete(user.id)}
-                      className="text-red-400 hover:text-red-300"
+                      className="text-red-600 hover:text-red-800"
                     >
                       Supprimer
                     </button>
@@ -235,7 +235,7 @@ export default function UtilisateursPage() {
 
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-900 rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md border border-gray-300 shadow-lg">
             <h2 className="text-xl font-bold mb-4">
               {editingUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
             </h2>
@@ -248,7 +248,7 @@ export default function UtilisateursPage() {
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
                   disabled={!!editingUser}
                   required
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-slate-800"
                 />
               </div>
               
@@ -261,7 +261,7 @@ export default function UtilisateursPage() {
                     onChange={e => setFormData({ ...formData, password: e.target.value })}
                     required
                     minLength={6}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-slate-800"
                   />
                 </div>
               )}
@@ -273,7 +273,7 @@ export default function UtilisateursPage() {
                   value={formData.full_name}
                   onChange={e => setFormData({ ...formData, full_name: e.target.value })}
                   required
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-slate-800"
                 />
               </div>
 
@@ -282,7 +282,7 @@ export default function UtilisateursPage() {
                 <select
                   value={formData.role}
                   onChange={e => setFormData({ ...formData, role: e.target.value as any })}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-slate-800"
                 >
                   <option value="technicien">Technicien</option>
                   <option value="admin">Admin</option>
@@ -296,7 +296,7 @@ export default function UtilisateursPage() {
                   type="tel"
                   value={formData.phone}
                   onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-slate-800"
                 />
               </div>
 
@@ -307,13 +307,13 @@ export default function UtilisateursPage() {
                     setShowAddModal(false)
                     setEditingUser(null)
                   }}
-                  className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg"
+                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-slate-800 rounded-lg"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg"
                 >
                   {editingUser ? 'Modifier' : 'Créer'}
                 </button>

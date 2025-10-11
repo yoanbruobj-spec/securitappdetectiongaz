@@ -19,10 +19,10 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     const baseClasses = 'rounded-xl transition-all duration-300'
 
     const variants = {
-      default: 'bg-[#141B2D] border border-[#2D3B52]',
-      elevated: 'bg-[#1E2A3F] border border-[#2D3B52] shadow-lg',
-      glass: 'bg-[#1E2A3F]/50 backdrop-blur-xl border border-[#2D3B52]/50',
-      bordered: 'bg-transparent border-2 border-[#2D3B52]'
+      default: 'bg-white border border-gray-300',
+      elevated: 'bg-white border border-gray-300 shadow-lg',
+      glass: 'bg-white/90 backdrop-blur-sm border border-gray-300',
+      bordered: 'bg-transparent border-2 border-gray-400'
     }
 
     const paddings = {

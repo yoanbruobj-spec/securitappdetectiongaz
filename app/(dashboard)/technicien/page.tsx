@@ -96,7 +96,7 @@ export default function TechnicienDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="space-y-4 w-full max-w-6xl px-8">
           <div className="grid grid-cols-4 gap-6">
             {[1, 2, 3, 4].map(i => (
@@ -111,65 +111,65 @@ export default function TechnicienDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E1A] flex">
-      <aside className="w-64 bg-[#141B2D] border-r border-[#2D3B52] flex flex-col">
-        <div className="p-6 border-b border-[#2D3B52]">
+    <div className="min-h-screen bg-gray-50 flex">
+      <aside className="w-64 bg-slate-100 border-r border-gray-400 flex flex-col">
+        <div className="p-6 border-b border-gray-400 bg-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 shadow-lg shadow-blue-500/20 flex items-center justify-center">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">SÉCUR'IT</h1>
+            <h1 className="text-lg font-bold text-slate-800">SÉCUR'IT</h1>
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2">
-          <Button
+        <nav className="flex-1 p-4 space-y-3">
+          <button
             onClick={() => router.push('/select-rapport-type')}
-            variant="primary"
-            size="md"
-            icon={<Plus className="w-5 h-5" />}
-            className="w-full justify-start"
+            className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg font-medium"
           >
-            Nouveau rapport
-          </Button>
+            <div className="p-2 bg-white/20 rounded-lg">
+              <Plus className="w-5 h-5" />
+            </div>
+            <span>Nouveau rapport</span>
+          </button>
 
-          <Button
+          <button
             onClick={() => router.push('/interventions')}
-            variant="ghost"
-            size="md"
-            icon={<FileText className="w-5 h-5" />}
-            className="w-full justify-start"
+            className="w-full flex items-center gap-3 px-4 py-3 bg-white hover:bg-purple-50 text-slate-700 hover:text-purple-700 rounded-lg transition-all border-2 border-gray-200 hover:border-purple-300 font-medium group"
           >
-            Mes rapports
-          </Button>
+            <div className="p-2 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+              <FileText className="w-5 h-5 text-purple-600" />
+            </div>
+            <span>Mes rapports</span>
+          </button>
 
-          <Button
+          <button
             onClick={() => router.push('/planning')}
-            variant="ghost"
-            size="md"
-            icon={<Calendar className="w-5 h-5" />}
-            className="w-full justify-start"
+            className="w-full flex items-center gap-3 px-4 py-3 bg-white hover:bg-green-50 text-slate-700 hover:text-green-700 rounded-lg transition-all border-2 border-gray-200 hover:border-green-300 font-medium group"
           >
-            Planning
-          </Button>
+            <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+              <Calendar className="w-5 h-5 text-green-600" />
+            </div>
+            <span>Planning</span>
+          </button>
 
-          <Button
+          <button
             onClick={() => router.push('/clients')}
-            variant="ghost"
-            size="md"
-            icon={<Building2 className="w-5 h-5" />}
-            className="w-full justify-start"
+            className="w-full flex items-center gap-3 px-4 py-3 bg-white hover:bg-orange-50 text-slate-700 hover:text-orange-700 rounded-lg transition-all border-2 border-gray-200 hover:border-orange-300 font-medium group"
           >
-            Clients
-          </Button>
+            <div className="p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
+              <Building2 className="w-5 h-5 text-orange-600" />
+            </div>
+            <span>Clients</span>
+          </button>
         </nav>
 
-        <div className="p-4 border-t border-[#2D3B52]">
+        <div className="p-4 border-t border-gray-400 bg-white">
           <div className="mb-3 px-2">
             <p className="text-xs text-slate-500 mb-1">Connecté en tant que</p>
-            <p className="text-sm text-slate-300 font-medium truncate">{profile?.full_name}</p>
+            <p className="text-sm text-slate-800 font-medium truncate">{profile?.full_name}</p>
           </div>
           <Button
             onClick={handleLogout}
@@ -184,13 +184,13 @@ export default function TechnicienDashboard() {
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-[#141B2D]/50 backdrop-blur-xl border-b border-[#2D3B52] px-8 py-6">
+        <header className="bg-white border-b border-gray-300 shadow-sm px-8 py-6">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h2 className="text-3xl font-bold text-slate-100 mb-2">Mes interventions</h2>
-            <p className="text-slate-400">Bienvenue {profile?.full_name}</p>
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">Mes interventions</h2>
+            <p className="text-slate-600">Bienvenue {profile?.full_name}</p>
           </motion.div>
         </header>
 
@@ -222,7 +222,7 @@ export default function TechnicienDashboard() {
             />
           </div>
 
-          <Card variant="glass" padding="md" className="mb-6">
+          <Card variant="glass" padding="md" className="mb-6 bg-white border border-gray-300 rounded-lg">
             <div className="flex gap-2">
               <Button
                 onClick={() => setFilter('all')}
@@ -258,7 +258,7 @@ export default function TechnicienDashboard() {
           {interventions.length === 0 ? (
             <div className="text-center py-16">
               <ClipboardList className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-              <p className="text-slate-400 text-lg">Aucune intervention assignée</p>
+              <p className="text-slate-600 text-lg">Aucune intervention assignée</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -273,16 +273,23 @@ export default function TechnicienDashboard() {
                     variant="glass"
                     padding="lg"
                     hover
-                    className="cursor-pointer"
-                    onClick={() => router.push(`/intervention/${intervention.id}`)}
+                    className="cursor-pointer bg-white border border-gray-300 rounded-lg"
+                    onClick={() => {
+                      if (intervention.type_rapport === 'portable') {
+                        router.push(`/intervention-portable/${intervention.id}`)
+                      } else {
+                        // Par défaut ou si type_rapport = 'fixe'
+                        router.push(`/intervention/${intervention.id}`)
+                      }
+                    }}
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="text-lg font-semibold mb-1 text-slate-100">
+                        <h3 className="text-lg font-semibold mb-1 text-slate-800">
                           {intervention.sites?.clients?.nom}
                         </h3>
-                        <p className="text-slate-400">{intervention.sites?.nom}</p>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-slate-600">{intervention.sites?.nom}</p>
+                        <p className="text-sm text-slate-600">
                           {intervention.sites?.adresse}, {intervention.sites?.ville}
                         </p>
                       </div>
@@ -304,19 +311,19 @@ export default function TechnicienDashboard() {
                     <div className="grid grid-cols-3 gap-6 text-sm">
                       <div>
                         <p className="text-slate-500 mb-1 text-xs">Date</p>
-                        <p className="text-slate-100 font-medium">
+                        <p className="text-slate-800 font-medium">
                           {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
                         </p>
                       </div>
                       <div>
                         <p className="text-slate-500 mb-1 text-xs">Type</p>
-                        <p className="text-slate-100 font-medium capitalize">
+                        <p className="text-slate-800 font-medium capitalize">
                           {intervention.type?.replace(/_/g, ' ')}
                         </p>
                       </div>
                       <div>
                         <p className="text-slate-500 mb-1 text-xs">Horaires</p>
-                        <p className="text-slate-100 font-medium">
+                        <p className="text-slate-800 font-medium">
                           {intervention.heure_debut && intervention.heure_fin
                             ? `${intervention.heure_debut} - ${intervention.heure_fin}`
                             : '-'}

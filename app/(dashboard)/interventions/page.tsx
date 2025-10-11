@@ -109,7 +109,7 @@ export default function InterventionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="space-y-4 w-full max-w-6xl px-8">
           {[1, 2, 3].map(i => (
             <Card key={i} variant="glass" padding="lg">
@@ -122,8 +122,8 @@ export default function InterventionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E1A] flex flex-col">
-      <header className="bg-[#141B2D]/80 backdrop-blur-xl border-b border-[#2D3B52] sticky top-0 z-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <header className="bg-white border-b border-gray-300 shadow-sm sticky top-0 z-50">
         <div className="px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
@@ -138,7 +138,7 @@ export default function InterventionsPage() {
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-600 to-green-500 shadow-lg shadow-green-500/20 flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-slate-100">Mes rapports</h1>
+              <h1 className="text-xl font-bold text-slate-800">Mes rapports</h1>
             </div>
           </div>
           <Button
@@ -152,7 +152,7 @@ export default function InterventionsPage() {
       </header>
 
       <main className="flex-1 overflow-y-auto px-8 py-6">
-        <Card variant="glass" padding="md" className="mb-6">
+        <Card variant="glass" padding="md" className="mb-6 bg-white border border-gray-300 rounded-lg">
           <div className="flex gap-2">
             <Button
               onClick={() => setFilter('all')}
@@ -181,7 +181,7 @@ export default function InterventionsPage() {
         {interventions.length === 0 ? (
           <div className="text-center py-16">
             <FileText className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-            <p className="text-slate-400 text-lg">Aucune intervention trouvée</p>
+            <p className="text-slate-600 text-lg">Aucune intervention trouvée</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -196,21 +196,28 @@ export default function InterventionsPage() {
                   variant="glass"
                   padding="lg"
                   hover
-                  className="cursor-pointer"
-                  onClick={() => router.push(`/intervention/${intervention.id}`)}
+                  className="cursor-pointer bg-white border border-gray-300 rounded-lg"
+                  onClick={() => {
+                    if (intervention.type_rapport === 'portable') {
+                      router.push(`/intervention-portable/${intervention.id}`)
+                    } else {
+                      // Par défaut ou si type_rapport = 'fixe'
+                      router.push(`/intervention/${intervention.id}`)
+                    }
+                  }}
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold mb-1 text-slate-100">
+                      <h3 className="text-lg font-semibold mb-1 text-slate-800">
                         {intervention.sites?.clients?.nom}
                       </h3>
-                      <p className="text-slate-400">{intervention.sites?.nom}</p>
+                      <p className="text-slate-600">{intervention.sites?.nom}</p>
                     </div>
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                       <select
                         value={intervention.statut}
                         onChange={(e) => updateStatut(intervention.id, e.target.value, e as any)}
-                        className="px-3 py-1.5 rounded-lg text-sm cursor-pointer border-0 bg-[#141B2D] border border-[#2D3B52] text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="px-3 py-1.5 rounded-lg text-sm cursor-pointer border-0 bg-gray-50 border border-gray-300 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="en_cours">En cours</option>
                         <option value="terminee">Terminée</option>
@@ -250,19 +257,19 @@ export default function InterventionsPage() {
                   <div className="grid grid-cols-3 gap-6 text-sm">
                     <div>
                       <p className="text-slate-500 mb-1 text-xs">Date</p>
-                      <p className="text-slate-100 font-medium">
+                      <p className="text-slate-800 font-medium">
                         {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
                       </p>
                     </div>
                     <div>
                       <p className="text-slate-500 mb-1 text-xs">Type</p>
-                      <p className="text-slate-100 font-medium capitalize">
+                      <p className="text-slate-800 font-medium capitalize">
                         {intervention.type?.replace(/_/g, ' ')}
                       </p>
                     </div>
                     <div>
                       <p className="text-slate-500 mb-1 text-xs">Horaires</p>
-                      <p className="text-slate-100 font-medium">
+                      <p className="text-slate-800 font-medium">
                         {intervention.heure_debut && intervention.heure_fin
                           ? `${intervention.heure_debut} - ${intervention.heure_fin}`
                           : '-'}

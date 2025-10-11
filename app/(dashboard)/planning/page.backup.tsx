@@ -422,28 +422,28 @@ export default function PlanningPage() {
 
   const getStatusColor = (statut: string) => {
     switch(statut) {
-      case 'planifiee': return 'bg-blue-100 border-blue-500 text-blue-800'
-      case 'en_cours': return 'bg-amber-100 border-amber-500 text-amber-800'
-      case 'annulee': return 'bg-red-100 border-red-500 text-red-800'
-      default: return 'bg-gray-100 border-gray-500 text-gray-800'
+      case 'planifiee': return 'bg-blue-500/20 border-blue-500/30 text-blue-300'
+      case 'en_cours': return 'bg-yellow-500/20 border-yellow-500/30 text-yellow-300'
+      case 'annulee': return 'bg-red-500/20 border-red-500/30 text-red-300'
+      default: return 'bg-slate-500/20 border-slate-500/30 text-slate-300'
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 font-medium">Chargement du planning...</p>
+      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
+        <div className="space-y-4">
+          <Skeleton width="300px" height="40px" />
+          <Skeleton width="100%" height="600px" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-300 sticky top-0 z-50 shadow-sm">
-        <div className="px-8 py-5 flex items-center justify-between">
+    <div className="min-h-screen bg-[#0A0E1A] flex flex-col">
+      <header className="bg-[#141B2D]/80 backdrop-blur-xl border-b border-[#2D3B52] sticky top-0 z-50">
+        <div className="px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
               onClick={() => router.push(profile?.role === 'admin' ? '/admin' : '/technicien')}
@@ -454,15 +454,12 @@ export default function PlanningPage() {
               Retour
             </Button>
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 shadow-md flex items-center justify-center">
-                <CalendarIcon className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-purple-500 shadow-lg shadow-purple-500/20 flex items-center justify-center">
+                <CalendarIcon className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-800">
-                  {profile?.role === 'admin' ? 'Gestion des plannings' : 'Mon planning'}
-                </h1>
-                <p className="text-sm text-slate-500">Organisez et suivez vos interventions</p>
-              </div>
+              <h1 className="text-xl font-bold text-slate-100">
+                {profile?.role === 'admin' ? 'Gestion des plannings' : 'Mon planning'}
+              </h1>
             </div>
           </div>
           <Button
@@ -475,42 +472,36 @@ export default function PlanningPage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-8 py-8">
+      <main className="flex-1 overflow-y-auto px-8 py-6">
         {profile?.role === 'admin' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-6">
+          <Card variant="glass" padding="md" className="mb-6">
             <div className="flex gap-4 items-center">
-              <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
-                <button
+              <div className="flex gap-2">
+                <Button
                   onClick={() => {
                     setViewMode('global')
                     setSelectedTechnicienFilter('')
                   }}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                    viewMode === 'global'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-800'
-                  }`}
+                  variant={viewMode === 'global' ? 'primary' : 'secondary'}
+                  size="sm"
                 >
                   Vue globale
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setViewMode('par_technicien')}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
-                    viewMode === 'par_technicien'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-800'
-                  }`}
+                  variant={viewMode === 'par_technicien' ? 'primary' : 'secondary'}
+                  size="sm"
+                  icon={<Users className="w-4 h-4" />}
                 >
-                  <Users className="w-4 h-4" />
                   Par technicien
-                </button>
+                </Button>
               </div>
 
               {viewMode === 'par_technicien' && (
                 <select
                   value={selectedTechnicienFilter}
                   onChange={(e) => setSelectedTechnicienFilter(e.target.value)}
-                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 font-medium"
+                  className="px-4 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                 >
                   <option value="">Tous les techniciens</option>
                   {techniciens.map(tech => (
@@ -519,7 +510,7 @@ export default function PlanningPage() {
                 </select>
               )}
             </div>
-          </div>
+          </Card>
         )}
 
         <div className="mb-6 flex items-center justify-between">
@@ -530,17 +521,14 @@ export default function PlanningPage() {
           >
             Mois précédent
           </Button>
-          <div className="text-center">
-            <motion.h2
-              className="text-3xl font-bold text-slate-800"
-              key={currentDate.toISOString()}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-            </motion.h2>
-            <p className="text-sm text-slate-500 mt-1">Cliquez sur une intervention pour la modifier</p>
-          </div>
+          <motion.h2
+            className="text-2xl font-bold text-slate-100"
+            key={currentDate.toISOString()}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          </motion.h2>
           <Button
             onClick={nextMonth}
             variant="secondary"
@@ -551,16 +539,16 @@ export default function PlanningPage() {
           </Button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg border-2 border-gray-400 overflow-hidden">
-          <div className="grid grid-cols-7 bg-slate-800 text-white border-b-2 border-slate-700">
+        <Card variant="glass" padding="none" className="overflow-hidden">
+          <div className="grid grid-cols-7 bg-[#1E2A3F] border-b border-[#2D3B52]">
             {dayNames.map(day => (
-              <div key={day} className="px-2 py-4 text-center text-sm font-semibold">
+              <div key={day} className="px-2 py-4 text-center text-sm font-semibold text-slate-300">
                 {day}
               </div>
             ))}
           </div>
 
-          <div className="grid grid-cols-7">
+          <div className="grid grid-cols-7 divide-x divide-[#2D3B52]">
             {getDaysInMonth().map((date, index) => {
               const dayPlanning = getPlanningForDate(date)
               const isToday = date && date.toDateString() === new Date().toDateString()
@@ -588,11 +576,11 @@ export default function PlanningPage() {
                       handleDateChange(draggedPlanning.id, newDate)
                     }
                   }}
-                  className={`min-h-[140px] p-3 border border-gray-300 ${!date ? 'bg-gray-200' : 'bg-white hover:bg-gray-50 transition-colors'} ${isToday ? 'ring-2 ring-inset ring-blue-500 bg-blue-100' : ''}`}
+                  className={`min-h-[140px] p-3 border-b border-[#2D3B52] ${!date ? 'bg-[#0A0E1A]/50' : 'bg-[#141B2D] hover:bg-[#1E2A3F] transition-colors'} ${isToday ? 'ring-2 ring-inset ring-blue-500/50 bg-blue-500/5' : ''}`}
                 >
                   {date && (
                     <>
-                      <div className={`text-sm font-bold mb-2 ${isToday ? 'text-blue-600' : 'text-slate-700'}`}>
+                      <div className={`text-sm font-semibold mb-2 ${isToday ? 'text-blue-400' : 'text-slate-400'}`}>
                         {date.getDate()}
                       </div>
                       <div className="space-y-2">
@@ -611,29 +599,29 @@ export default function PlanningPage() {
                               e.currentTarget.classList.remove('opacity-50')
                               setDraggedPlanning(null)
                             }}
-                            className={`border-2 rounded px-2.5 py-2 text-xs cursor-pointer hover:shadow-md hover:scale-105 transition-all ${getStatusColor(planning.statut)}`}
+                            className={`border rounded-lg px-2.5 py-2 text-xs cursor-pointer hover:scale-105 transition-transform ${getStatusColor(planning.statut)}`}
                             onClick={() => openEditModal(planning)}
                           >
-                            <div className="font-bold truncate text-slate-800">
+                            <div className="font-semibold truncate text-slate-100">
                               {planning.sites?.clients?.nom}
                             </div>
-                            <div className="text-slate-600 truncate text-[10px] mt-0.5">
+                            <div className="text-slate-400 truncate text-[10px] mt-0.5">
                               {planning.sites?.nom}
                             </div>
                             {planning.heure_debut && (
-                              <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-1.5">
+                              <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-1.5">
                                 <Clock className="w-3 h-3" />
                                 {planning.heure_debut}{planning.heure_fin && ` - ${planning.heure_fin}`}
                               </div>
                             )}
                             {planning.techniciens.length > 0 && (
-                              <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-1">
+                              <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-1">
                                 <Users className="w-3 h-3" />
                                 <span className="truncate">{planning.techniciens.map((t: any) => t.profiles?.full_name).join(', ')}</span>
                               </div>
                             )}
                             {planning.notes && (
-                              <span className="inline-block mt-1.5 px-2 py-0.5 bg-amber-200 text-amber-700 rounded-full text-[9px] font-semibold">Note</span>
+                              <Badge variant="warning" size="sm" className="mt-1.5 text-[9px]">Note</Badge>
                             )}
                           </motion.div>
                         ))}
@@ -644,19 +632,19 @@ export default function PlanningPage() {
               )
             })}
           </div>
-        </div>
+        </Card>
       </main>
 
       {showEditModal && selectedPlanning && (
-        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           >
-            <div className="p-8">
+            <Card variant="elevated" padding="lg">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-slate-800">Modifier l'intervention</h2>
+                <h2 className="text-2xl font-bold text-slate-100">Modifier l'intervention</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -665,25 +653,25 @@ export default function PlanningPage() {
                 />
               </div>
 
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 mb-6 border border-blue-200">
-                <div className="font-bold text-lg mb-2 text-slate-800">{selectedPlanning.sites?.clients?.nom}</div>
-                <div className="text-sm text-slate-600 mb-1">{selectedPlanning.sites?.nom}</div>
+              <Card variant="glass" padding="md" className="mb-6">
+                <div className="font-semibold text-lg mb-2 text-slate-100">{selectedPlanning.sites?.clients?.nom}</div>
+                <div className="text-sm text-slate-300 mb-1">{selectedPlanning.sites?.nom}</div>
                 {selectedPlanning.sites?.adresse && (
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-slate-400">
                     {selectedPlanning.sites?.adresse}, {selectedPlanning.sites?.ville}
                   </div>
                 )}
-              </div>
+              </Card>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Client</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Client</label>
                 <select
                   value={formData.client_id}
                   onChange={(e) => {
                     setFormData({ ...formData, client_id: e.target.value, site_id: '' })
                   }}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 >
                   <option value="">Sélectionner un client</option>
                   {clients.map(client => (
@@ -693,11 +681,11 @@ export default function PlanningPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Site *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Site *</label>
                 <select
                   value={formData.site_id}
                   onChange={(e) => setFormData({ ...formData, site_id: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   required
                 >
                   <option value="">Sélectionner un site</option>
@@ -709,21 +697,21 @@ export default function PlanningPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Date *</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Date *</label>
                   <input
                     type="date"
                     value={formData.date_intervention}
                     onChange={(e) => setFormData({ ...formData, date_intervention: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Statut</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Statut</label>
                   <select
                     value={formData.statut}
                     onChange={(e) => setFormData({ ...formData, statut: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   >
                     <option value="planifiee">Planifiée</option>
                     <option value="en_cours">En cours</option>
@@ -733,11 +721,11 @@ export default function PlanningPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Type</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Type</label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 >
                   <option value="verification_periodique">Vérification périodique</option>
                   <option value="maintenance_preventive">Maintenance préventive</option>
@@ -750,44 +738,44 @@ export default function PlanningPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Heure début</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Heure début</label>
                   <input
                     type="time"
                     value={formData.heure_debut}
                     onChange={(e) => setFormData({ ...formData, heure_debut: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Heure fin</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Heure fin</label>
                   <input
                     type="time"
                     value={formData.heure_fin}
                     onChange={(e) => setFormData({ ...formData, heure_fin: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Notes</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Notes</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Coordonnées, instructions, remarques..."
                   rows={3}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400"
+                  className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-500"
                 />
               </div>
 
               {profile?.role === 'admin' && (
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Techniciens / Admins assignés</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Techniciens / Admins assignés</label>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
                     {techniciens.map(tech => (
                       <label
                         key={tech.id}
-                        className="flex items-center gap-3 p-3 bg-white hover:bg-blue-50 border border-slate-200 rounded-lg cursor-pointer transition-colors"
+                        className="flex items-center gap-3 p-3 bg-[#141B2D] hover:bg-[#1E2A3F] border border-[#2D3B52] rounded-lg cursor-pointer transition-colors"
                       >
                         <input
                           type="checkbox"
@@ -807,8 +795,8 @@ export default function PlanningPage() {
                           }}
                           className="w-4 h-4 rounded border-[#2D3B52] text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
                         />
-                        <span className="text-slate-700 font-medium">{tech.full_name}</span>
-                        <span className="text-xs text-slate-500">({tech.role})</span>
+                        <span className="text-slate-100">{tech.full_name}</span>
+                        <span className="text-xs text-slate-400">({tech.role})</span>
                       </label>
                     ))}
                   </div>
@@ -849,21 +837,21 @@ export default function PlanningPage() {
                 Enregistrer
               </Button>
             </div>
-            </div>
+            </Card>
           </motion.div>
         </div>
       )}
 
       {showCreateModal && (
-        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           >
-            <div className="p-8">
+            <Card variant="elevated" padding="lg">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-slate-800">Nouvelle intervention planifiée</h2>
+              <h2 className="text-2xl font-bold text-slate-100">Nouvelle intervention planifiée</h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -874,13 +862,13 @@ export default function PlanningPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Client *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Client *</label>
                 <select
                   value={formData.client_id}
                   onChange={(e) => {
                     setFormData({ ...formData, client_id: e.target.value, site_id: '' })
                   }}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   required
                 >
                   <option value="">Sélectionner un client</option>
@@ -891,11 +879,11 @@ export default function PlanningPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Site *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Site *</label>
                 <select
                   value={formData.site_id}
                   onChange={(e) => setFormData({ ...formData, site_id: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   required
                   disabled={!formData.client_id}
                 >
@@ -908,21 +896,21 @@ export default function PlanningPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Date *</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Date *</label>
                   <input
                     type="date"
                     value={formData.date_intervention}
                     onChange={(e) => setFormData({ ...formData, date_intervention: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Type</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Type</label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   >
                     <option value="verification_periodique">Vérification périodique</option>
                     <option value="maintenance_preventive">Maintenance préventive</option>
@@ -936,38 +924,38 @@ export default function PlanningPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Heure début</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Heure début</label>
                   <input
                     type="time"
                     value={formData.heure_debut}
                     onChange={(e) => setFormData({ ...formData, heure_debut: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Heure fin</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Heure fin</label>
                   <input
                     type="time"
                     value={formData.heure_fin}
                     onChange={(e) => setFormData({ ...formData, heure_fin: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Notes</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Notes</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Coordonnées, instructions, remarques..."
                   rows={3}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400"
+                  className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Techniciens / Admins assignés</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Techniciens / Admins assignés</label>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {techniciens.map(tech => (
                     <label
@@ -1017,7 +1005,7 @@ export default function PlanningPage() {
                 Créer
               </Button>
             </div>
-            </div>
+            </Card>
           </motion.div>
         </div>
       )}

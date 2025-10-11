@@ -15,34 +15,34 @@ interface StatCardProps {
 
 const colorClasses = {
   blue: {
-    bg: 'from-blue-600/20 to-blue-500/20',
-    icon: 'text-blue-400',
-    border: 'border-blue-500/30',
-    glow: 'shadow-blue-500/20'
+    bg: 'from-blue-100 to-blue-200',
+    icon: 'text-blue-600',
+    border: 'border-blue-300',
+    glow: 'shadow-blue-200'
   },
   green: {
-    bg: 'from-green-600/20 to-green-500/20',
-    icon: 'text-green-400',
-    border: 'border-green-500/30',
-    glow: 'shadow-green-500/20'
+    bg: 'from-green-100 to-green-200',
+    icon: 'text-green-600',
+    border: 'border-green-300',
+    glow: 'shadow-green-200'
   },
   orange: {
-    bg: 'from-orange-600/20 to-orange-500/20',
-    icon: 'text-orange-400',
-    border: 'border-orange-500/30',
-    glow: 'shadow-orange-500/20'
+    bg: 'from-orange-100 to-orange-200',
+    icon: 'text-orange-600',
+    border: 'border-orange-300',
+    glow: 'shadow-orange-200'
   },
   red: {
-    bg: 'from-red-600/20 to-red-500/20',
-    icon: 'text-red-400',
-    border: 'border-red-500/30',
-    glow: 'shadow-red-500/20'
+    bg: 'from-red-100 to-red-200',
+    icon: 'text-red-600',
+    border: 'border-red-300',
+    glow: 'shadow-red-200'
   },
   purple: {
-    bg: 'from-purple-600/20 to-purple-500/20',
-    icon: 'text-purple-400',
-    border: 'border-purple-500/30',
-    glow: 'shadow-purple-500/20'
+    bg: 'from-purple-100 to-purple-200',
+    icon: 'text-purple-600',
+    border: 'border-purple-300',
+    glow: 'shadow-purple-200'
   }
 }
 
@@ -56,12 +56,17 @@ export const StatCard = ({
   const colors = colorClasses[color]
 
   return (
-    <Card variant="glass" padding="md" hover className={`border ${colors.border}`}>
+    <Card variant="glass" padding="md" hover className={`bg-white border-2 ${colors.border} group relative overflow-hidden`}>
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+      </div>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm text-slate-400 font-medium mb-1">{title}</p>
+          <p className="text-sm text-slate-600 font-medium mb-1">{title}</p>
           <motion.p
-            className="text-3xl font-bold text-slate-100"
+            className="text-3xl font-bold text-slate-800"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -70,11 +75,11 @@ export const StatCard = ({
           </motion.p>
           {trend && (
             <div className={`flex items-center gap-1 mt-2 text-sm ${
-              trend.isPositive ? 'text-green-400' : 'text-red-400'
+              trend.isPositive ? 'text-green-600' : 'text-red-600'
             }`}>
               <span>{trend.isPositive ? '↑' : '↓'}</span>
               <span>{Math.abs(trend.value)}%</span>
-              <span className="text-slate-500 text-xs">vs mois dernier</span>
+              <span className="text-slate-600 text-xs">vs mois dernier</span>
             </div>
           )}
         </div>
