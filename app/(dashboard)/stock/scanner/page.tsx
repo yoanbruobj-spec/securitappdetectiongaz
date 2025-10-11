@@ -18,7 +18,7 @@ export default function ScannerQRPage() {
   const [scannedArticle, setScannedArticle] = useState<StockArticle | null>(null)
   const [showMouvementForm, setShowMouvementForm] = useState(false)
   const [mouvementType, setMouvementType] = useState<'entree' | 'sortie'>('sortie')
-  const [mouvementData, setMouvementData] = useState({ quantite: 1, notes: '' })
+  const [mouvementData, setMouvementData] = useState({ quantite: '', notes: '' })
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -131,7 +131,11 @@ export default function ScannerQRPage() {
   }
 
   async function handleMouvement() {
-    if (!scannedArticle || mouvementData.quantite <= 0) return
+    const quantite = parseInt(mouvementData.quantite as any) || 0
+    if (!scannedArticle || quantite <= 0) {
+      alert('Veuillez entrer une quantité valide (minimum 1)')
+      return
+    }
 
     setProcessing(true)
     try {
@@ -140,8 +144,8 @@ export default function ScannerQRPage() {
 
       const quantiteAvant = scannedArticle.quantite
       const quantiteApres = mouvementType === 'entree'
-        ? quantiteAvant + mouvementData.quantite
-        : quantiteAvant - mouvementData.quantite
+        ? quantiteAvant + quantite
+        : quantiteAvant - quantite
 
       if (quantiteApres < 0) {
         alert('Stock insuffisant !')
@@ -155,7 +159,7 @@ export default function ScannerQRPage() {
         .insert([{
           article_id: scannedArticle.id,
           type: mouvementType,
-          quantite: mouvementData.quantite,
+          quantite: quantite,
           quantite_avant: quantiteAvant,
           quantite_apres: quantiteApres,
           utilisateur_id: user.id,
@@ -174,7 +178,7 @@ export default function ScannerQRPage() {
       // Réinitialiser
       setScannedArticle(null)
       setShowMouvementForm(false)
-      setMouvementData({ quantite: 1, notes: '' })
+      setMouvementData({ quantite: '', notes: '' })
       setError(null)
     } catch (error: any) {
       console.error('Erreur mouvement:', error)
@@ -187,7 +191,7 @@ export default function ScannerQRPage() {
   function resetScanner() {
     setScannedArticle(null)
     setShowMouvementForm(false)
-    setMouvementData({ quantite: 1, notes: '' })
+    setMouvementData({ quantite: '', notes: '' })
     setError(null)
   }
 
@@ -314,8 +318,9 @@ export default function ScannerQRPage() {
                     <Input
                       type="number"
                       min="1"
+                      placeholder="Ex: 2"
                       value={mouvementData.quantite}
-                      onChange={(e) => setMouvementData({ ...mouvementData, quantite: parseInt(e.target.value) || 1 })}
+                      onChange={(e) => setMouvementData({ ...mouvementData, quantite: e.target.value })}
                       className="text-lg text-center"
                     />
                   </div>
