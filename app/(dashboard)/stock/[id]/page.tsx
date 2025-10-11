@@ -35,8 +35,11 @@ export default function ArticleDetailPage() {
 
   // Générer QR code après chargement de l'article
   useEffect(() => {
-    if (article && qrCanvasRef.current && article.qr_code) {
-      QRCodeLib.toCanvas(qrCanvasRef.current, article.qr_code, {
+    if (article && qrCanvasRef.current) {
+      // Utiliser le qr_code existant ou générer un code à partir de l'ID
+      const qrData = article.qr_code || `SECURIT-ART-${article.id}`
+
+      QRCodeLib.toCanvas(qrCanvasRef.current, qrData, {
         width: 300,
         margin: 2,
         color: {
@@ -46,6 +49,17 @@ export default function ArticleDetailPage() {
       }).catch((err) => {
         console.error('Erreur génération QR:', err)
       })
+
+      // Si l'article n'avait pas de QR code, le sauvegarder
+      if (!article.qr_code) {
+        supabase
+          .from('stock_articles')
+          .update({ qr_code: qrData })
+          .eq('id', article.id)
+          .then(() => {
+            console.log('QR code généré et sauvegardé:', qrData)
+          })
+      }
     }
   }, [article])
 
@@ -85,7 +99,7 @@ export default function ArticleDetailPage() {
     }
 
     // Charger mouvements
-    const { data: mouvs } = await supabase
+    const { data: mouvs, error: mouvsError } = await supabase
       .from('stock_mouvements')
       .select(`
         *,
@@ -94,7 +108,12 @@ export default function ArticleDetailPage() {
       .eq('article_id', params.id)
       .order('date_mouvement', { ascending: false })
 
-    if (mouvs) setMouvements(mouvs)
+    if (mouvsError) {
+      console.error('Erreur chargement mouvements:', mouvsError)
+    } else {
+      console.log('Mouvements chargés:', mouvs?.length || 0, 'mouvement(s)')
+      if (mouvs) setMouvements(mouvs)
+    }
 
     setLoading(false)
   }
@@ -119,7 +138,7 @@ export default function ArticleDetailPage() {
       }
 
       // Créer mouvement
-      await supabase
+      const { data: mouvData, error: mouvError } = await supabase
         .from('stock_mouvements')
         .insert([{
           article_id: article.id,
@@ -131,17 +150,34 @@ export default function ArticleDetailPage() {
           notes: mouvementData.notes || null,
           date_mouvement: new Date().toISOString()
         }])
+        .select()
+
+      if (mouvError) {
+        console.error('Erreur insertion mouvement:', mouvError)
+        throw new Error('Erreur lors de l\'enregistrement du mouvement: ' + mouvError.message)
+      }
+
+      console.log('Mouvement créé:', mouvData)
 
       // Mettre à jour quantité article
-      await supabase
+      const { error: updateError } = await supabase
         .from('stock_articles')
         .update({ quantite: quantiteApres })
         .eq('id', article.id)
 
+      if (updateError) {
+        console.error('Erreur mise à jour article:', updateError)
+        throw new Error('Erreur lors de la mise à jour du stock: ' + updateError.message)
+      }
+
+      console.log('Stock mis à jour:', quantiteAvant, '→', quantiteApres)
+
       alert('Mouvement enregistré !')
       setShowMouvementModal(false)
       setMouvementData({ quantite: 1, notes: '' })
-      loadData()
+
+      // Recharger les données
+      await loadData()
     } catch (error: any) {
       console.error('Erreur mouvement:', error)
       alert('Erreur : ' + error.message)
