@@ -33,6 +33,22 @@ export default function ArticleDetailPage() {
     loadData()
   }, [params.id])
 
+  // Générer QR code après chargement de l'article
+  useEffect(() => {
+    if (article && qrCanvasRef.current && article.qr_code) {
+      QRCodeLib.toCanvas(qrCanvasRef.current, article.qr_code, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      }).catch((err) => {
+        console.error('Erreur génération QR:', err)
+      })
+    }
+  }, [article])
+
   async function checkAuth() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
@@ -66,10 +82,6 @@ export default function ArticleDetailPage() {
 
     if (art) {
       setArticle(art)
-      // Générer QR code
-      if (qrCanvasRef.current) {
-        QRCodeLib.toCanvas(qrCanvasRef.current, art.qr_code, { width: 300 })
-      }
     }
 
     // Charger mouvements
