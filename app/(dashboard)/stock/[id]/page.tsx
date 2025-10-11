@@ -29,22 +29,35 @@ export default function ArticleDetailPage() {
   const [processing, setProcessing] = useState(false)
 
   useEffect(() => {
+    console.log('🔵 Component mounted, params.id:', params.id)
     checkAuth()
     loadData()
   }, [params.id])
 
   // Générer QR code après chargement de l'article
   useEffect(() => {
+    console.log('🔄 useEffect QR déclenché', {
+      hasArticle: !!article,
+      articleId: article?.id,
+      hasCanvas: !!qrCanvasRef.current
+    })
+
     async function generateQR() {
-      if (!article || !qrCanvasRef.current) {
-        console.log('QR: Conditions non remplies', { article: !!article, canvas: !!qrCanvasRef.current })
+      if (!article) {
+        console.log('⏸️ QR: Pas d\'article')
+        return
+      }
+
+      if (!qrCanvasRef.current) {
+        console.log('⏸️ QR: Canvas ref non disponible, retry dans 100ms')
+        setTimeout(generateQR, 100)
         return
       }
 
       try {
         // Utiliser le qr_code existant ou générer un code à partir de l'ID
         const qrData = article.qr_code || `SECURIT-ART-${article.id}`
-        console.log('Génération QR code pour:', qrData)
+        console.log('🔵 Génération QR code pour:', qrData)
 
         await QRCodeLib.toCanvas(qrCanvasRef.current, qrData, {
           width: 300,
@@ -55,11 +68,11 @@ export default function ArticleDetailPage() {
           }
         })
 
-        console.log('✅ QR code généré avec succès')
+        console.log('✅ QR code généré avec succès!')
 
         // Si l'article n'avait pas de QR code, le sauvegarder
         if (!article.qr_code) {
-          console.log('Sauvegarde du QR code en base...')
+          console.log('💾 Sauvegarde du QR code en base...')
           const { error } = await supabase
             .from('stock_articles')
             .update({ qr_code: qrData })
@@ -111,7 +124,10 @@ export default function ArticleDetailPage() {
       .single()
 
     if (art) {
+      console.log('📦 Article chargé:', art.nom, 'QR:', art.qr_code)
       setArticle(art)
+    } else {
+      console.log('❌ Aucun article trouvé')
     }
 
     // Charger mouvements
