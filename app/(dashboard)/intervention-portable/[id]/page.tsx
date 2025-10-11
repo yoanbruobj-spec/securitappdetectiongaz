@@ -107,44 +107,44 @@ export default function InterventionPortableDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-white">Chargement...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-slate-800">Chargement...</div>
       </div>
     )
   }
 
   if (!intervention) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-white">Intervention non trouvée</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-slate-800">Intervention non trouvée</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <nav className="bg-slate-900 border-b border-slate-800">
+    <div className="min-h-screen bg-gray-50 text-slate-800">
+      <nav className="bg-white border-b border-gray-300 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.push('/interventions')}
-              className="text-slate-400 hover:text-white"
+              className="text-slate-600 hover:text-slate-800"
             >
               ← Retour
             </button>
-            <h1 className="text-xl font-bold">Intervention Portable du {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}</h1>
+            <h1 className="text-xl font-bold text-slate-800">Intervention Portable du {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}</h1>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => router.push(`/intervention-portable/${params.id}/edit`)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
             >
               Modifier
             </button>
             <button
               onClick={handleGeneratePDF}
               disabled={generatingPDF}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg disabled:opacity-50"
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50"
             >
               {generatingPDF ? 'Génération...' : 'Générer PDF'}
             </button>
@@ -155,36 +155,36 @@ export default function InterventionPortableDetailPage() {
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="space-y-6">
           {/* Informations générales */}
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">Informations générales</h2>
+          <div className="bg-white border border-gray-300 shadow-sm rounded-lg p-6">
+            <h2 className="text-xl font-bold text-slate-800 mb-4">Informations générales</h2>
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <h3 className="text-sm text-slate-400 mb-2">Client</h3>
-                <p className="text-lg">{intervention.sites?.clients?.nom}</p>
+                <h3 className="text-sm text-slate-700 font-medium mb-2">Client</h3>
+                <p className="text-lg text-slate-800">{intervention.sites?.clients?.nom}</p>
               </div>
               <div>
-                <h3 className="text-sm text-slate-400 mb-2">Site</h3>
-                <p className="text-lg">{intervention.sites?.nom}</p>
-                <p className="text-sm text-slate-400">{intervention.sites?.adresse}, {intervention.sites?.ville}</p>
+                <h3 className="text-sm text-slate-700 font-medium mb-2">Site</h3>
+                <p className="text-lg text-slate-800">{intervention.sites?.nom}</p>
+                <p className="text-sm text-slate-600">{intervention.sites?.adresse}, {intervention.sites?.ville}</p>
               </div>
               <div>
-                <h3 className="text-sm text-slate-400 mb-2">Date</h3>
-                <p className="text-lg">{new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}</p>
+                <h3 className="text-sm text-slate-700 font-medium mb-2">Date</h3>
+                <p className="text-lg text-slate-800">{new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}</p>
               </div>
               <div>
-                <h3 className="text-sm text-slate-400 mb-2">Horaires</h3>
-                <p className="text-lg">
+                <h3 className="text-sm text-slate-700 font-medium mb-2">Horaires</h3>
+                <p className="text-lg text-slate-800">
                   {intervention.heure_debut && intervention.heure_fin
                     ? `${intervention.heure_debut} - ${intervention.heure_fin}`
                     : '-'}
                 </p>
               </div>
               <div>
-                <h3 className="text-sm text-slate-400 mb-2">Type</h3>
-                <p className="text-lg capitalize">{intervention.type?.replace(/_/g, ' ')}</p>
+                <h3 className="text-sm text-slate-700 font-medium mb-2">Type</h3>
+                <p className="text-lg text-slate-800 capitalize">{intervention.type?.replace(/_/g, ' ')}</p>
               </div>
               <div>
-                <h3 className="text-sm text-slate-400 mb-2">Statut</h3>
+                <h3 className="text-sm text-slate-700 font-medium mb-2">Statut</h3>
                 <span className={`inline-block px-3 py-1 rounded text-sm ${
                   intervention.statut === 'terminee' ? 'bg-green-500/20 text-green-400' :
                   intervention.statut === 'en_cours' ? 'bg-blue-500/20 text-blue-400' :
@@ -196,60 +196,60 @@ export default function InterventionPortableDetailPage() {
               </div>
               {intervention.technicien && (
                 <div>
-                  <h3 className="text-sm text-slate-400 mb-2">Technicien</h3>
-                  <p className="text-lg">{intervention.technicien}</p>
+                  <h3 className="text-sm text-slate-700 font-medium mb-2">Technicien</h3>
+                  <p className="text-lg text-slate-800">{intervention.technicien}</p>
                 </div>
               )}
               {intervention.local && (
                 <div>
-                  <h3 className="text-sm text-slate-400 mb-2">Local</h3>
-                  <p className="text-lg">{intervention.local}</p>
+                  <h3 className="text-sm text-slate-700 font-medium mb-2">Local</h3>
+                  <p className="text-lg text-slate-800">{intervention.local}</p>
                 </div>
               )}
             </div>
             {intervention.observations_generales && (
               <div className="mt-6">
-                <h3 className="text-sm text-slate-400 mb-2">Observations générales</h3>
-                <p className="text-base">{intervention.observations_generales}</p>
+                <h3 className="text-sm text-slate-700 font-medium mb-2">Observations générales</h3>
+                <p className="text-base text-slate-800">{intervention.observations_generales}</p>
               </div>
             )}
           </div>
 
           {/* Détecteurs portables */}
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">Détecteurs portables ({portables.length})</h2>
+          <div className="bg-white border border-gray-300 shadow-sm rounded-lg p-6">
+            <h2 className="text-xl font-bold text-slate-800 mb-4">Détecteurs portables ({portables.length})</h2>
             {portables.length === 0 ? (
-              <p className="text-slate-400">Aucun détecteur portable enregistré</p>
+              <p className="text-slate-600">Aucun détecteur portable enregistré</p>
             ) : (
               <div className="space-y-6">
                 {portables.map((portable, index) => (
-                  <div key={portable.id} className="bg-slate-800 rounded-lg p-6">
-                    <h3 className="font-bold text-lg mb-4">Détecteur #{index + 1}</h3>
+                  <div key={portable.id} className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                    <h3 className="font-bold text-lg text-slate-800 mb-4">Détecteur #{index + 1}</h3>
 
                     {/* Informations du portable */}
                     <div className="grid grid-cols-4 gap-4 mb-6">
                       <div>
-                        <p className="text-slate-400 text-sm">Marque</p>
-                        <p className="font-medium">{portable.marque}</p>
+                        <p className="text-slate-600 text-sm">Marque</p>
+                        <p className="font-medium text-slate-800">{portable.marque}</p>
                       </div>
                       <div>
-                        <p className="text-slate-400 text-sm">Modèle</p>
-                        <p className="font-medium">{portable.modele}</p>
+                        <p className="text-slate-600 text-sm">Modèle</p>
+                        <p className="font-medium text-slate-800">{portable.modele}</p>
                       </div>
                       <div>
-                        <p className="text-slate-400 text-sm">N° série</p>
-                        <p className="font-medium">{portable.numero_serie || '-'}</p>
+                        <p className="text-slate-600 text-sm">N° série</p>
+                        <p className="font-medium text-slate-800">{portable.numero_serie || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-slate-400 text-sm">État général</p>
-                        <p className="font-medium">{portable.etat_general}</p>
+                        <p className="text-slate-600 text-sm">État général</p>
+                        <p className="font-medium text-slate-800">{portable.etat_general}</p>
                       </div>
                     </div>
 
                     {/* Vérifications */}
                     {portable.portables_verifications?.[0] && (
-                      <div className="mb-6 bg-slate-700/50 rounded p-4">
-                        <p className="text-sm text-slate-400 mb-3 font-semibold">Vérifications</p>
+                      <div className="mb-6 bg-white border border-gray-300 rounded p-4">
+                        <p className="text-sm text-slate-700 mb-3 font-semibold">Vérifications</p>
                         <div className="flex gap-6">
                           <label className="flex items-center gap-2">
                             <input
@@ -258,7 +258,7 @@ export default function InterventionPortableDetailPage() {
                               disabled
                               className="w-4 h-4"
                             />
-                            <span className="text-sm">Alarme sonore</span>
+                            <span className="text-sm text-slate-800">Alarme sonore</span>
                           </label>
                           <label className="flex items-center gap-2">
                             <input
@@ -267,7 +267,7 @@ export default function InterventionPortableDetailPage() {
                               disabled
                               className="w-4 h-4"
                             />
-                            <span className="text-sm">Alarme visuelle</span>
+                            <span className="text-sm text-slate-800">Alarme visuelle</span>
                           </label>
                           <label className="flex items-center gap-2">
                             <input
@@ -276,7 +276,7 @@ export default function InterventionPortableDetailPage() {
                               disabled
                               className="w-4 h-4"
                             />
-                            <span className="text-sm">Alarme vibrante</span>
+                            <span className="text-sm text-slate-800">Alarme vibrante</span>
                           </label>
                         </div>
                       </div>
@@ -285,45 +285,45 @@ export default function InterventionPortableDetailPage() {
                     {/* Gaz détectés */}
                     {portable.portables_gaz?.length > 0 && (
                       <div>
-                        <h4 className="font-semibold mb-3">Gaz détectés</h4>
+                        <h4 className="font-semibold text-slate-800 mb-3">Gaz détectés</h4>
                         <div className="space-y-4">
                           {portable.portables_gaz.map((gaz: any) => (
-                            <div key={gaz.id} className="bg-slate-700/50 rounded p-4">
-                              <p className="font-semibold text-blue-400 mb-3">{gaz.gaz}</p>
+                            <div key={gaz.id} className="bg-white border border-gray-300 rounded p-4">
+                              <p className="font-semibold text-blue-600 mb-3">{gaz.gaz}</p>
                               <div className="grid grid-cols-3 gap-4 text-sm">
                                 <div>
-                                  <p className="text-slate-400">Gamme de mesure</p>
-                                  <p>{gaz.gamme_mesure || '-'}</p>
+                                  <p className="text-slate-600">Gamme de mesure</p>
+                                  <p className="text-slate-800">{gaz.gamme_mesure || '-'}</p>
                                 </div>
                                 <div>
-                                  <p className="text-slate-400">Date remplacement</p>
-                                  <p>{gaz.date_remplacement ? new Date(gaz.date_remplacement).toLocaleDateString('fr-FR') : '-'}</p>
+                                  <p className="text-slate-600">Date remplacement</p>
+                                  <p className="text-slate-800">{gaz.date_remplacement ? new Date(gaz.date_remplacement).toLocaleDateString('fr-FR') : '-'}</p>
                                 </div>
                                 <div>
-                                  <p className="text-slate-400">Prochain remplacement</p>
-                                  <p>{gaz.date_prochain_remplacement ? new Date(gaz.date_prochain_remplacement).toLocaleDateString('fr-FR') : '-'}</p>
+                                  <p className="text-slate-600">Prochain remplacement</p>
+                                  <p className="text-slate-800">{gaz.date_prochain_remplacement ? new Date(gaz.date_prochain_remplacement).toLocaleDateString('fr-FR') : '-'}</p>
                                 </div>
                               </div>
 
                               {/* Calibration */}
                               {gaz.calibration_statut && (
-                                <div className="mt-4 pt-4 border-t border-slate-600">
-                                  <p className="text-sm font-semibold text-slate-300 mb-2">Calibration</p>
+                                <div className="mt-4 pt-4 border-t border-gray-200">
+                                  <p className="text-sm font-semibold text-slate-700 mb-2">Calibration</p>
                                   <div className="grid grid-cols-4 gap-4 text-sm">
                                     <div>
-                                      <p className="text-slate-400">Gaz zéro</p>
-                                      <p>{gaz.calibration_gaz_zero || '-'}</p>
+                                      <p className="text-slate-600">Gaz zéro</p>
+                                      <p className="text-slate-800">{gaz.calibration_gaz_zero || '-'}</p>
                                     </div>
                                     <div>
-                                      <p className="text-slate-400">Valeur avant</p>
-                                      <p>{gaz.calibration_valeur_avant ?? '-'}</p>
+                                      <p className="text-slate-600">Valeur avant</p>
+                                      <p className="text-slate-800">{gaz.calibration_valeur_avant ?? '-'}</p>
                                     </div>
                                     <div>
-                                      <p className="text-slate-400">Valeur après</p>
-                                      <p>{gaz.calibration_valeur_apres ?? '-'}</p>
+                                      <p className="text-slate-600">Valeur après</p>
+                                      <p className="text-slate-800">{gaz.calibration_valeur_apres ?? '-'}</p>
                                     </div>
                                     <div>
-                                      <p className="text-slate-400">Statut</p>
+                                      <p className="text-slate-600">Statut</p>
                                       <span className={`inline-block px-2 py-1 rounded text-xs ${
                                         gaz.calibration_statut === 'OK' ? 'bg-green-500/20 text-green-400' :
                                         gaz.calibration_statut === 'Dérive' ? 'bg-yellow-500/20 text-yellow-400' :
@@ -338,27 +338,27 @@ export default function InterventionPortableDetailPage() {
 
                               {/* Étalonnage */}
                               {gaz.etalonnage_statut && (
-                                <div className="mt-4 pt-4 border-t border-slate-600">
-                                  <p className="text-sm font-semibold text-slate-300 mb-2">Étalonnage</p>
+                                <div className="mt-4 pt-4 border-t border-gray-200">
+                                  <p className="text-sm font-semibold text-slate-700 mb-2">Étalonnage</p>
                                   <div className="grid grid-cols-5 gap-4 text-sm">
                                     <div>
-                                      <p className="text-slate-400">Gaz</p>
-                                      <p>{gaz.etalonnage_gaz || '-'}</p>
+                                      <p className="text-slate-600">Gaz</p>
+                                      <p className="text-slate-800">{gaz.etalonnage_gaz || '-'}</p>
                                     </div>
                                     <div>
-                                      <p className="text-slate-400">Avant réglage</p>
-                                      <p>{gaz.etalonnage_valeur_avant_reglage ?? '-'}</p>
+                                      <p className="text-slate-600">Avant réglage</p>
+                                      <p className="text-slate-800">{gaz.etalonnage_valeur_avant_reglage ?? '-'}</p>
                                     </div>
                                     <div>
-                                      <p className="text-slate-400">Après réglage</p>
-                                      <p>{gaz.etalonnage_valeur_apres_reglage ?? '-'}</p>
+                                      <p className="text-slate-600">Après réglage</p>
+                                      <p className="text-slate-800">{gaz.etalonnage_valeur_apres_reglage ?? '-'}</p>
                                     </div>
                                     <div>
-                                      <p className="text-slate-400">Coefficient</p>
-                                      <p>{gaz.etalonnage_coefficient ?? '-'} {gaz.etalonnage_unite || ''}</p>
+                                      <p className="text-slate-600">Coefficient</p>
+                                      <p className="text-slate-800">{gaz.etalonnage_coefficient ?? '-'} {gaz.etalonnage_unite || ''}</p>
                                     </div>
                                     <div>
-                                      <p className="text-slate-400">Statut</p>
+                                      <p className="text-slate-600">Statut</p>
                                       <span className={`inline-block px-2 py-1 rounded text-xs ${
                                         gaz.etalonnage_statut === 'OK' ? 'bg-green-500/20 text-green-400' :
                                         gaz.etalonnage_statut?.includes('acceptable') ? 'bg-yellow-500/20 text-yellow-400' :
@@ -383,9 +383,9 @@ export default function InterventionPortableDetailPage() {
 
           {/* Conclusion */}
           {intervention.conclusion_generale && (
-            <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
-              <h2 className="text-xl font-bold mb-4">Conclusion</h2>
-              <p className="text-base">{intervention.conclusion_generale}</p>
+            <div className="bg-white border border-gray-300 shadow-sm rounded-lg p-6">
+              <h2 className="text-xl font-bold text-slate-800 mb-4">Conclusion</h2>
+              <p className="text-base text-slate-800">{intervention.conclusion_generale}</p>
             </div>
           )}
 
@@ -393,13 +393,13 @@ export default function InterventionPortableDetailPage() {
           <div className="flex gap-4">
             <button
               onClick={() => router.push('/interventions')}
-              className="flex-1 px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg"
+              className="flex-1 px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-slate-800 rounded-lg"
             >
               Retour à la liste
             </button>
             <button
               onClick={() => router.push(`/intervention-portable/${params.id}/edit`)}
-              className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg"
+              className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
             >
               Modifier l'intervention
             </button>

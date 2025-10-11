@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
-import { Users, Building2, ClipboardList, AlertTriangle, Plus, FileText, Calendar, LogOut } from 'lucide-react'
+import { Users, Building2, ClipboardList, AlertTriangle, Plus, FileText, Calendar, LogOut, Package } from 'lucide-react'
 import { StatCard } from '@/components/ui/StatCard'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -150,6 +150,16 @@ export default function AdminDashboard() {
               <Calendar className="w-5 h-5 text-green-600" />
             </div>
             <span>Planning</span>
+          </button>
+
+          <button
+            onClick={() => router.push('/stock')}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-white hover:bg-purple-50 text-slate-700 hover:text-purple-700 rounded-lg transition-all border-2 border-gray-200 hover:border-purple-300 font-medium group"
+          >
+            <div className="p-2 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+              <Package className="w-5 h-5 text-purple-600" />
+            </div>
+            <span>Stock</span>
           </button>
 
           <button

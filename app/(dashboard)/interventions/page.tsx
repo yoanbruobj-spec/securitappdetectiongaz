@@ -151,136 +151,158 @@ export default function InterventionsPage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-8 py-6">
-        <Card variant="glass" padding="md" className="mb-6 bg-white border border-gray-300 rounded-lg">
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setFilter('all')}
-              variant={filter === 'all' ? 'primary' : 'secondary'}
-              size="sm"
-            >
-              Toutes
-            </Button>
-            <Button
-              onClick={() => setFilter('en_cours')}
-              variant={filter === 'en_cours' ? 'primary' : 'secondary'}
-              size="sm"
-            >
-              En cours
-            </Button>
-            <Button
-              onClick={() => setFilter('terminee')}
-              variant={filter === 'terminee' ? 'primary' : 'secondary'}
-              size="sm"
-            >
-              Terminées
-            </Button>
-          </div>
-        </Card>
-
-        {interventions.length === 0 ? (
-          <div className="text-center py-16">
-            <FileText className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-            <p className="text-slate-600 text-lg">Aucune intervention trouvée</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {interventions.map((intervention, index) => (
-              <motion.div
-                key={intervention.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-6xl mx-auto px-8 py-6">
+          <Card variant="glass" padding="md" className="mb-6 bg-white border border-gray-300 rounded-lg shadow-sm">
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setFilter('all')}
+                variant={filter === 'all' ? 'primary' : 'secondary'}
+                size="sm"
               >
-                <Card
-                  variant="glass"
-                  padding="lg"
-                  hover
-                  className="cursor-pointer bg-white border border-gray-300 rounded-lg"
-                  onClick={() => {
-                    if (intervention.type_rapport === 'portable') {
-                      router.push(`/intervention-portable/${intervention.id}`)
-                    } else {
-                      // Par défaut ou si type_rapport = 'fixe'
-                      router.push(`/intervention/${intervention.id}`)
-                    }
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold mb-1 text-slate-800">
-                        {intervention.sites?.clients?.nom}
-                      </h3>
-                      <p className="text-slate-600">{intervention.sites?.nom}</p>
-                    </div>
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                      <select
-                        value={intervention.statut}
-                        onChange={(e) => updateStatut(intervention.id, e.target.value, e as any)}
-                        className="px-3 py-1.5 rounded-lg text-sm cursor-pointer border-0 bg-gray-50 border border-gray-300 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="en_cours">En cours</option>
-                        <option value="terminee">Terminée</option>
-                      </select>
-                      <Badge
-                        variant={
-                          intervention.statut === 'terminee' ? 'success' :
-                          intervention.statut === 'en_cours' ? 'info' :
-                          'warning'
-                        }
-                      >
-                        {intervention.statut === 'terminee' ? 'Terminée' :
-                         intervention.statut === 'en_cours' ? 'En cours' :
-                         intervention.statut}
-                      </Badge>
-                      <Button
-                        onClick={() => router.push(`/intervention/${intervention.id}`)}
-                        variant="secondary"
-                        size="sm"
-                        icon={<Eye className="w-4 h-4" />}
-                      >
-                        Voir
-                      </Button>
-                      {userRole === 'admin' && (
-                        <Button
-                          onClick={(e) => handleDelete(intervention.id, e)}
-                          variant="danger"
-                          size="sm"
-                          icon={<Trash2 className="w-4 h-4" />}
-                        >
-                          Supprimer
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                Toutes
+              </Button>
+              <Button
+                onClick={() => setFilter('en_cours')}
+                variant={filter === 'en_cours' ? 'primary' : 'secondary'}
+                size="sm"
+              >
+                En cours
+              </Button>
+              <Button
+                onClick={() => setFilter('terminee')}
+                variant={filter === 'terminee' ? 'primary' : 'secondary'}
+                size="sm"
+              >
+                Terminées
+              </Button>
+            </div>
+          </Card>
 
-                  <div className="grid grid-cols-3 gap-6 text-sm">
-                    <div>
-                      <p className="text-slate-500 mb-1 text-xs">Date</p>
-                      <p className="text-slate-800 font-medium">
-                        {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500 mb-1 text-xs">Type</p>
-                      <p className="text-slate-800 font-medium capitalize">
-                        {intervention.type?.replace(/_/g, ' ')}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500 mb-1 text-xs">Horaires</p>
-                      <p className="text-slate-800 font-medium">
-                        {intervention.heure_debut && intervention.heure_fin
-                          ? `${intervention.heure_debut} - ${intervention.heure_fin}`
-                          : '-'}
-                      </p>
-                    </div>
+          {interventions.length === 0 ? (
+            <div className="flex items-center justify-center min-h-[500px]">
+              <Card variant="glass" padding="lg" className="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 max-w-3xl w-full">
+                <div className="text-center py-8">
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center">
+                    <FileText className="w-10 h-10 text-white" />
                   </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        )}
+                  <h3 className="text-2xl font-bold text-slate-800 mb-3">Aucune intervention trouvée</h3>
+                  <p className="text-slate-600 mb-8">
+                    {filter !== 'all'
+                      ? `Aucune intervention ${filter === 'en_cours' ? 'en cours' : 'terminée'} pour le moment.`
+                      : 'Commencez par créer votre première intervention.'
+                    }
+                  </p>
+                  <Button
+                    onClick={() => router.push('/select-rapport-type')}
+                    variant="primary"
+                    icon={<Plus className="w-5 h-5" />}
+                    className="shadow-lg"
+                  >
+                    Nouvelle intervention
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {interventions.map((intervention, index) => (
+                <motion.div
+                  key={intervention.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Card
+                    variant="glass"
+                    padding="lg"
+                    hover
+                    className="cursor-pointer bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                    onClick={() => {
+                      if (intervention.type_rapport === 'portable') {
+                        router.push(`/intervention-portable/${intervention.id}`)
+                      } else {
+                        // Par défaut ou si type_rapport = 'fixe'
+                        router.push(`/intervention/${intervention.id}`)
+                      }
+                    }}
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-1 text-slate-800">
+                          {intervention.sites?.clients?.nom}
+                        </h3>
+                        <p className="text-slate-600">{intervention.sites?.nom}</p>
+                      </div>
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <select
+                          value={intervention.statut}
+                          onChange={(e) => updateStatut(intervention.id, e.target.value, e as any)}
+                          className="px-3 py-1.5 rounded-lg text-sm cursor-pointer border-0 bg-gray-50 border border-gray-300 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="en_cours">En cours</option>
+                          <option value="terminee">Terminée</option>
+                        </select>
+                        <Badge
+                          variant={
+                            intervention.statut === 'terminee' ? 'success' :
+                            intervention.statut === 'en_cours' ? 'info' :
+                            'warning'
+                          }
+                        >
+                          {intervention.statut === 'terminee' ? 'Terminée' :
+                           intervention.statut === 'en_cours' ? 'En cours' :
+                           intervention.statut}
+                        </Badge>
+                        <Button
+                          onClick={() => router.push(`/intervention/${intervention.id}`)}
+                          variant="secondary"
+                          size="sm"
+                          icon={<Eye className="w-4 h-4" />}
+                        >
+                          Voir
+                        </Button>
+                        {userRole === 'admin' && (
+                          <Button
+                            onClick={(e) => handleDelete(intervention.id, e)}
+                            variant="danger"
+                            size="sm"
+                            icon={<Trash2 className="w-4 h-4" />}
+                          >
+                            Supprimer
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-6 text-sm">
+                      <div>
+                        <p className="text-slate-500 mb-1 text-xs font-medium">Date</p>
+                        <p className="text-slate-800 font-medium">
+                          {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 mb-1 text-xs font-medium">Type</p>
+                        <p className="text-slate-800 font-medium capitalize">
+                          {intervention.type?.replace(/_/g, ' ')}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 mb-1 text-xs font-medium">Horaires</p>
+                        <p className="text-slate-800 font-medium">
+                          {intervention.heure_debut && intervention.heure_fin
+                            ? `${intervention.heure_debut} - ${intervention.heure_fin}`
+                            : '-'}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   )

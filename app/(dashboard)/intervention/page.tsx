@@ -664,12 +664,12 @@ export default function InterventionPage() {
   const currentCentrale = centrales[currentCentraleIndex]
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-gray-50">
       <div className="flex">
-        <aside className="w-64 min-h-screen bg-slate-900 border-r border-slate-800 p-6">
-          <h2 className="text-xl font-bold mb-4">Generer un rapport</h2>
+        <aside className="w-64 min-h-screen bg-white border-r border-gray-300 p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-slate-800 mb-4">Générer un rapport</h2>
           {planningInterventionId && (
-            <div className="mb-4 p-2 bg-green-500/20 border border-green-500/30 rounded text-xs text-green-400">
+            <div className="mb-4 p-2 bg-green-100 border border-green-300 rounded text-xs text-green-700">
               📅 Lié au planning
             </div>
           )}
@@ -677,21 +677,21 @@ export default function InterventionPage() {
           <nav className="space-y-2">
             <button
               onClick={() => setCurrentSection('info')}
-              className={`w-full text-left px-4 py-3 rounded-lg transition ${
-                currentSection === 'info' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'
+              className={`w-full text-left px-4 py-3 rounded-lg transition font-medium ${
+                currentSection === 'info' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-gray-100'
               }`}
             >
               Info intervention
             </button>
             <button
               onClick={() => setCurrentSection('client')}
-              className={`w-full text-left px-4 py-3 rounded-lg transition ${
-                currentSection === 'client' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'
+              className={`w-full text-left px-4 py-3 rounded-lg transition font-medium ${
+                currentSection === 'client' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-gray-100'
               }`}
             >
               Client & Site
             </button>
-            
+
             {centrales.map((_, index) => (
               <button
                 key={index}
@@ -699,10 +699,10 @@ export default function InterventionPage() {
                   setCurrentSection('centrale')
                   setCurrentCentraleIndex(index)
                 }}
-                className={`w-full text-left px-4 py-3 rounded-lg transition ${
+                className={`w-full text-left px-4 py-3 rounded-lg transition font-medium ${
                   currentSection === 'centrale' && currentCentraleIndex === index
                     ? 'bg-blue-600 text-white'
-                    : 'hover:bg-slate-800'
+                    : 'text-slate-700 hover:bg-gray-100'
                 }`}
               >
                 Centrale {index + 1}
@@ -711,15 +711,15 @@ export default function InterventionPage() {
 
             <button
               onClick={addCentrale}
-              className="w-full text-left px-4 py-3 rounded-lg bg-green-600 hover:bg-green-700 transition"
+              className="w-full text-left px-4 py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white transition font-medium"
             >
               + Ajouter centrale
             </button>
 
             <button
               onClick={() => setCurrentSection('conclusion')}
-              className={`w-full text-left px-4 py-3 rounded-lg transition ${
-                currentSection === 'conclusion' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'
+              className={`w-full text-left px-4 py-3 rounded-lg transition font-medium ${
+                currentSection === 'conclusion' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-gray-100'
               }`}
             >
               Conclusion finale
@@ -729,64 +729,65 @@ export default function InterventionPage() {
             <button
               onClick={handleSave}
               disabled={loading}
-              className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-medium disabled:opacity-50"
+              className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium disabled:opacity-50 shadow-sm"
             >
               {loading ? 'Enregistrement...' : 'Enregistrer'}
             </button>
             <button
               onClick={() => router.push('/admin')}
-              className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg font-medium"
+              className="w-full px-4 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-slate-700 rounded-lg font-medium"
             >
               Annuler
             </button>
           </div>
         </aside>
 
-        <main className="flex-1 p-8 overflow-auto">
+        <main className="flex-1 p-8 overflow-auto bg-gray-50">
           {currentSection === 'info' && (
-            <div className="max-w-4xl">
-              <div className="bg-slate-900 rounded-lg p-6 space-y-6">
+            <div className="max-w-4xl mx-auto">
+              <h1 className="text-3xl font-bold text-slate-800 mb-6">Informations intervention</h1>
+              <div className="bg-white border border-gray-300 rounded-lg p-6 space-y-6 shadow-sm">
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Date intervention</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Date intervention</label>
                     <input
                       type="date"
                       value={dateIntervention}
                       onChange={e => setDateIntervention(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Heure début</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Heure début</label>
                     <input
                       type="time"
                       value={heureDebut}
                       onChange={e => setHeureDebut(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Heure fin</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Heure fin</label>
                     <input
                       type="time"
                       value={heureFin}
                       onChange={e => setHeureFin(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Technicien</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Technicien</label>
                   <select
                     value={technicien}
                     onChange={e => setTechnicien(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 text-white"
+                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     required
                   >
-                    <option value="" className="bg-slate-800">Sélectionner un technicien</option>
+                    <option value="">Sélectionner un technicien</option>
                     {availableTechniciens.map(tech => (
-                      <option key={tech.id} value={tech.full_name} className="bg-slate-800 text-white">
+                      <option key={tech.id} value={tech.full_name}>
                         {tech.full_name}
                       </option>
                     ))}
@@ -794,7 +795,7 @@ export default function InterventionPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Type d'intervention</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Type d'intervention</label>
                   <div className="grid grid-cols-2 gap-3">
                     {['Maintenance préventive', 'Maintenance corrective', 'Installation', 'Mise en service', 'Dépannage', 'Autre'].map(type => (
                       <label key={type} className="flex items-center space-x-2 cursor-pointer">
@@ -808,9 +809,9 @@ export default function InterventionPage() {
                               setTypeIntervention(typeIntervention.filter(t => t !== type))
                             }
                           }}
-                          className="w-4 h-4"
+                          className="w-4 h-4 text-blue-600"
                         />
-                        <span>{type}</span>
+                        <span className="text-slate-800">{type}</span>
                       </label>
                     ))}
                   </div>
@@ -820,15 +821,15 @@ export default function InterventionPage() {
           )}
 
           {currentSection === 'client' && (
-            <div className="max-w-4xl">
-              <h1 className="text-3xl font-bold mb-8">Client & Site</h1>
-              <div className="bg-slate-900 rounded-lg p-6 space-y-6">
+            <div className="max-w-4xl mx-auto">
+              <h1 className="text-3xl font-bold text-slate-800 mb-6">Client & Site</h1>
+              <div className="bg-white border border-gray-300 rounded-lg p-6 space-y-6 shadow-sm">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Client</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Client</label>
                   <select
                     value={clientId}
                     onChange={e => setClientId(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                   >
                     <option value="">Sélectionner un client</option>
                     {clients.map(client => (
@@ -838,12 +839,12 @@ export default function InterventionPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Site</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Site</label>
                   <select
                     value={siteId}
                     onChange={e => setSiteId(e.target.value)}
                     disabled={!clientId}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 disabled:opacity-50"
                   >
                     <option value="">Sélectionner un site</option>
                     {sites.map(site => (
@@ -853,42 +854,42 @@ export default function InterventionPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Local</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Local</label>
                   <input
                     type="text"
                     value={local}
                     onChange={e => setLocal(e.target.value)}
                     placeholder="Ex: Chaufferie, Local technique..."
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Contact sur site</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Contact sur site</label>
                     <input
                       type="text"
                       value={contactSite}
                       onChange={e => setContactSite(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Téléphone</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Téléphone</label>
                     <input
                       type="tel"
                       value={telContact}
                       onChange={e => setTelContact(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Email rapport</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Email rapport</label>
                     <input
                       type="email"
                       value={emailRapport}
                       onChange={e => setEmailRapport(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     />
                   </div>
                 </div>
@@ -897,30 +898,30 @@ export default function InterventionPage() {
           )}
 
           {currentSection === 'centrale' && currentCentrale && (
-            <div className="max-w-7xl">
-              <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">Centrale {currentCentraleIndex + 1}</h1>
+            <div className="max-w-7xl mx-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold text-slate-800">Centrale {currentCentraleIndex + 1}</h1>
                 {centrales.length > 1 && (
                   <button
                     onClick={() => removeCentrale(currentCentraleIndex)}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm"
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm text-white"
                   >
                     Supprimer cette centrale
                   </button>
                 )}
               </div>
 
-              <div className="bg-slate-900 rounded-lg p-6 space-y-8">
+              <div className="bg-white border border-gray-300 rounded-lg p-6 space-y-8 shadow-sm">
                 <div>
-                  <h2 className="text-xl font-bold mb-4">Informations centrale</h2>
+                  <h2 className="text-xl font-bold text-slate-800 mb-4">Informations centrale</h2>
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2">Marque</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Marque</label>
                         <select
                           value={currentCentrale.marque}
                           onChange={e => updateCentrale(currentCentraleIndex, 'marque', e.target.value)}
-                          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                         >
                           <option value="">Sélectionner une marque</option>
                           {Object.keys(CENTRALES_DATA).map(marque => (
@@ -930,21 +931,21 @@ export default function InterventionPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Modèle</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Modèle</label>
                         {currentCentrale.marque === 'Autre' ? (
                           <input
                             type="text"
                             value={currentCentrale.modele}
                             onChange={e => updateCentrale(currentCentraleIndex, 'modele', e.target.value)}
                             placeholder="Saisir le modèle"
-                            className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                            className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                           />
                         ) : (
                           <select
                             value={currentCentrale.modele}
                             onChange={e => updateCentrale(currentCentraleIndex, 'modele', e.target.value)}
                             disabled={!currentCentrale.marque}
-                            className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                            className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 disabled:opacity-50"
                           >
                             <option value="">Sélectionner un modèle</option>
                             {currentCentrale.marque && CENTRALES_DATA[currentCentrale.marque as keyof typeof CENTRALES_DATA]?.map(modele => (
@@ -957,29 +958,29 @@ export default function InterventionPage() {
 
                     <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2">N° de série</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">N° de série</label>
                         <input
                           type="text"
                           value={currentCentrale.numero_serie}
                           onChange={e => updateCentrale(currentCentraleIndex, 'numero_serie', e.target.value)}
-                          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Firmware</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Firmware</label>
                         <input
                           type="text"
                           value={currentCentrale.firmware}
                           onChange={e => updateCentrale(currentCentraleIndex, 'firmware', e.target.value)}
-                          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">État général</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">État général</label>
                         <select
                           value={currentCentrale.etat_general}
                           onChange={e => updateCentrale(currentCentraleIndex, 'etat_general', e.target.value)}
-                          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                         >
                           <option value="Bon">Bon</option>
                           <option value="Acceptable">Acceptable</option>
@@ -989,7 +990,7 @@ export default function InterventionPage() {
                       </div>
                     </div>
 
-                    <div className="border-t border-slate-700 pt-4 mt-4">
+                    <div className="border-t border-gray-300 pt-4 mt-4">
                       <label className="flex items-center space-x-2 mb-4 cursor-pointer">
                         <input
                           type="checkbox"
@@ -997,18 +998,18 @@ export default function InterventionPage() {
                           onChange={e => updateCentrale(currentCentraleIndex, 'aes_presente', e.target.checked)}
                           className="w-4 h-4"
                         />
-                        <span className="font-medium">AES (Alimentation de secours) présente</span>
+                        <span className="font-medium text-slate-800">AES (Alimentation de secours) présente</span>
                       </label>
 
                       {currentCentrale.aes_presente && (
-                        <div className="bg-slate-800 rounded-lg p-4 space-y-4">
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-4">
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-sm font-medium mb-2">Modèle</label>
+                              <label className="block text-sm font-medium text-slate-700 mb-2">Modèle</label>
                               <select
                                 value={currentCentrale.aes_modele}
                                 onChange={e => updateCentrale(currentCentraleIndex, 'aes_modele', e.target.value)}
-                                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500"
+                                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               >
                                 <option value="">Sélectionner</option>
                                 {MODELES_BATTERIES.map(modele => (
@@ -1017,11 +1018,11 @@ export default function InterventionPage() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-sm font-medium mb-2">Statut</label>
+                              <label className="block text-sm font-medium text-slate-700 mb-2">Statut</label>
                               <select
                                 value={currentCentrale.aes_statut}
                                 onChange={e => updateCentrale(currentCentraleIndex, 'aes_statut', e.target.value)}
-                                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500"
+                                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               >
                                 <option value="Bon">Bon</option>
                                 <option value="À surveiller">À surveiller</option>
@@ -1039,26 +1040,26 @@ export default function InterventionPage() {
                               onChange={e => updateCentrale(currentCentraleIndex, 'aes_ondulee', e.target.checked)}
                               className="w-4 h-4"
                             />
-                            <span className="text-sm">Ondulée</span>
+                            <span className="text-sm text-slate-800">Ondulée</span>
                           </label>
 
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-sm font-medium mb-2">Date remplacement</label>
+                              <label className="block text-sm font-medium text-slate-700 mb-2">Date remplacement</label>
                               <input
                                 type="date"
                                 value={currentCentrale.aes_date_remplacement}
                                 onChange={e => updateCentrale(currentCentraleIndex, 'aes_date_remplacement', e.target.value)}
-                                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500"
+                                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium mb-2">Prochaine échéance</label>
+                              <label className="block text-sm font-medium text-slate-700 mb-2">Prochaine échéance</label>
                               <input
                                 type="date"
                                 value={currentCentrale.aes_prochaine_echeance}
                                 onChange={e => updateCentrale(currentCentraleIndex, 'aes_prochaine_echeance', e.target.value)}
-                                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500"
+                                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               />
                             </div>
                           </div>
@@ -1068,29 +1069,29 @@ export default function InterventionPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-slate-700 pt-6">
+                <div className="border-t border-gray-300 pt-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Détecteurs Gaz</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Détecteurs Gaz</h2>
                     <button
                       onClick={() => addDetecteurGaz(currentCentraleIndex)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
                     >
                       + Ajouter détecteur gaz
                     </button>
                   </div>
 
                   {currentCentrale.detecteurs_gaz.length === 0 ? (
-                    <p className="text-slate-400 text-sm">Aucun détecteur gaz. Cliquez sur "+ Ajouter détecteur gaz" pour commencer.</p>
+                    <p className="text-slate-600 text-sm">Aucun détecteur gaz. Cliquez sur "+ Ajouter détecteur gaz" pour commencer.</p>
                   ) : (
                     <div className="space-y-4">
                       {currentCentrale.detecteurs_gaz.map((detecteur, detecteurIndex) => (
-                        <div key={detecteur.id} className="bg-slate-800 rounded-lg p-4">
+                        <div key={detecteur.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                           <div className="flex justify-between items-center mb-3">
-                            <h3 className="font-bold">Détecteur Gaz {detecteurIndex + 1}</h3>
+                            <h3 className="font-bold text-slate-800">Détecteur Gaz {detecteurIndex + 1}</h3>
                             {currentCentrale.detecteurs_gaz.length > 1 && (
                             <button
                               onClick={() => removeDetecteurGaz(currentCentraleIndex, detecteurIndex)}
-                              className="text-red-400 hover:text-red-300 text-sm"
+                              className="text-red-600 hover:text-red-700 text-sm"
                             >
                               Supprimer
                             </button>
@@ -1100,20 +1101,20 @@ export default function InterventionPage() {
                         <div className="space-y-4">
                           <div className="grid grid-cols-4 gap-3">
                             <div>
-                              <label className="block text-xs mb-1">Ligne</label>
+                              <label className="block text-xs text-slate-700 mb-1">Ligne</label>
                               <input
                                 type="text"
                                 value={detecteur.ligne}
                                 onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'ligne', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs mb-1">Marque</label>
+                              <label className="block text-xs text-slate-700 mb-1">Marque</label>
                               <select
                                 value={detecteur.marque}
                                 onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'marque', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               >
                                 <option value="">Sélectionner</option>
                                 {Object.keys(DETECTEURS_GAZ_DATA).map(marque => (
@@ -1123,21 +1124,21 @@ export default function InterventionPage() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs mb-1">Modèle</label>
+                              <label className="block text-xs text-slate-700 mb-1">Modèle</label>
                               {detecteur.marque === 'Autre' ? (
                                 <input
                                   type="text"
                                   value={detecteur.modele}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
                                   placeholder="Saisir le modèle"
-                                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                                 />
                               ) : (
                                 <select
                                   value={detecteur.modele}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
                                   disabled={!detecteur.marque}
-                                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 disabled:opacity-50"
                                 >
                                   <option value="">Sélectionner</option>
                                   {detecteur.marque && DETECTEURS_GAZ_DATA[detecteur.marque as keyof typeof DETECTEURS_GAZ_DATA]?.map(modele => (
@@ -1147,23 +1148,23 @@ export default function InterventionPage() {
                               )}
                             </div>
                             <div>
-                              <label className="block text-xs mb-1">N° série</label>
+                              <label className="block text-xs text-slate-700 mb-1">N° série</label>
                               <input
                                 type="text"
                                 value={detecteur.numero_serie}
                                 onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'numero_serie', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               />
                             </div>
                           </div>
 
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs mb-1">Type de gaz</label>
+                              <label className="block text-xs text-slate-700 mb-1">Type de gaz</label>
                               <select
                                 value={detecteur.type_gaz}
                                 onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'type_gaz', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               >
                                 <option value="">Sélectionner</option>
                                 {ALL_GAZ.map(gaz => (
@@ -1172,11 +1173,11 @@ export default function InterventionPage() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs mb-1">Type connexion</label>
+                              <label className="block text-xs text-slate-700 mb-1">Type connexion</label>
                               <select
                                 value={detecteur.type_connexion}
                                 onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'type_connexion', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               >
                                 {TYPES_CONNEXION.map(type => (
                                   <option key={type} value={type}>{type}</option>
@@ -1187,69 +1188,69 @@ export default function InterventionPage() {
 
                           {detecteur.type_connexion === 'Autre' && (
                             <div>
-                              <label className="block text-xs mb-1">Préciser connexion</label>
+                              <label className="block text-xs text-slate-700 mb-1">Préciser connexion</label>
                               <input
                                 type="text"
                                 value={detecteur.connexion_autre}
                                 onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'connexion_autre', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               />
                             </div>
                           )}
 
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs mb-1">Gamme de mesure</label>
+                              <label className="block text-xs text-slate-700 mb-1">Gamme de mesure</label>
                               <input
                                 type="text"
                                 value={detecteur.gamme_mesure}
                                 onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'gamme_mesure', e.target.value)}
                                 placeholder="Ex: 0-100 ppm"
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs mb-1">Temps de réponse</label>
+                              <label className="block text-xs text-slate-700 mb-1">Temps de réponse</label>
                               <input
                                 type="text"
                                 value={detecteur.temps_reponse}
                                 onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'temps_reponse', e.target.value)}
                                 placeholder="Ex: T90 < 30s"
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               />
                             </div>
                           </div>
 
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs mb-1">Date de remplacement</label>
+                              <label className="block text-xs text-slate-700 mb-1">Date de remplacement</label>
                               <input
                                 type="date"
                                 value={detecteur.date_remplacement || ''}
                                 onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'date_remplacement', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs mb-1">Date prochain remplacement théorique</label>
+                              <label className="block text-xs text-slate-700 mb-1">Date prochain remplacement théorique</label>
                               <input
                                 type="date"
                                 value={detecteur.date_prochain_remplacement || ''}
                                 onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'date_prochain_remplacement', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               />
                             </div>
                           </div>
 
-                          <div className="border-t border-slate-600 pt-3">
-                            <h4 className="text-sm font-semibold mb-2">Test zéro</h4>
+                          <div className="border-t border-gray-300 pt-3">
+                            <h4 className="text-sm font-semibold text-slate-800 mb-2">Test zéro</h4>
                             <div className="grid grid-cols-4 gap-2">
                               <div>
-                                <label className="block text-xs mb-1">Gaz zéro</label>
+                                <label className="block text-xs text-slate-700 mb-1">Gaz zéro</label>
                                 <select
                                   value={detecteur.gaz_zero}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'gaz_zero', e.target.value)}
-                                  className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs"
+                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs text-slate-800"
                                 >
                                   {GAZ_ETALON_ZERO.map(gaz => (
                                     <option key={gaz} value={gaz}>{gaz}</option>
@@ -1257,31 +1258,31 @@ export default function InterventionPage() {
                                 </select>
                               </div>
                               <div>
-                                <label className="block text-xs mb-1">Valeur avant</label>
+                                <label className="block text-xs text-slate-700 mb-1">Valeur avant</label>
                                 <input
                                   type="text"
                                   value={detecteur.valeur_avant}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_avant', e.target.value)}
                                   placeholder="0,0"
-                                  className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs"
+                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs text-slate-800"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs mb-1">Valeur après</label>
+                                <label className="block text-xs text-slate-700 mb-1">Valeur après</label>
                                 <input
                                   type="text"
                                   value={detecteur.valeur_apres}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_apres', e.target.value)}
                                   placeholder="0,0"
-                                  className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs"
+                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs text-slate-800"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs mb-1">Statut</label>
+                                <label className="block text-xs text-slate-700 mb-1">Statut</label>
                                 <select
                                   value={detecteur.statut_zero}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'statut_zero', e.target.value)}
-                                  className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs"
+                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs text-slate-800"
                                 >
                                   <option value="OK">OK</option>
                                   <option value="Dérive">Dérive</option>
@@ -1291,46 +1292,46 @@ export default function InterventionPage() {
                             </div>
                           </div>
 
-                          <div className="border-t border-slate-600 pt-3">
-                            <h4 className="text-sm font-semibold mb-2">Étalonnage sensibilité</h4>
+                          <div className="border-t border-gray-300 pt-3">
+                            <h4 className="text-sm font-semibold text-slate-800 mb-2">Étalonnage sensibilité</h4>
                             <div className="grid grid-cols-6 gap-2">
                               <div>
-                                <label className="block text-xs mb-1">Gaz étalonnage</label>
+                                <label className="block text-xs text-slate-700 mb-1">Gaz étalonnage</label>
                                 <input
                                   type="text"
                                   value={detecteur.gaz_sensi}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'gaz_sensi', e.target.value)}
                                   placeholder="Ex: CO"
-                                  className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs"
+                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs text-slate-800"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs mb-1">Valeur avant réglage</label>
+                                <label className="block text-xs text-slate-700 mb-1">Valeur avant réglage</label>
                                 <input
                                   type="text"
                                   value={detecteur.valeur_avant_reglage}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_avant_reglage', e.target.value)}
                                   placeholder="100"
-                                  className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs"
+                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs text-slate-800"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs mb-1">Valeur après réglage</label>
+                                <label className="block text-xs text-slate-700 mb-1">Valeur après réglage</label>
                                 <input
                                   type="text"
                                   value={detecteur.valeur_apres_reglage}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_apres_reglage', e.target.value)}
                                   onBlur={() => calculateCoefficient(currentCentraleIndex, detecteurIndex)}
                                   placeholder="98"
-                                  className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs"
+                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs text-slate-800"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs mb-1">Unité</label>
+                                <label className="block text-xs text-slate-700 mb-1">Unité</label>
                                 <select
                                   value={detecteur.unite_etal}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'unite_etal', e.target.value)}
-                                  className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs"
+                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs text-slate-800"
                                 >
                                   {UNITES_MESURE.map(unite => (
                                     <option key={unite} value={unite}>{unite}</option>
@@ -1338,20 +1339,20 @@ export default function InterventionPage() {
                                 </select>
                               </div>
                               <div>
-                                <label className="block text-xs mb-1">Coefficient</label>
+                                <label className="block text-xs text-slate-700 mb-1">Coefficient</label>
                                 <input
                                   type="text"
                                   value={detecteur.coefficient}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'coefficient', e.target.value)}
-                                  className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs"
+                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs text-slate-800"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs mb-1">Statut</label>
+                                <label className="block text-xs text-slate-700 mb-1">Statut</label>
                                 <select
                                   value={detecteur.statut_sensi}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'statut_sensi', e.target.value)}
-                                  className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-xs"
+                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs text-slate-800"
                                 >
                                   <option value="OK">OK</option>
                                   <option value="Dérive acceptable">Dérive acceptable</option>
@@ -1362,54 +1363,54 @@ export default function InterventionPage() {
                             </div>
                           </div>
 
-                          <div className="border-t border-slate-600 pt-3">
+                          <div className="border-t border-gray-300 pt-3">
                             <div className="flex justify-between items-center mb-2">
-                              <h4 className="text-sm font-semibold">Seuils d'alarme</h4>
+                              <h4 className="text-sm font-semibold text-slate-800">Seuils d'alarme</h4>
                               <button
                                 onClick={() => addSeuil(currentCentraleIndex, detecteurIndex)}
-                                className="text-xs px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded"
+                                className="text-xs px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-white"
                               >
                                 + Ajouter seuil
                               </button>
                             </div>
 
                             {detecteur.seuils.length === 0 ? (
-                              <p className="text-xs text-slate-400">Aucun seuil configuré</p>
+                              <p className="text-xs text-slate-600">Aucun seuil configuré</p>
                             ) : (
                               <div className="space-y-2">
                                 {detecteur.seuils.map((seuil, seuilIndex) => (
-                                  <div key={seuil.id} className="bg-slate-700 rounded p-3">
+                                  <div key={seuil.id} className="bg-white border border-gray-300 rounded p-3">
                                     <div className="flex justify-between items-start mb-2">
                                       <input
                                         type="text"
                                         value={seuil.nom}
                                         onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'nom', e.target.value)}
-                                        className="font-medium bg-transparent border-b border-slate-500 text-sm focus:outline-none focus:border-blue-500"
+                                        className="font-medium bg-transparent border-b border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                                         placeholder="Nom du seuil"
                                       />
                                       <button
                                         onClick={() => removeSeuil(currentCentraleIndex, detecteurIndex, seuilIndex)}
-                                        className="text-red-400 hover:text-red-300 text-xs"
+                                        className="text-red-600 hover:text-red-700 text-xs"
                                       >
                                         Supprimer
                                       </button>
                                     </div>
                                     <div className="grid grid-cols-6 gap-2">
                                       <div>
-                                        <label className="block text-xs mb-1">Valeur</label>
+                                        <label className="block text-xs text-slate-700 mb-1">Valeur</label>
                                         <input
                                           type="text"
                                           value={seuil.valeur}
                                           onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'valeur', e.target.value)}
-                                          className="w-full px-2 py-1 bg-slate-600 border border-slate-500 rounded text-xs"
+                                          className="w-full px-2 py-1 bg-white border border-gray-200 rounded text-xs text-slate-800"
                                         />
                                       </div>
                                       <div>
-                                        <label className="block text-xs mb-1">Unité</label>
+                                        <label className="block text-xs text-slate-700 mb-1">Unité</label>
                                         <select
                                           value={seuil.unite}
                                           onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'unite', e.target.value)}
-                                          className="w-full px-2 py-1 bg-slate-600 border border-slate-500 rounded text-xs"
+                                          className="w-full px-2 py-1 bg-white border border-gray-200 rounded text-xs text-slate-800"
                                         >
                                           {UNITES_MESURE.map(unite => (
                                             <option key={unite} value={unite}>{unite}</option>
@@ -1417,28 +1418,28 @@ export default function InterventionPage() {
                                         </select>
                                       </div>
                                       <div className="col-span-2">
-                                        <label className="block text-xs mb-1">Asservissements</label>
+                                        <label className="block text-xs text-slate-700 mb-1">Asservissements</label>
                                         <input
                                           type="text"
                                           value={seuil.asservissements}
                                           onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'asservissements', e.target.value)}
                                           placeholder="Ex: Ventilation, Sirène..."
-                                          className="w-full px-2 py-1 bg-slate-600 border border-slate-500 rounded text-xs"
+                                          className="w-full px-2 py-1 bg-white border border-gray-200 rounded text-xs text-slate-800"
                                         />
                                       </div>
                                       <div>
-                                        <label className="block text-xs mb-1">Asserv. OK</label>
+                                        <label className="block text-xs text-slate-700 mb-1">Asserv. OK</label>
                                         <select
                                           value={seuil.asserv_operationnel ? 'true' : 'false'}
                                           onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'asserv_operationnel', e.target.value === 'true')}
-                                          className="w-full px-2 py-1 bg-slate-600 border border-slate-500 rounded text-xs"
+                                          className="w-full px-2 py-1 bg-white border border-gray-200 rounded text-xs text-slate-800"
                                         >
                                           <option value="true">Oui</option>
                                           <option value="false">Non</option>
                                         </select>
                                       </div>
                                       <div>
-                                        <label className="block text-xs mb-1">Flags</label>
+                                        <label className="block text-xs text-slate-700 mb-1">Flags</label>
                                         <div className="flex gap-2 mt-1">
                                           <label className="flex items-center space-x-1 cursor-pointer" title="Opérationnel">
                                             <input
@@ -1447,7 +1448,7 @@ export default function InterventionPage() {
                                               onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'operationnel', e.target.checked)}
                                               className="w-3 h-3"
                                             />
-                                            <span className="text-xs">OP</span>
+                                            <span className="text-xs text-slate-800">OP</span>
                                           </label>
                                           <label className="flex items-center space-x-1 cursor-pointer" title="Supervision">
                                             <input
@@ -1456,7 +1457,7 @@ export default function InterventionPage() {
                                               onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'supervision', e.target.checked)}
                                               className="w-3 h-3"
                                             />
-                                            <span className="text-xs">SUP</span>
+                                            <span className="text-xs text-slate-800">SUP</span>
                                           </label>
                                           <label className="flex items-center space-x-1 cursor-pointer" title="Non testé">
                                             <input
@@ -1465,7 +1466,7 @@ export default function InterventionPage() {
                                               onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'non_teste', e.target.checked)}
                                               className="w-3 h-3"
                                             />
-                                            <span className="text-xs">NT</span>
+                                            <span className="text-xs text-slate-800">NT</span>
                                           </label>
                                         </div>
                                       </div>
@@ -1476,7 +1477,7 @@ export default function InterventionPage() {
                             )}
                           </div>
 
-                          <div className="border-t border-slate-600 pt-3">
+                          <div className="border-t border-gray-300 pt-3">
                             <div className="flex gap-4">
                               <label className="flex items-center space-x-2 cursor-pointer">
                                 <input
@@ -1485,7 +1486,7 @@ export default function InterventionPage() {
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'operationnel', e.target.checked)}
                                   className="w-4 h-4"
                                 />
-                                <span className="text-sm">Opérationnel</span>
+                                <span className="text-sm text-slate-800">Opérationnel</span>
                               </label>
                               <label className="flex items-center space-x-2 cursor-pointer">
                                 <input
@@ -1494,7 +1495,7 @@ export default function InterventionPage() {
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'non_teste', e.target.checked)}
                                   className="w-4 h-4"
                                 />
-                                <span className="text-sm">Non testé</span>
+                                <span className="text-sm text-slate-800">Non testé</span>
                               </label>
                             </div>
                           </div>
@@ -1505,29 +1506,29 @@ export default function InterventionPage() {
                   )}
                 </div>
 
-                <div className="border-t border-slate-700 pt-6">
+                <div className="border-t border-gray-300 pt-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Détecteurs Flamme</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Détecteurs Flamme</h2>
                     <button
                       onClick={() => addDetecteurFlamme(currentCentraleIndex)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
                     >
                       + Ajouter détecteur flamme
                     </button>
                   </div>
 
                   {currentCentrale.detecteurs_flamme.length === 0 ? (
-                    <p className="text-slate-400 text-sm">Aucun détecteur flamme. Cliquez sur "+ Ajouter détecteur flamme" pour commencer.</p>
+                    <p className="text-slate-600 text-sm">Aucun détecteur flamme. Cliquez sur "+ Ajouter détecteur flamme" pour commencer.</p>
                   ) : (
                     <div className="space-y-4">
                       {currentCentrale.detecteurs_flamme.map((detecteur, detecteurIndex) => (
-                        <div key={detecteur.id} className="bg-slate-800 rounded-lg p-4">
+                        <div key={detecteur.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                           <div className="flex justify-between items-center mb-3">
-                            <h3 className="font-bold">Détecteur Flamme {detecteurIndex + 1}</h3>
+                            <h3 className="font-bold text-slate-800">Détecteur Flamme {detecteurIndex + 1}</h3>
                             {currentCentrale.detecteurs_flamme.length > 1 && (
                             <button
                               onClick={() => removeDetecteurFlamme(currentCentraleIndex, detecteurIndex)}
-                              className="text-red-400 hover:text-red-300 text-sm"
+                              className="text-red-600 hover:text-red-700 text-sm"
                             >
                               Supprimer
                             </button>
@@ -1537,20 +1538,20 @@ export default function InterventionPage() {
                         <div className="space-y-4">
                           <div className="grid grid-cols-4 gap-3">
                             <div>
-                              <label className="block text-xs mb-1">Ligne</label>
+                              <label className="block text-xs text-slate-700 mb-1">Ligne</label>
                               <input
                                 type="text"
                                 value={detecteur.ligne}
                                 onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'ligne', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs mb-1">Marque</label>
+                              <label className="block text-xs text-slate-700 mb-1">Marque</label>
                               <select
                                 value={detecteur.marque}
                                 onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'marque', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               >
                                 <option value="">Sélectionner</option>
                                 {Object.keys(DETECTEURS_FLAMME_DATA).map(marque => (
@@ -1560,21 +1561,21 @@ export default function InterventionPage() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs mb-1">Modèle</label>
+                              <label className="block text-xs text-slate-700 mb-1">Modèle</label>
                               {detecteur.marque === 'Autre' ? (
                                 <input
                                   type="text"
                                   value={detecteur.modele}
                                   onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
                                   placeholder="Saisir le modèle"
-                                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                                 />
                               ) : (
                                 <select
                                   value={detecteur.modele}
                                   onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
                                   disabled={!detecteur.marque}
-                                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 disabled:opacity-50"
                                 >
                                   <option value="">Sélectionner</option>
                                   {detecteur.marque && DETECTEURS_FLAMME_DATA[detecteur.marque as keyof typeof DETECTEURS_FLAMME_DATA]?.map(modele => (
@@ -1584,23 +1585,23 @@ export default function InterventionPage() {
                               )}
                             </div>
                             <div>
-                              <label className="block text-xs mb-1">N° série</label>
+                              <label className="block text-xs text-slate-700 mb-1">N° série</label>
                               <input
                                 type="text"
                                 value={detecteur.numero_serie}
                                 onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'numero_serie', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               />
                             </div>
                           </div>
 
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs mb-1">Type connexion</label>
+                              <label className="block text-xs text-slate-700 mb-1">Type connexion</label>
                               <select
                                 value={detecteur.type_connexion}
                                 onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'type_connexion', e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                               >
                                 <option value="">Sélectionner</option>
                                 {TYPES_CONNEXION.map(type => (
@@ -1610,47 +1611,47 @@ export default function InterventionPage() {
                             </div>
                             {detecteur.type_connexion === 'Autre' && (
                               <div>
-                                <label className="block text-xs mb-1">Préciser type connexion</label>
+                                <label className="block text-xs text-slate-700 mb-1">Préciser type connexion</label>
                                 <input
                                   type="text"
                                   value={detecteur.type_connexion_autre || ''}
                                   onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'type_connexion_autre', e.target.value)}
                                   placeholder="Préciser..."
-                                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                                 />
                               </div>
                             )}
                           </div>
 
-                          <div className="border-t border-slate-600 pt-3">
-                            <h4 className="text-sm font-semibold mb-2">Test flamme</h4>
+                          <div className="border-t border-gray-300 pt-3">
+                            <h4 className="text-sm font-semibold text-slate-800 mb-2">Test flamme</h4>
                             <div className="grid grid-cols-3 gap-2">
                               <div>
-                                <label className="block text-xs mb-1">Distance test</label>
+                                <label className="block text-xs text-slate-700 mb-1">Distance test</label>
                                 <input
                                   type="text"
                                   value={detecteur.distance_test}
                                   onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'distance_test', e.target.value)}
                                   placeholder="Ex: 3m"
-                                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs mb-1">Temps de réponse</label>
+                                <label className="block text-xs text-slate-700 mb-1">Temps de réponse</label>
                                 <input
                                   type="text"
                                   value={detecteur.temps_reponse}
                                   onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'temps_reponse', e.target.value)}
                                   placeholder="Ex: < 5s"
-                                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs mb-1">Statut</label>
+                                <label className="block text-xs text-slate-700 mb-1">Statut</label>
                                 <select
                                   value={detecteur.statut_test}
                                   onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'statut_test', e.target.value)}
-                                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                                 >
                                   <option value="OK">OK</option>
                                   <option value="Dérive">Dérive</option>
@@ -1660,25 +1661,25 @@ export default function InterventionPage() {
                             </div>
                           </div>
 
-                          <div className="border-t border-slate-600 pt-3">
-                            <h4 className="text-sm font-semibold mb-2">Asservissements</h4>
+                          <div className="border-t border-gray-300 pt-3">
+                            <h4 className="text-sm font-semibold text-slate-800 mb-2">Asservissements</h4>
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="block text-xs mb-1">Asservissements</label>
+                                <label className="block text-xs text-slate-700 mb-1">Asservissements</label>
                                 <input
                                   type="text"
                                   value={detecteur.asservissements}
                                   onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'asservissements', e.target.value)}
                                   placeholder="Ex: Ventilation, Sirène..."
-                                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs mb-1">Asserv. opérationnel</label>
+                                <label className="block text-xs text-slate-700 mb-1">Asserv. opérationnel</label>
                                 <select
                                   value={detecteur.asserv_operationnel ? 'true' : 'false'}
                                   onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'asserv_operationnel', e.target.value === 'true')}
-                                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                                 >
                                   <option value="true">Oui</option>
                                   <option value="false">Non</option>
@@ -1687,7 +1688,7 @@ export default function InterventionPage() {
                             </div>
                           </div>
 
-                          <div className="border-t border-slate-600 pt-3">
+                          <div className="border-t border-gray-300 pt-3">
                             <label className="flex items-center gap-2">
                               <input
                                 type="checkbox"
@@ -1695,7 +1696,7 @@ export default function InterventionPage() {
                                 onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'operationnel', e.target.checked)}
                                 className="w-4 h-4"
                               />
-                              <span className="text-sm">Opérationnel</span>
+                              <span className="text-sm text-slate-800">Opérationnel</span>
                             </label>
                             <label className="flex items-center gap-2">
                               <input
@@ -1704,7 +1705,7 @@ export default function InterventionPage() {
                                 onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'non_teste', e.target.checked)}
                                 className="w-4 h-4"
                               />
-                              <span className="text-sm">Non testé</span>
+                              <span className="text-sm text-slate-800">Non testé</span>
                             </label>
                           </div>
                         </div>
@@ -1714,43 +1715,43 @@ export default function InterventionPage() {
                   )}
                 </div>
 
-                <div className="border-t border-slate-700 pt-6">
-                  <h2 className="text-xl font-bold mb-4">Conclusion Centrale {currentCentraleIndex + 1}</h2>
+                <div className="border-t border-gray-300 pt-6">
+                  <h2 className="text-xl font-bold text-slate-800 mb-4">Conclusion Centrale {currentCentraleIndex + 1}</h2>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm mb-2">Travaux effectués</label>
+                      <label className="block text-sm text-slate-700 mb-2">Travaux effectués</label>
                       <textarea
                         value={currentCentrale.travaux_effectues}
                         onChange={e => updateCentrale(currentCentraleIndex, 'travaux_effectues', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-2">Anomalies constatées</label>
+                      <label className="block text-sm text-slate-700 mb-2">Anomalies constatées</label>
                       <textarea
                         value={currentCentrale.anomalies}
                         onChange={e => updateCentrale(currentCentraleIndex, 'anomalies', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-2">Recommandations</label>
+                      <label className="block text-sm text-slate-700 mb-2">Recommandations</label>
                       <textarea
                         value={currentCentrale.recommandations}
                         onChange={e => updateCentrale(currentCentraleIndex, 'recommandations', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-2">Pièces remplacées</label>
+                      <label className="block text-sm text-slate-700 mb-2">Pièces remplacées</label>
                       <textarea
                         value={currentCentrale.pieces_remplacees}
                         onChange={e => updateCentrale(currentCentraleIndex, 'pieces_remplacees', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                       />
                     </div>
                   </div>
@@ -1760,42 +1761,42 @@ export default function InterventionPage() {
           )}
 
           {currentSection === 'conclusion' && (
-            <div className="max-w-4xl">
-              <h1 className="text-3xl font-bold mb-8">Conclusion Finale</h1>
-              <div className="bg-slate-900 rounded-lg p-6 space-y-6">
+            <div className="max-w-4xl mx-auto">
+              <h1 className="text-3xl font-bold text-slate-800 mb-6">Conclusion Finale</h1>
+              <div className="bg-white border border-gray-300 rounded-lg p-6 space-y-6 shadow-sm">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Observations générales</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Observations générales</label>
                   <textarea
                     value={observationsGenerales}
                     onChange={e => setObservationsGenerales(e.target.value)}
                     rows={4}
                     placeholder="Observations générales sur l'intervention..."
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Conclusion</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Conclusion</label>
                   <textarea
                     value={conclusion}
                     onChange={e => setConclusion(e.target.value)}
                     rows={4}
                     placeholder="Conclusion de l'intervention..."
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                   />
                 </div>
 
-                <div className="border-t border-slate-700 pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Photos</h3>
+                <div className="border-t border-gray-300 pt-6">
+                  <h3 className="text-lg font-semibold text-slate-800 mb-4">Photos</h3>
                   <div>
                     <label className="block">
-                      <div className="bg-slate-800 border-2 border-dashed border-slate-600 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-slate-500 transition-colors">
+                      <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
                         <svg className="w-12 h-12 text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <p className="text-slate-400 text-sm mb-1">Cliquer pour ajouter des photos</p>
-                        <p className="text-slate-500 text-xs">PNG, JPG jusqu'à 10MB</p>
+                        <p className="text-slate-600 text-sm mb-1">Cliquer pour ajouter des photos</p>
+                        <p className="text-slate-600 text-xs">PNG, JPG jusqu'à 10MB</p>
                       </div>
                       <input
                         type="file"
@@ -1836,7 +1837,7 @@ export default function InterventionPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-slate-700 pt-6">
+                <div className="border-t border-gray-300 pt-6">
                   <button
                     onClick={handleSave}
                     className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"

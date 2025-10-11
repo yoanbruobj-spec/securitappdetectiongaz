@@ -54,7 +54,7 @@ export async function generateInterventionPDF(data: InterventionData) {
   doc.setFontSize(9)
   doc.setFont('helvetica', 'normal')
   doc.text('6 rue Georges BRASSENS, Zac des 4 saisons, 31140 Fonbeauzard', pageWidth / 2, yPos + 8, { align: 'center' })
-  doc.text('Telephone : 06 13 84 53 98', pageWidth / 2, yPos + 15, { align: 'center' })
+  doc.text('Téléphone : 06 13 84 53 98', pageWidth / 2, yPos + 15, { align: 'center' })
   doc.text('E-mail : christophe.agnus@yahoo.fr', pageWidth / 2, yPos + 22, { align: 'center' })
 
   // Espace
@@ -76,7 +76,25 @@ export async function generateInterventionPDF(data: InterventionData) {
   doc.setFontSize(12)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(100, 100, 100)
-  const typeIntervention = intervention.type?.replace(/_/g, ' ').toUpperCase() || 'INTERVENTION'
+
+  // Mapping des types d'intervention avec accents français
+  const typeMapping: Record<string, string> = {
+    'maintenance_preventive': 'MAINTENANCE PRÉVENTIVE',
+    'maintenance_corrective': 'MAINTENANCE CORRECTIVE',
+    'verification_periodique': 'VÉRIFICATION PÉRIODIQUE',
+    'installation': 'INSTALLATION',
+    'mise_en_service': 'MISE EN SERVICE',
+    'reparation': 'RÉPARATION',
+    'depannage': 'DÉPANNAGE',
+    'diagnostic': 'DIAGNOSTIC',
+    'formation': 'FORMATION',
+    'autre': 'AUTRE'
+  }
+
+  const typeIntervention = intervention.type
+    ? (typeMapping[intervention.type] || intervention.type.replace(/_/g, ' ').toUpperCase())
+    : 'INTERVENTION'
+
   doc.text(typeIntervention, pageWidth / 2, yPos, { align: 'center' })
 
   // Informations principales dans un encadré élégant

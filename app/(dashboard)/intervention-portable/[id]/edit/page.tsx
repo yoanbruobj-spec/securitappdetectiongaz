@@ -580,15 +580,15 @@ export default function InterventionPortableEditPage() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
-        <div className="text-white">Chargement des données...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-slate-800">Chargement des données...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E1A] flex flex-col">
-      <header className="bg-[#141B2D]/80 backdrop-blur-xl border-b border-[#2D3B52] sticky top-0 z-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <header className="bg-white border-b border-gray-300 shadow-sm sticky top-0 z-50">
         <div className="px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
@@ -599,7 +599,7 @@ export default function InterventionPortableEditPage() {
             >
               Retour
             </Button>
-            <h1 className="text-xl font-bold text-slate-100">Modifier Rapport - Détection Portable</h1>
+            <h1 className="text-xl font-bold text-slate-800">Modifier Rapport - Détection Portable</h1>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="info">Section {currentSection === 'info' ? '1' : currentSection === 'client' ? '2' : currentSection === 'portable' ? '3' : '4'}/4</Badge>
@@ -611,26 +611,26 @@ export default function InterventionPortableEditPage() {
         <div className="max-w-5xl mx-auto">
           {currentSection === 'info' && (
             <Card variant="glass" padding="lg">
-              <h2 className="text-2xl font-bold text-slate-100 mb-6">Informations intervention</h2>
+              <h2 className="text-2xl font-bold text-slate-800 mb-6">Informations intervention</h2>
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Date intervention *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Date intervention *</label>
                   <input
                     type="date"
                     value={dateIntervention}
                     onChange={(e) => setDateIntervention(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Technicien *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Technicien *</label>
                   <select
                     value={technicien}
                     onChange={(e) => setTechnicien(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                     required
                   >
                     <option value="">Sélectionner un technicien</option>
@@ -641,33 +641,33 @@ export default function InterventionPortableEditPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Heure début *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Heure début *</label>
                   <input
                     type="time"
                     value={heureDebut}
                     onChange={(e) => setHeureDebut(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Heure fin *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Heure fin *</label>
                   <input
                     type="time"
                     value={heureFin}
                     onChange={(e) => setHeureFin(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                     required
                   />
                 </div>
               </div>
 
               <div className="mt-6">
-                <label className="block text-sm font-medium text-slate-300 mb-3">Type d'intervention *</label>
+                <label className="block text-sm font-medium text-slate-700 mb-3">Type d'intervention *</label>
                 <div className="grid grid-cols-2 gap-3">
                   {['Vérification périodique', 'Maintenance préventive', 'Réparation', 'Mise en service', 'Diagnostic', 'Formation'].map(type => (
-                    <label key={type} className="flex items-center gap-3 p-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg cursor-pointer hover:bg-[#1E2A3F]">
+                    <label key={type} className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
                       <input
                         type="checkbox"
                         checked={typeIntervention.includes(type)}
@@ -680,7 +680,7 @@ export default function InterventionPortableEditPage() {
                         }}
                         className="w-4 h-4"
                       />
-                      <span className="text-slate-100">{type}</span>
+                      <span className="text-slate-800">{type}</span>
                     </label>
                   ))}
                 </div>
@@ -696,15 +696,15 @@ export default function InterventionPortableEditPage() {
 
           {currentSection === 'client' && (
             <Card variant="glass" padding="lg">
-              <h2 className="text-2xl font-bold text-slate-100 mb-6">Client & Site</h2>
+              <h2 className="text-2xl font-bold text-slate-800 mb-6">Client & Site</h2>
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Client *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Client *</label>
                   <select
                     value={clientId}
                     onChange={(e) => setClientId(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                     required
                   >
                     <option value="">Sélectionner un client</option>
@@ -715,11 +715,11 @@ export default function InterventionPortableEditPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Site *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Site *</label>
                   <select
                     value={siteId}
                     onChange={(e) => setSiteId(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                     required
                     disabled={!clientId}
                   >
@@ -731,48 +731,48 @@ export default function InterventionPortableEditPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Local / Zone</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Local / Zone</label>
                   <input
                     type="text"
                     value={local}
                     onChange={(e) => setLocal(e.target.value)}
                     placeholder="Ex: Atelier, Zone de stockage..."
-                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Contact sur site</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Contact sur site</label>
                     <input
                       type="text"
                       value={contactSite}
                       onChange={(e) => setContactSite(e.target.value)}
                       placeholder="Nom du contact"
-                      className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Téléphone contact</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Téléphone contact</label>
                     <input
                       type="tel"
                       value={telContact}
                       onChange={(e) => setTelContact(e.target.value)}
                       placeholder="06 12 34 56 78"
-                      className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Email pour envoi du rapport</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email pour envoi du rapport</label>
                   <input
                     type="email"
                     value={emailRapport}
                     onChange={(e) => setEmailRapport(e.target.value)}
                     placeholder="email@exemple.fr"
-                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                   />
                 </div>
               </div>
@@ -791,7 +791,7 @@ export default function InterventionPortableEditPage() {
           {currentSection === 'portable' && portables.length > 0 && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-slate-100">
+                <h2 className="text-2xl font-bold text-slate-800">
                   Détecteur Portable {currentPortableIndex + 1}/{portables.length}
                 </h2>
                 <div className="flex gap-2">
@@ -812,48 +812,48 @@ export default function InterventionPortableEditPage() {
               </div>
 
               <Card variant="glass" padding="lg">
-                <h3 className="text-lg font-semibold text-slate-100 mb-4">Informations générales</h3>
+                <h3 className="text-lg font-semibold text-slate-800 mb-4">Informations générales</h3>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Marque *</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Marque *</label>
                     <input
                       type="text"
                       value={portables[currentPortableIndex].marque}
                       onChange={(e) => updatePortable(currentPortableIndex, 'marque', e.target.value)}
-                      className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Modèle *</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Modèle *</label>
                     <input
                       type="text"
                       value={portables[currentPortableIndex].modele}
                       onChange={(e) => updatePortable(currentPortableIndex, 'modele', e.target.value)}
-                      className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">N° de série *</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">N° de série *</label>
                     <input
                       type="text"
                       value={portables[currentPortableIndex].numero_serie}
                       onChange={(e) => updatePortable(currentPortableIndex, 'numero_serie', e.target.value)}
-                      className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">État général</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">État général</label>
                     <select
                       value={portables[currentPortableIndex].etat_general}
                       onChange={(e) => updatePortable(currentPortableIndex, 'etat_general', e.target.value)}
-                      className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                     >
                       <option value="Bon">Bon</option>
                       <option value="Moyen">Moyen</option>
@@ -863,7 +863,7 @@ export default function InterventionPortableEditPage() {
                 </div>
 
                 <div className="mt-6">
-                  <h4 className="text-sm font-medium text-slate-300 mb-3">Vérifications fonctionnelles</h4>
+                  <h4 className="text-sm font-medium text-slate-700 mb-3">Vérifications fonctionnelles</h4>
                   <div className="flex gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -872,7 +872,7 @@ export default function InterventionPortableEditPage() {
                         onChange={(e) => updatePortable(currentPortableIndex, 'alarme_sonore', e.target.checked)}
                         className="w-4 h-4"
                       />
-                      <span className="text-slate-100">Alarme sonore</span>
+                      <span className="text-slate-800">Alarme sonore</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -881,7 +881,7 @@ export default function InterventionPortableEditPage() {
                         onChange={(e) => updatePortable(currentPortableIndex, 'alarme_visuelle', e.target.checked)}
                         className="w-4 h-4"
                       />
-                      <span className="text-slate-100">Alarme visuelle</span>
+                      <span className="text-slate-800">Alarme visuelle</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -890,7 +890,7 @@ export default function InterventionPortableEditPage() {
                         onChange={(e) => updatePortable(currentPortableIndex, 'alarme_vibrante', e.target.checked)}
                         className="w-4 h-4"
                       />
-                      <span className="text-slate-100">Alarme vibrante</span>
+                      <span className="text-slate-800">Alarme vibrante</span>
                     </label>
                   </div>
                 </div>
@@ -898,7 +898,7 @@ export default function InterventionPortableEditPage() {
 
               <Card variant="glass" padding="lg">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-slate-100">Gaz détectés</h3>
+                  <h3 className="text-lg font-semibold text-slate-800">Gaz détectés</h3>
                   <Button
                     onClick={() => addGaz(currentPortableIndex)}
                     variant="primary"
@@ -910,13 +910,13 @@ export default function InterventionPortableEditPage() {
                 </div>
 
                 {portables[currentPortableIndex].gaz.length === 0 ? (
-                  <p className="text-slate-400 text-center py-8">Aucun gaz ajouté</p>
+                  <p className="text-slate-600 text-center py-8">Aucun gaz ajouté</p>
                 ) : (
                   <div className="space-y-6">
                     {portables[currentPortableIndex].gaz.map((gaz, gazIndex) => (
                       <Card key={gaz.id} variant="elevated" padding="md">
                         <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-semibold text-slate-100">Gaz {gazIndex + 1}</h4>
+                          <h4 className="font-semibold text-slate-800">Gaz {gazIndex + 1}</h4>
                           <Button
                             onClick={() => removeGaz(currentPortableIndex, gazIndex)}
                             variant="ghost"
@@ -929,11 +929,11 @@ export default function InterventionPortableEditPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-2">Type de gaz</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Type de gaz</label>
                             <select
                               value={gaz.gaz}
                               onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'gaz', e.target.value)}
-                              className="w-full px-4 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-slate-800"
                             >
                               <option value="">Sélectionner</option>
                               {ALL_GAZ.map(g => (
@@ -943,76 +943,76 @@ export default function InterventionPortableEditPage() {
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-2">Gamme de mesure</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Gamme de mesure</label>
                             <input
                               type="text"
                               value={gaz.gamme_mesure}
                               onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'gamme_mesure', e.target.value)}
                               placeholder="Ex: 0-100 ppm"
-                              className="w-full px-4 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-slate-800"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-2">Date remplacement cellule</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Date remplacement cellule</label>
                             <input
                               type="date"
                               value={gaz.date_remplacement}
                               onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'date_remplacement', e.target.value)}
-                              className="w-full px-4 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-slate-800"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-2">Prochain remplacement</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Prochain remplacement</label>
                             <input
                               type="date"
                               value={gaz.date_prochain_remplacement}
                               onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'date_prochain_remplacement', e.target.value)}
-                              className="w-full px-4 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-slate-800"
                             />
                           </div>
                         </div>
 
-                        <div className="mt-4 pt-4 border-t border-[#2D3B52]">
-                          <h5 className="text-sm font-semibold text-slate-300 mb-3">Calibration zéro</h5>
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <h5 className="text-sm font-semibold text-slate-700 mb-3">Calibration zéro</h5>
                           <div className="grid grid-cols-4 gap-4">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Gaz zéro</label>
+                              <label className="block text-xs text-slate-600 mb-1">Gaz zéro</label>
                               <input
                                 type="text"
                                 value={gaz.calibration_gaz_zero}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'calibration_gaz_zero', e.target.value)}
                                 placeholder="Air ou N2"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Valeur avant</label>
+                              <label className="block text-xs text-slate-600 mb-1">Valeur avant</label>
                               <input
                                 type="text"
                                 value={gaz.calibration_valeur_avant}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'calibration_valeur_avant', e.target.value)}
                                 placeholder="0.00"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Valeur après</label>
+                              <label className="block text-xs text-slate-600 mb-1">Valeur après</label>
                               <input
                                 type="text"
                                 value={gaz.calibration_valeur_apres}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'calibration_valeur_apres', e.target.value)}
                                 placeholder="0.00"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Statut</label>
+                              <label className="block text-xs text-slate-600 mb-1">Statut</label>
                               <select
                                 value={gaz.calibration_statut}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'calibration_statut', e.target.value)}
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               >
                                 <option value="OK">OK</option>
                                 <option value="Dérive">Dérive</option>
@@ -1022,47 +1022,47 @@ export default function InterventionPortableEditPage() {
                           </div>
                         </div>
 
-                        <div className="mt-4 pt-4 border-t border-[#2D3B52]">
-                          <h5 className="text-sm font-semibold text-slate-300 mb-3">Étalonnage sensibilité</h5>
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <h5 className="text-sm font-semibold text-slate-700 mb-3">Étalonnage sensibilité</h5>
                           <div className="grid grid-cols-3 gap-4 mb-3">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Gaz</label>
+                              <label className="block text-xs text-slate-600 mb-1">Gaz</label>
                               <input
                                 type="text"
                                 value={gaz.etalonnage_gaz}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'etalonnage_gaz', e.target.value)}
                                 placeholder="Ex: CH4"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Valeur avant réglage</label>
+                              <label className="block text-xs text-slate-600 mb-1">Valeur avant réglage</label>
                               <input
                                 type="text"
                                 value={gaz.etalonnage_valeur_avant_reglage}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'etalonnage_valeur_avant_reglage', e.target.value)}
                                 placeholder="50.0"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Valeur après réglage</label>
+                              <label className="block text-xs text-slate-600 mb-1">Valeur après réglage</label>
                               <input
                                 type="text"
                                 value={gaz.etalonnage_valeur_apres_reglage}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'etalonnage_valeur_apres_reglage', e.target.value)}
                                 placeholder="50.0"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                           </div>
                           <div className="grid grid-cols-3 gap-4">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Unité</label>
+                              <label className="block text-xs text-slate-600 mb-1">Unité</label>
                               <select
                                 value={gaz.etalonnage_unite}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'etalonnage_unite', e.target.value)}
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               >
                                 <option value="%LIE">%LIE</option>
                                 <option value="ppm">ppm</option>
@@ -1070,21 +1070,21 @@ export default function InterventionPortableEditPage() {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Coefficient</label>
+                              <label className="block text-xs text-slate-600 mb-1">Coefficient</label>
                               <input
                                 type="text"
                                 value={gaz.etalonnage_coefficient}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'etalonnage_coefficient', e.target.value)}
                                 placeholder="1.00"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Statut</label>
+                              <label className="block text-xs text-slate-600 mb-1">Statut</label>
                               <select
                                 value={gaz.etalonnage_statut}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'etalonnage_statut', e.target.value)}
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               >
                                 <option value="OK">OK</option>
                                 <option value="Dérive acceptable">Dérive acceptable</option>
@@ -1095,57 +1095,57 @@ export default function InterventionPortableEditPage() {
                           </div>
                         </div>
 
-                        <div className="mt-4 pt-4 border-t border-[#2D3B52]">
-                          <h5 className="text-sm font-semibold text-slate-300 mb-3">Seuils d'alarme</h5>
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <h5 className="text-sm font-semibold text-slate-700 mb-3">Seuils d'alarme</h5>
                           <div className="grid grid-cols-5 gap-4">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Seuil 1</label>
+                              <label className="block text-xs text-slate-600 mb-1">Seuil 1</label>
                               <input
                                 type="text"
                                 value={gaz.seuil_1}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'seuil_1', e.target.value)}
                                 placeholder="Ex: 10 ppm"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Seuil 2</label>
+                              <label className="block text-xs text-slate-600 mb-1">Seuil 2</label>
                               <input
                                 type="text"
                                 value={gaz.seuil_2}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'seuil_2', e.target.value)}
                                 placeholder="Ex: 20 ppm"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">Seuil 3</label>
+                              <label className="block text-xs text-slate-600 mb-1">Seuil 3</label>
                               <input
                                 type="text"
                                 value={gaz.seuil_3}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'seuil_3', e.target.value)}
                                 placeholder="Ex: 50 ppm"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">VME</label>
+                              <label className="block text-xs text-slate-600 mb-1">VME</label>
                               <input
                                 type="text"
                                 value={gaz.vme}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'vme', e.target.value)}
                                 placeholder="Ex: 100 ppm"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-1">VLE</label>
+                              <label className="block text-xs text-slate-600 mb-1">VLE</label>
                               <input
                                 type="text"
                                 value={gaz.vle}
                                 onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'vle', e.target.value)}
                                 placeholder="Ex: 200 ppm"
-                                className="w-full px-3 py-2 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100 text-sm"
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-slate-800 text-sm"
                               />
                             </div>
                           </div>
@@ -1156,13 +1156,13 @@ export default function InterventionPortableEditPage() {
                 )}
 
                 <div className="mt-6">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Pièces remplacées</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Pièces remplacées</label>
                   <textarea
                     value={portables[currentPortableIndex].pieces_remplacees}
                     onChange={(e) => updatePortable(currentPortableIndex, 'pieces_remplacees', e.target.value)}
                     placeholder="Cellule O2, batterie..."
                     rows={3}
-                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                   />
                 </div>
               </Card>
@@ -1180,41 +1180,41 @@ export default function InterventionPortableEditPage() {
 
           {currentSection === 'conclusion' && (
             <Card variant="glass" padding="lg">
-              <h2 className="text-2xl font-bold text-slate-100 mb-6">Conclusion</h2>
+              <h2 className="text-2xl font-bold text-slate-800 mb-6">Conclusion</h2>
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Observations générales</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Observations générales</label>
                   <textarea
                     value={observationsGenerales}
                     onChange={(e) => setObservationsGenerales(e.target.value)}
                     placeholder="Remarques générales sur l'intervention..."
                     rows={4}
-                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Conclusion finale</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Conclusion finale</label>
                   <textarea
                     value={conclusion}
                     onChange={(e) => setConclusion(e.target.value)}
                     placeholder="Conclusion de l'intervention..."
                     rows={4}
-                    className="w-full px-4 py-3 bg-[#141B2D] border border-[#2D3B52] rounded-lg text-slate-100"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Photos de conclusion</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Photos de conclusion</label>
 
                   {existingPhotos.length > 0 && (
                     <div className="mb-4">
-                      <p className="text-sm text-slate-400 mb-2">Photos existantes: {existingPhotos.length}</p>
+                      <p className="text-sm text-slate-600 mb-2">Photos existantes: {existingPhotos.length}</p>
                     </div>
                   )}
 
-                  <div className="border-2 border-dashed border-[#2D3B52] rounded-lg p-6 text-center bg-[#141B2D]">
+                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center bg-white">
                     <input
                       type="file"
                       accept="image/*"
@@ -1234,11 +1234,11 @@ export default function InterventionPortableEditPage() {
                       📷 Cliquer pour ajouter des photos
                     </label>
                     {photosConclusion.length > 0 && (
-                      <div className="mt-4 text-slate-300">
+                      <div className="mt-4 text-slate-700">
                         {photosConclusion.length} photo(s) sélectionnée(s)
                         <div className="mt-2 flex flex-wrap gap-2 justify-center">
                           {photosConclusion.map((photo, index) => (
-                            <div key={index} className="text-sm text-slate-400">
+                            <div key={index} className="text-sm text-slate-600">
                               {photo.name}
                             </div>
                           ))}
@@ -1249,23 +1249,23 @@ export default function InterventionPortableEditPage() {
                 </div>
 
                 <Card variant="elevated" padding="md">
-                  <h3 className="font-semibold text-slate-100 mb-3">Récapitulatif</h3>
+                  <h3 className="font-semibold text-slate-800 mb-3">Récapitulatif</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Client:</span>
-                      <span className="text-slate-100">{selectedClient?.nom}</span>
+                      <span className="text-slate-600">Client:</span>
+                      <span className="text-slate-800">{selectedClient?.nom}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Site:</span>
-                      <span className="text-slate-100">{selectedSite?.nom}</span>
+                      <span className="text-slate-600">Site:</span>
+                      <span className="text-slate-800">{selectedSite?.nom}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Date:</span>
-                      <span className="text-slate-100">{dateIntervention}</span>
+                      <span className="text-slate-600">Date:</span>
+                      <span className="text-slate-800">{dateIntervention}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Détecteurs portables:</span>
-                      <span className="text-slate-100">{portables.length}</span>
+                      <span className="text-slate-600">Détecteurs portables:</span>
+                      <span className="text-slate-800">{portables.length}</span>
                     </div>
                   </div>
                 </Card>
@@ -1288,7 +1288,7 @@ export default function InterventionPortableEditPage() {
                 </button>
                 <button
                   onClick={() => router.push(`/intervention-portable/${params.id}`)}
-                  className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg font-medium text-white"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg font-medium text-slate-800"
                 >
                   Annuler
                 </button>
