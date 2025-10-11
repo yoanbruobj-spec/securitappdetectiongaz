@@ -35,32 +35,48 @@ export default function ArticleDetailPage() {
 
   // Générer QR code après chargement de l'article
   useEffect(() => {
-    if (article && qrCanvasRef.current) {
-      // Utiliser le qr_code existant ou générer un code à partir de l'ID
-      const qrData = article.qr_code || `SECURIT-ART-${article.id}`
+    async function generateQR() {
+      if (!article || !qrCanvasRef.current) {
+        console.log('QR: Conditions non remplies', { article: !!article, canvas: !!qrCanvasRef.current })
+        return
+      }
 
-      QRCodeLib.toCanvas(qrCanvasRef.current, qrData, {
-        width: 300,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
+      try {
+        // Utiliser le qr_code existant ou générer un code à partir de l'ID
+        const qrData = article.qr_code || `SECURIT-ART-${article.id}`
+        console.log('Génération QR code pour:', qrData)
+
+        await QRCodeLib.toCanvas(qrCanvasRef.current, qrData, {
+          width: 300,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          }
+        })
+
+        console.log('✅ QR code généré avec succès')
+
+        // Si l'article n'avait pas de QR code, le sauvegarder
+        if (!article.qr_code) {
+          console.log('Sauvegarde du QR code en base...')
+          const { error } = await supabase
+            .from('stock_articles')
+            .update({ qr_code: qrData })
+            .eq('id', article.id)
+
+          if (error) {
+            console.error('❌ Erreur sauvegarde QR:', error)
+          } else {
+            console.log('✅ QR code sauvegardé en base:', qrData)
+          }
         }
-      }).catch((err) => {
-        console.error('Erreur génération QR:', err)
-      })
-
-      // Si l'article n'avait pas de QR code, le sauvegarder
-      if (!article.qr_code) {
-        supabase
-          .from('stock_articles')
-          .update({ qr_code: qrData })
-          .eq('id', article.id)
-          .then(() => {
-            console.log('QR code généré et sauvegardé:', qrData)
-          })
+      } catch (err) {
+        console.error('❌ Erreur génération QR:', err)
       }
     }
+
+    generateQR()
   }, [article])
 
   async function checkAuth() {
