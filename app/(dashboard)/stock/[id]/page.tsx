@@ -183,14 +183,20 @@ export default function ArticleDetailPage() {
           </div>
           <div className="flex gap-2">
             <Button
-              onClick={() => setShowMouvementModal(true); setMouvementType('sortie')}
+              onClick={() => {
+                setShowMouvementModal(true)
+                setMouvementType('sortie')
+              }}
               variant="secondary"
               icon={<TrendingDown className="w-5 h-5" />}
             >
               Sortie
             </Button>
             <Button
-              onClick={() => setShowMouvementModal(true); setMouvementType('entree')}
+              onClick={() => {
+                setShowMouvementModal(true)
+                setMouvementType('entree')
+              }}
               variant="primary"
               icon={<TrendingUp className="w-5 h-5" />}
             >

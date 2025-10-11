@@ -21,7 +21,8 @@
       "Bash(git remote add:*)",
       "Bash(git push:*)",
       "Bash(git remote remove:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(npm run build)"
     ],
     "deny": [],
     "ask": []
