@@ -43,6 +43,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: authError.message }, { status: 400 })
     }
 
+    // Attendre que le trigger crée le profil
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    // Mettre à jour le profil pour s'assurer que toutes les données sont correctes
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        full_name,
+        role,
+        phone
+      })
+      .eq('id', authData.user.id)
+
+    if (profileError) {
+      console.error('Profile update error:', profileError)
+    }
+
     return NextResponse.json({ success: true, user: authData.user })
   } catch (error: any) {
     console.error('Server error:', error)
