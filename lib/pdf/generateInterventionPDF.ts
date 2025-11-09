@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { logoBase64 } from '../utils/logoBase64'
+import { logoBlancBase64 } from '../utils/logoBlancBase64'
 
 interface InterventionData {
   intervention: any
@@ -32,32 +33,27 @@ export async function generateInterventionPDF(data: InterventionData) {
   // PAGE DE GARDE PROFESSIONNELLE
   // ============================================
 
-  // Bandeau supérieur blanc pour le logo
-  doc.setFillColor(255, 255, 255) // Blanc pour le logo
-  doc.rect(0, 0, pageWidth, 50, 'F')
+  // Bandeau supérieur rouge pour le logo
+  doc.setFillColor(220, 38, 38) // Rouge SÉCUR'IT
+  doc.rect(0, 0, pageWidth, 45, 'F')
 
-  // Logo de l'entreprise
+  // Logo de l'entreprise (version blanche)
   try {
     const logoWidth = 80
     const logoHeight = 20
     const logoX = (pageWidth - logoWidth) / 2
-    const logoY = 15
-    doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight)
+    const logoY = 13
+    doc.addImage(logoBlancBase64, 'PNG', logoX, logoY, logoWidth, logoHeight)
   } catch (error) {
     // Fallback au texte si le logo ne charge pas
-    doc.setTextColor(220, 38, 38)
+    doc.setTextColor(255, 255, 255)
     doc.setFontSize(32)
     doc.setFont('helvetica', 'bold')
     doc.text('SECUR\'IT', pageWidth / 2, 25, { align: 'center' })
   }
 
-  doc.setFontSize(11)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(100, 100, 100)
-  doc.text('Detection Gaz - Expert en securite', pageWidth / 2, 42, { align: 'center' })
-
   // Coordonnées de l'entreprise
-  yPos = 58
+  yPos = 53
   doc.setFillColor(245, 245, 245)
   doc.rect(0, yPos, pageWidth, 28, 'F')
   
