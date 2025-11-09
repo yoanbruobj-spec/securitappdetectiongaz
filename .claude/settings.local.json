@@ -22,7 +22,14 @@
       "Bash(git push:*)",
       "Bash(git remote remove:*)",
       "Bash(git config:*)",
-      "Bash(npm run build)"
+      "Bash(npm run build)",
+      "Bash(npm view:*)",
+      "Bash(nul)",
+      "Bash(del nul)",
+      "Bash(rm:*)",
+      "Bash(cp:*)",
+      "Bash(node -e:*)",
+      "Bash(tail:*)"
     ],
     "deny": [],
     "ask": []

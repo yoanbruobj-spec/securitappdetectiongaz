@@ -109,22 +109,19 @@ export default function InterventionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="space-y-4 w-full max-w-6xl px-8">
-          {[1, 2, 3].map(i => (
-            <Card key={i} variant="glass" padding="lg">
-              <Skeleton height="100px" />
-            </Card>
-          ))}
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Chargement...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
-      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <div className="px-8 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex flex-col">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm sticky top-0 z-50">
+        <div className="px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
               onClick={() => router.push('/admin')}
@@ -135,10 +132,15 @@ export default function InterventionsPage() {
               Retour
             </Button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-600 to-green-500 shadow-lg shadow-green-500/20 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/20 flex items-center justify-center">
+                <FileText className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-slate-800">Mes rapports</h1>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
+                  Mes rapports
+                </h1>
+                <p className="text-sm text-gray-600">Gérez toutes vos interventions</p>
+              </div>
             </div>
           </div>
           <Button
@@ -155,7 +157,7 @@ export default function InterventionsPage() {
         <div className="max-w-6xl mx-auto px-8 py-8">
           <div className="mb-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-800">
+              <h2 className="text-xl font-bold text-gray-900">
                 {filter === 'all' ? 'Toutes les interventions' :
                  filter === 'en_cours' ? 'Interventions en cours' :
                  'Interventions terminées'}
@@ -188,13 +190,13 @@ export default function InterventionsPage() {
 
           {interventions.length === 0 ? (
             <div className="flex items-center justify-center min-h-[500px]">
-              <Card variant="glass" padding="lg" className="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 max-w-3xl w-full">
-                <div className="text-center py-8">
-                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center">
+              <Card variant="glass" padding="lg" className="bg-white shadow-xl ring-1 ring-gray-200 max-w-3xl w-full">
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg">
                     <FileText className="w-10 h-10 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-3">Aucune intervention trouvée</h3>
-                  <p className="text-slate-600 mb-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Aucune intervention trouvée</h3>
+                  <p className="text-gray-600 mb-8">
                     {filter !== 'all'
                       ? `Aucune intervention ${filter === 'en_cours' ? 'en cours' : 'terminée'} pour le moment.`
                       : 'Commencez par créer votre première intervention.'
@@ -221,7 +223,7 @@ export default function InterventionsPage() {
                   transition={{ delay: index * 0.05 }}
                 >
                   <div
-                    className="cursor-pointer group bg-gray-50 hover:bg-white border border-gray-200 rounded-lg p-5 hover:shadow-md transition-all duration-200"
+                    className="cursor-pointer group bg-gradient-to-br from-gray-50 to-white hover:from-white hover:to-gray-50 border border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-emerald-200 transition-all duration-200"
                     onClick={() => {
                       if (intervention.type_rapport === 'portable') {
                         router.push(`/intervention-portable/${intervention.id}`)
@@ -233,7 +235,7 @@ export default function InterventionsPage() {
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold text-slate-800 group-hover:text-blue-600 transition">
+                          <p className="font-semibold text-gray-900 group-hover:text-emerald-600 transition">
                             {intervention.sites?.clients?.nom}
                           </p>
                           <Badge
@@ -243,7 +245,13 @@ export default function InterventionsPage() {
                             {intervention.type_rapport === 'portable' ? 'Portable' : 'Fixe'}
                           </Badge>
                         </div>
-                        <p className="text-sm text-slate-600">{intervention.sites?.nom}</p>
+                        <p className="text-sm text-gray-600 flex items-center gap-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          {intervention.sites?.nom}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <Badge
@@ -285,7 +293,7 @@ export default function InterventionsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6 text-sm text-slate-500">
+                    <div className="flex items-center gap-6 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />

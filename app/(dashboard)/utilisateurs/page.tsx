@@ -153,14 +153,14 @@ export default function UtilisateursPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">
         <div className="text-slate-800">Chargement...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 text-slate-800">
       <nav className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -178,7 +178,7 @@ export default function UtilisateursPage() {
               setFormData({ email: '', password: '', full_name: '', role: 'technicien', phone: '' })
               setShowAddModal(true)
             }}
-            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg"
+            className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white rounded-lg"
           >
             + Nouvel utilisateur
           </button>
@@ -313,7 +313,7 @@ export default function UtilisateursPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white rounded-lg"
                 >
                   {editingUser ? 'Modifier' : 'Créer'}
                 </button>

@@ -431,18 +431,18 @@ export default function PlanningPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 font-medium">Chargement du planning...</p>
+          <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Chargement du planning...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex flex-col">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
@@ -454,14 +454,14 @@ export default function PlanningPage() {
               Retour
             </Button>
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 shadow-md flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/20 flex items-center justify-center">
                 <CalendarIcon className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-800">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
                   {profile?.role === 'admin' ? 'Gestion des plannings' : 'Mon planning'}
                 </h1>
-                <p className="text-sm text-slate-500">Organisez et suivez vos interventions</p>
+                <p className="text-sm text-gray-600">Organisez et suivez vos interventions</p>
               </div>
             </div>
           </div>
@@ -477,7 +477,7 @@ export default function PlanningPage() {
 
       <main className="flex-1 overflow-y-auto px-8 py-8">
         {profile?.role === 'admin' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="bg-white rounded-xl shadow-lg ring-1 ring-gray-200 p-4 mb-6">
             <div className="flex gap-4 items-center">
               <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
                 <button
@@ -487,7 +487,7 @@ export default function PlanningPage() {
                   }}
                   className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                     viewMode === 'global'
-                    ? 'bg-white text-blue-600 shadow-sm'
+                    ? 'bg-white text-emerald-600 shadow-sm'
                     : 'text-slate-600 hover:text-slate-800'
                   }`}
                 >
@@ -497,7 +497,7 @@ export default function PlanningPage() {
                   onClick={() => setViewMode('par_technicien')}
                   className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
                     viewMode === 'par_technicien'
-                    ? 'bg-white text-blue-600 shadow-sm'
+                    ? 'bg-white text-emerald-600 shadow-sm'
                     : 'text-slate-600 hover:text-slate-800'
                   }`}
                 >
@@ -510,7 +510,7 @@ export default function PlanningPage() {
                 <select
                   value={selectedTechnicienFilter}
                   onChange={(e) => setSelectedTechnicienFilter(e.target.value)}
-                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 font-medium"
+                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-medium"
                 >
                   <option value="">Tous les techniciens</option>
                   {techniciens.map(tech => (
@@ -551,8 +551,8 @@ export default function PlanningPage() {
           </Button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-          <div className="grid grid-cols-7 bg-slate-800 text-white border-b border-slate-700">
+        <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-200 overflow-hidden">
+          <div className="grid grid-cols-7 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white">
             {dayNames.map(day => (
               <div key={day} className="px-2 py-4 text-center text-sm font-semibold">
                 {day}
@@ -588,11 +588,11 @@ export default function PlanningPage() {
                       handleDateChange(draggedPlanning.id, newDate)
                     }
                   }}
-                  className={`min-h-[140px] p-3 border border-gray-300 ${!date ? 'bg-gray-200' : 'bg-white hover:bg-gray-50 transition-colors'} ${isToday ? 'ring-2 ring-inset ring-blue-500 bg-blue-100' : ''}`}
+                  className={`min-h-[140px] p-3 border border-gray-300 ${!date ? 'bg-gray-200' : 'bg-white hover:bg-gray-50 transition-colors'} ${isToday ? 'ring-2 ring-inset ring-emerald-500 bg-emerald-50' : ''}`}
                 >
                   {date && (
                     <>
-                      <div className={`text-sm font-bold mb-2 ${isToday ? 'text-blue-600' : 'text-slate-700'}`}>
+                      <div className={`text-sm font-bold mb-2 ${isToday ? 'text-emerald-600' : 'text-slate-700'}`}>
                         {date.getDate()}
                       </div>
                       <div className="space-y-2">
@@ -665,7 +665,7 @@ export default function PlanningPage() {
                 />
               </div>
 
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 mb-6 border border-blue-200">
+              <div className="bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-xl p-5 mb-6 border border-emerald-200">
                 <div className="font-bold text-lg mb-2 text-slate-800">{selectedPlanning.sites?.clients?.nom}</div>
                 <div className="text-sm text-slate-600 mb-1">{selectedPlanning.sites?.nom}</div>
                 {selectedPlanning.sites?.adresse && (
@@ -683,7 +683,7 @@ export default function PlanningPage() {
                   onChange={(e) => {
                     setFormData({ ...formData, client_id: e.target.value, site_id: '' })
                   }}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 >
                   <option value="">Sélectionner un client</option>
                   {clients.map(client => (
@@ -697,7 +697,7 @@ export default function PlanningPage() {
                 <select
                   value={formData.site_id}
                   onChange={(e) => setFormData({ ...formData, site_id: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   required
                 >
                   <option value="">Sélectionner un site</option>
@@ -714,7 +714,7 @@ export default function PlanningPage() {
                     type="date"
                     value={formData.date_intervention}
                     onChange={(e) => setFormData({ ...formData, date_intervention: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                     required
                   />
                 </div>
@@ -723,7 +723,7 @@ export default function PlanningPage() {
                   <select
                     value={formData.statut}
                     onChange={(e) => setFormData({ ...formData, statut: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   >
                     <option value="planifiee">Planifiée</option>
                     <option value="en_cours">En cours</option>
@@ -737,7 +737,7 @@ export default function PlanningPage() {
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 >
                   <option value="verification_periodique">Vérification périodique</option>
                   <option value="maintenance_preventive">Maintenance préventive</option>
@@ -755,7 +755,7 @@ export default function PlanningPage() {
                     type="time"
                     value={formData.heure_debut}
                     onChange={(e) => setFormData({ ...formData, heure_debut: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   />
                 </div>
                 <div>
@@ -764,7 +764,7 @@ export default function PlanningPage() {
                     type="time"
                     value={formData.heure_fin}
                     onChange={(e) => setFormData({ ...formData, heure_fin: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   />
                 </div>
               </div>
@@ -776,7 +776,7 @@ export default function PlanningPage() {
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Coordonnées, instructions, remarques..."
                   rows={3}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-slate-400"
                 />
               </div>
 
@@ -787,7 +787,7 @@ export default function PlanningPage() {
                     {techniciens.map(tech => (
                       <label
                         key={tech.id}
-                        className="flex items-center gap-3 p-3 bg-white hover:bg-blue-50 border border-slate-200 rounded-lg cursor-pointer transition-colors"
+                        className="flex items-center gap-3 p-3 bg-white hover:bg-emerald-50 border border-slate-200 rounded-lg cursor-pointer transition-colors"
                       >
                         <input
                           type="checkbox"
@@ -805,7 +805,7 @@ export default function PlanningPage() {
                               })
                             }
                           }}
-                          className="w-4 h-4 rounded border-[#2D3B52] text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+                          className="w-4 h-4 rounded border-[#2D3B52] text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
                         />
                         <span className="text-slate-700 font-medium">{tech.full_name}</span>
                         <span className="text-xs text-slate-500">({tech.role})</span>
@@ -880,7 +880,7 @@ export default function PlanningPage() {
                   onChange={(e) => {
                     setFormData({ ...formData, client_id: e.target.value, site_id: '' })
                   }}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   required
                 >
                   <option value="">Sélectionner un client</option>
@@ -895,7 +895,7 @@ export default function PlanningPage() {
                 <select
                   value={formData.site_id}
                   onChange={(e) => setFormData({ ...formData, site_id: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   required
                   disabled={!formData.client_id}
                 >
@@ -913,7 +913,7 @@ export default function PlanningPage() {
                     type="date"
                     value={formData.date_intervention}
                     onChange={(e) => setFormData({ ...formData, date_intervention: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                     required
                   />
                 </div>
@@ -922,7 +922,7 @@ export default function PlanningPage() {
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   >
                     <option value="verification_periodique">Vérification périodique</option>
                     <option value="maintenance_preventive">Maintenance préventive</option>
@@ -941,7 +941,7 @@ export default function PlanningPage() {
                     type="time"
                     value={formData.heure_debut}
                     onChange={(e) => setFormData({ ...formData, heure_debut: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   />
                 </div>
                 <div>
@@ -950,7 +950,7 @@ export default function PlanningPage() {
                     type="time"
                     value={formData.heure_fin}
                     onChange={(e) => setFormData({ ...formData, heure_fin: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   />
                 </div>
               </div>
@@ -962,7 +962,7 @@ export default function PlanningPage() {
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Coordonnées, instructions, remarques..."
                   rows={3}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-slate-400"
                 />
               </div>
 
@@ -972,7 +972,7 @@ export default function PlanningPage() {
                   {techniciens.map(tech => (
                     <label
                       key={tech.id}
-                      className="flex items-center gap-3 p-3 bg-white hover:bg-blue-50 border border-slate-200 rounded-lg cursor-pointer transition-colors"
+                      className="flex items-center gap-3 p-3 bg-white hover:bg-emerald-50 border border-slate-200 rounded-lg cursor-pointer transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -990,7 +990,7 @@ export default function PlanningPage() {
                             })
                           }
                         }}
-                        className="w-4 h-4 rounded border-slate-200 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+                        className="w-4 h-4 rounded border-slate-200 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
                       />
                       <span className="text-slate-700 font-medium">{tech.full_name}</span>
                       <span className="text-xs text-slate-500">({tech.role})</span>

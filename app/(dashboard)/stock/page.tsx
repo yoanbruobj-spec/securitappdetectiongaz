@@ -116,7 +116,7 @@ export default function StockInventairePage() {
               Retour
             </Button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-purple-500 shadow-lg shadow-purple-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-600 to-cyan-600 shadow-lg shadow-purple-500/20 flex items-center justify-center">
                 <Package className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -218,9 +218,9 @@ export default function StockInventairePage() {
         {/* Articles par catégorie */}
         {Object.keys(articlesByCategory).length === 0 ? (
           <div className="flex items-center justify-center min-h-[500px]">
-            <Card variant="glass" padding="lg" className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 max-w-5xl w-full">
+            <Card variant="glass" padding="lg" className="bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-200 max-w-5xl w-full">
               <div className="text-center py-8 px-4">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
                   <Package className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-slate-800 mb-3">Aucun article en stock</h3>
@@ -231,7 +231,7 @@ export default function StockInventairePage() {
                 {userRole === 'admin' ? (
                   <div className="w-full">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 max-w-4xl mx-auto">
-                      <div className="bg-white rounded-lg p-6 border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="bg-white rounded-lg p-6 border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
                         <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center mb-4 mx-auto">
                           <span className="text-2xl font-bold text-purple-600">1</span>
                         </div>
