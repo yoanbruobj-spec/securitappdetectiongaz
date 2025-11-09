@@ -13,6 +13,10 @@ import {
   GAZ_ETALON_ZERO,
   UNITES_MESURE,
 } from '@/lib/data/equipements'
+import { StepIndicator } from '@/components/rapport/StepIndicator'
+import { FormSection } from '@/components/rapport/FormSection'
+import { FormField } from '@/components/rapport/FormField'
+import { ValidationBadge } from '@/components/rapport/ValidationBadge'
 
 type Section = 'info' | 'client' | 'centrale' | 'conclusion'
 
@@ -663,127 +667,163 @@ export default function InterventionPage() {
 
   const currentCentrale = centrales[currentCentraleIndex]
 
+  // Définir les étapes pour le Step Indicator
+  const steps = [
+    { id: 'info', label: 'Informations' },
+    { id: 'client', label: 'Client & Site' },
+    { id: 'centrale', label: `Centrale${centrales.length > 1 ? 's' : ''} (${centrales.length})` },
+    { id: 'conclusion', label: 'Conclusion' },
+  ]
+
+  const handleStepClick = (stepId: string) => {
+    if (stepId === 'centrale' && currentSection !== 'centrale') {
+      setCurrentCentraleIndex(0)
+    }
+    setCurrentSection(stepId as Section)
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        <aside className="w-64 min-h-screen bg-white border-r border-gray-300 p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-slate-800 mb-4">Générer un rapport</h2>
-          {planningInterventionId && (
-            <div className="mb-4 p-2 bg-green-100 border border-green-300 rounded text-xs text-green-700">
-              📅 Lié au planning
-            </div>
-          )}
-          <div className="mb-8"></div>
-          <nav className="space-y-2">
-            <button
-              onClick={() => setCurrentSection('info')}
-              className={`w-full text-left px-4 py-3 rounded-lg transition font-medium ${
-                currentSection === 'info' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-gray-100'
-              }`}
-            >
-              Info intervention
-            </button>
-            <button
-              onClick={() => setCurrentSection('client')}
-              className={`w-full text-left px-4 py-3 rounded-lg transition font-medium ${
-                currentSection === 'client' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-gray-100'
-              }`}
-            >
-              Client & Site
-            </button>
-
-            {centrales.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setCurrentSection('centrale')
-                  setCurrentCentraleIndex(index)
-                }}
-                className={`w-full text-left px-4 py-3 rounded-lg transition font-medium ${
-                  currentSection === 'centrale' && currentCentraleIndex === index
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-700 hover:bg-gray-100'
-                }`}
-              >
-                Centrale {index + 1}
-              </button>
-            ))}
-
-            <button
-              onClick={addCentrale}
-              className="w-full text-left px-4 py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white transition font-medium"
-            >
-              + Ajouter centrale
-            </button>
-
-            <button
-              onClick={() => setCurrentSection('conclusion')}
-              className={`w-full text-left px-4 py-3 rounded-lg transition font-medium ${
-                currentSection === 'conclusion' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-gray-100'
-              }`}
-            >
-              Conclusion finale
-            </button>
-          </nav>
-          <div className="mt-8 space-y-3">
-            <button
-              onClick={handleSave}
-              disabled={loading}
-              className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium disabled:opacity-50 shadow-sm"
-            >
-              {loading ? 'Enregistrement...' : 'Enregistrer'}
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header avec titre et infos */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => router.push('/admin')}
-              className="w-full px-4 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-slate-700 rounded-lg font-medium"
+              className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition"
             >
-              Annuler
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Retour
             </button>
+            <div className="h-6 w-px bg-gray-300"></div>
+            <h1 className="text-2xl font-bold text-slate-800">Nouveau Rapport - Détection Fixe</h1>
           </div>
-        </aside>
+          {planningInterventionId && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+              </svg>
+              Lié au planning
+            </div>
+          )}
+        </div>
+      </div>
 
-        <main className="flex-1 p-8 overflow-auto bg-gray-50">
+      {/* Step Indicator */}
+      <StepIndicator steps={steps} currentStep={currentSection} onStepClick={handleStepClick} />
+
+      {/* Contenu principal */}
+      <main className="max-w-7xl mx-auto px-8 py-8">
+        {/* Gestion des centrales */}
+        {currentSection === 'centrale' && (
+          <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {centrales.length > 1 ? (
+                  <>
+                    <span className="text-sm font-medium text-slate-700">Centrale sélectionnée :</span>
+                    <div className="flex gap-2">
+                      {centrales.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentCentraleIndex(index)}
+                          className={`px-4 py-2 rounded-lg font-medium transition ${
+                            currentCentraleIndex === index
+                              ? 'bg-blue-600 text-white shadow-md'
+                              : 'bg-gray-100 text-slate-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Centrale {index + 1}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-medium">Configuration de la centrale</span>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={addCentrale}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition shadow-sm"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+                Ajouter une centrale
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Contenus des sections */}
+        <div className="space-y-6">
           {currentSection === 'info' && (
-            <div className="max-w-4xl mx-auto">
-              <h1 className="text-3xl font-bold text-slate-800 mb-6">Informations intervention</h1>
-              <div className="bg-white border border-gray-300 rounded-lg p-6 space-y-6 shadow-sm">
+            <>
+              <FormSection
+                title="Informations d'intervention"
+                description="Renseignez les informations principales de l'intervention"
+                icon={
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                  </svg>
+                }
+                className="max-w-4xl mx-auto"
+              >
                 <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Date intervention</label>
+                  <FormField label="Date d'intervention" required error={!dateIntervention ? 'Date requise' : ''}>
                     <input
                       type="date"
                       value={dateIntervention}
                       onChange={e => setDateIntervention(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
+                        !dateIntervention
+                          ? 'border-red-300 focus:ring-red-500'
+                          : 'border-gray-300 focus:ring-blue-500'
+                      } text-slate-800`}
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Heure début</label>
+                  </FormField>
+                  <FormField label="Heure de début" required error={!heureDebut ? 'Heure requise' : ''}>
                     <input
                       type="time"
                       value={heureDebut}
                       onChange={e => setHeureDebut(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
+                        !heureDebut
+                          ? 'border-red-300 focus:ring-red-500'
+                          : 'border-gray-300 focus:ring-blue-500'
+                      } text-slate-800`}
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Heure fin</label>
+                  </FormField>
+                  <FormField label="Heure de fin" required error={!heureFin ? 'Heure requise' : ''}>
                     <input
                       type="time"
                       value={heureFin}
                       onChange={e => setHeureFin(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
+                        !heureFin
+                          ? 'border-red-300 focus:ring-red-500'
+                          : 'border-gray-300 focus:ring-blue-500'
+                      } text-slate-800`}
                     />
-                  </div>
+                  </FormField>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Technicien</label>
+                <FormField label="Technicien" required error={!technicien ? 'Technicien requis' : ''}>
                   <select
                     value={technicien}
                     onChange={e => setTechnicien(e.target.value)}
-                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
-                    required
+                    className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
+                      !technicien
+                        ? 'border-red-300 focus:ring-red-500'
+                        : 'border-gray-300 focus:ring-blue-500'
+                    } text-slate-800`}
                   >
                     <option value="">Sélectionner un technicien</option>
                     {availableTechniciens.map(tech => (
@@ -792,13 +832,23 @@ export default function InterventionPage() {
                       </option>
                     ))}
                   </select>
-                </div>
+                </FormField>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Type d'intervention</label>
+                <FormField
+                  label="Type d'intervention"
+                  required
+                  error={typeIntervention.length === 0 ? 'Au moins un type requis' : ''}
+                >
                   <div className="grid grid-cols-2 gap-3">
                     {['Maintenance préventive', 'Maintenance corrective', 'Installation', 'Mise en service', 'Dépannage', 'Autre'].map(type => (
-                      <label key={type} className="flex items-center space-x-2 cursor-pointer">
+                      <label
+                        key={type}
+                        className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition ${
+                          typeIntervention.includes(type)
+                            ? 'bg-blue-50 border-blue-300'
+                            : 'bg-white border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
                         <input
                           type="checkbox"
                           checked={typeIntervention.includes(type)}
@@ -809,92 +859,165 @@ export default function InterventionPage() {
                               setTypeIntervention(typeIntervention.filter(t => t !== type))
                             }
                           }}
-                          className="w-4 h-4 text-blue-600"
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                         />
-                        <span className="text-slate-800">{type}</span>
+                        <span className="text-slate-800 font-medium">{type}</span>
                       </label>
                     ))}
                   </div>
-                </div>
+                </FormField>
+              </FormSection>
+
+              {/* Boutons de navigation */}
+              <div className="max-w-4xl mx-auto flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                <ValidationBadge
+                  isValid={!!(dateIntervention && heureDebut && heureFin && technicien && typeIntervention.length > 0)}
+                  message={
+                    dateIntervention && heureDebut && heureFin && technicien && typeIntervention.length > 0
+                      ? 'Section complète'
+                      : 'Veuillez remplir tous les champs requis'
+                  }
+                />
+                <button
+                  onClick={() => setCurrentSection('client')}
+                  disabled={!(dateIntervention && heureDebut && heureFin && technicien && typeIntervention.length > 0)}
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition shadow-sm"
+                >
+                  Suivant
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
               </div>
-            </div>
+            </>
           )}
 
           {currentSection === 'client' && (
-            <div className="max-w-4xl mx-auto">
-              <h1 className="text-3xl font-bold text-slate-800 mb-6">Client & Site</h1>
-              <div className="bg-white border border-gray-300 rounded-lg p-6 space-y-6 shadow-sm">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Client</label>
+            <>
+              <FormSection
+                title="Client & Site d'intervention"
+                description="Sélectionnez le client et le site concernés par l'intervention"
+                icon={
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                  </svg>
+                }
+                className="max-w-4xl mx-auto"
+              >
+                <FormField label="Client" required error={!clientId ? 'Client requis' : ''}>
                   <select
                     value={clientId}
                     onChange={e => setClientId(e.target.value)}
-                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                    className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
+                      !clientId
+                        ? 'border-red-300 focus:ring-red-500'
+                        : 'border-gray-300 focus:ring-blue-500'
+                    } text-slate-800`}
                   >
                     <option value="">Sélectionner un client</option>
                     {clients.map(client => (
                       <option key={client.id} value={client.id}>{client.nom}</option>
                     ))}
                   </select>
-                </div>
+                </FormField>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Site</label>
+                <FormField
+                  label="Site"
+                  required
+                  error={!siteId ? 'Site requis' : ''}
+                  help={!clientId ? 'Veuillez d\'abord sélectionner un client' : ''}
+                >
                   <select
                     value={siteId}
                     onChange={e => setSiteId(e.target.value)}
                     disabled={!clientId}
-                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 disabled:opacity-50"
+                    className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
+                      !siteId && clientId
+                        ? 'border-red-300 focus:ring-red-500'
+                        : 'border-gray-300 focus:ring-blue-500'
+                    } text-slate-800 disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     <option value="">Sélectionner un site</option>
                     {sites.map(site => (
                       <option key={site.id} value={site.id}>{site.nom} - {site.ville}</option>
                     ))}
                   </select>
-                </div>
+                </FormField>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Local</label>
+                <FormField label="Local" help="Zone ou local spécifique de l'intervention">
                   <input
                     type="text"
                     value={local}
                     onChange={e => setLocal(e.target.value)}
-                    placeholder="Ex: Chaufferie, Local technique..."
-                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                    placeholder="Ex: Chaufferie, Local technique, Atelier..."
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                   />
-                </div>
+                </FormField>
 
                 <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Contact sur site</label>
+                  <FormField label="Contact sur site">
                     <input
                       type="text"
                       value={contactSite}
                       onChange={e => setContactSite(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      placeholder="Nom du contact"
+                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Téléphone</label>
+                  </FormField>
+                  <FormField label="Téléphone">
                     <input
                       type="tel"
                       value={telContact}
                       onChange={e => setTelContact(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      placeholder="06 12 34 56 78"
+                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Email rapport</label>
+                  </FormField>
+                  <FormField label="Email rapport">
                     <input
                       type="email"
                       value={emailRapport}
                       onChange={e => setEmailRapport(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      placeholder="email@exemple.fr"
+                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     />
-                  </div>
+                  </FormField>
+                </div>
+              </FormSection>
+
+              {/* Boutons de navigation */}
+              <div className="max-w-4xl mx-auto flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                <button
+                  onClick={() => setCurrentSection('info')}
+                  className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-slate-700 rounded-lg font-medium transition"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Précédent
+                </button>
+                <div className="flex items-center gap-4">
+                  <ValidationBadge
+                    isValid={!!(clientId && siteId)}
+                    message={
+                      clientId && siteId
+                        ? 'Section complète'
+                        : 'Veuillez sélectionner un client et un site'
+                    }
+                  />
+                  <button
+                    onClick={() => setCurrentSection('centrale')}
+                    disabled={!(clientId && siteId)}
+                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition shadow-sm"
+                  >
+                    Suivant
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
                 </div>
               </div>
-            </div>
+            </>
           )}
 
           {currentSection === 'centrale' && currentCentrale && (
@@ -1848,8 +1971,54 @@ export default function InterventionPage() {
               </div>
             </div>
           )}
-        </main>
-      </div>
+        </div>
+
+        {/* Footer fixe avec boutons d'action */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+          <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
+            <button
+              onClick={() => router.push('/admin')}
+              className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-slate-700 rounded-lg font-medium transition"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Annuler
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-slate-600">
+                {centrales.length} centrale{centrales.length > 1 ? 's' : ''} configurée{centrales.length > 1 ? 's' : ''}
+              </div>
+              <button
+                onClick={handleSave}
+                disabled={loading}
+                className="flex items-center gap-2 px-8 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition shadow-md"
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Enregistrement...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+                    </svg>
+                    Enregistrer le rapport
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Padding en bas pour éviter que le contenu soit masqué par le footer */}
+        <div className="h-24"></div>
+      </main>
     </div>
   )
 }
