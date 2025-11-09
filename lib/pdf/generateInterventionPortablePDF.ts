@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { logoBase64 } from '../utils/logoBase64'
 
 interface PortableInterventionData {
   intervention: any
@@ -20,17 +21,29 @@ export async function generateInterventionPortablePDF(data: PortableIntervention
   const primaryColor: [number, number, number] = [59, 130, 246]
   const darkColor: [number, number, number] = [15, 23, 42]
 
-  doc.setFillColor(220, 38, 38)
+  // Bandeau supérieur blanc pour le logo
+  doc.setFillColor(255, 255, 255)
   doc.rect(0, 0, pageWidth, 50, 'F')
 
-  doc.setTextColor(255, 255, 255)
-  doc.setFontSize(32)
-  doc.setFont('helvetica', 'bold')
-  doc.text('SECUR\'IT', pageWidth / 2, 25, { align: 'center' })
+  // Logo de l'entreprise
+  try {
+    const logoWidth = 80
+    const logoHeight = 20
+    const logoX = (pageWidth - logoWidth) / 2
+    const logoY = 15
+    doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight)
+  } catch (error) {
+    // Fallback au texte si le logo ne charge pas
+    doc.setTextColor(220, 38, 38)
+    doc.setFontSize(32)
+    doc.setFont('helvetica', 'bold')
+    doc.text('SECUR\'IT', pageWidth / 2, 25, { align: 'center' })
+  }
 
   doc.setFontSize(11)
   doc.setFont('helvetica', 'normal')
-  doc.text('Detection Gaz - Expert en securite', pageWidth / 2, 38, { align: 'center' })
+  doc.setTextColor(100, 100, 100)
+  doc.text('Detection Gaz - Expert en securite', pageWidth / 2, 42, { align: 'center' })
 
   yPos = 58
   doc.setFillColor(245, 245, 245)

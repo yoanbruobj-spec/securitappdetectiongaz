@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
 import { Users, Building2, ClipboardList, AlertTriangle, Plus, FileText, Calendar, LogOut, Package } from 'lucide-react'
+import Image from 'next/image'
 import { StatCard } from '@/components/ui/StatCard'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -111,13 +112,15 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 flex">
       <aside className="w-64 bg-slate-100 border-r border-gray-400 flex flex-col">
         <div className="p-6 border-b border-gray-400 bg-white">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 shadow-lg shadow-blue-500/20 flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <h1 className="text-lg font-bold text-slate-800">SÉCUR'IT</h1>
+          <div className="flex items-center justify-center">
+            <Image
+              src="/logo-securit.png"
+              alt="SÉCUR'IT"
+              width={160}
+              height={40}
+              priority
+              className="object-contain"
+            />
           </div>
         </div>
 

@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
-import { Mail, Lock, Shield } from 'lucide-react'
+import { Mail, Lock } from 'lucide-react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
@@ -78,13 +79,17 @@ export default function LoginPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 shadow-2xl shadow-blue-500/30 mb-6">
-            <Shield className="w-10 h-10 text-white" />
+          <div className="inline-flex items-center justify-center mb-6">
+            <Image
+              src="/logo-securit.png"
+              alt="SÉCUR'IT Logo"
+              width={200}
+              height={50}
+              priority
+              className="drop-shadow-2xl"
+            />
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-2">
-            SÉCUR'IT
-          </h1>
-          <p className="text-slate-400">Gestion des interventions de sécurité</p>
+          <p className="text-slate-400 text-lg">Gestion des interventions de sécurité</p>
         </motion.div>
 
         <Card variant="glass" padding="lg">
