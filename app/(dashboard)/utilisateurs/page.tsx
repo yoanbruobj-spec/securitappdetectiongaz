@@ -153,15 +153,15 @@ export default function UtilisateursPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-slate-800">Chargement...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-slate-800">
-      <nav className="bg-white border-b border-gray-300 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-slate-800">
+      <nav className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -186,9 +186,9 @@ export default function UtilisateursPage() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="bg-white border border-gray-300 rounded-lg overflow-hidden shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
           <table className="w-full">
-            <thead className="bg-gray-100">
+            <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase">Nom</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase">Email</th>
@@ -234,8 +234,8 @@ export default function UtilisateursPage() {
       </main>
 
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md border border-gray-300 shadow-lg">
+        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-2xl">
             <h2 className="text-xl font-bold mb-4">
               {editingUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
             </h2>

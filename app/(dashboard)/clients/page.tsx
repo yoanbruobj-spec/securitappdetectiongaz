@@ -207,15 +207,15 @@ export default function ClientsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-slate-800">Chargement...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-slate-800">
-      <nav className="bg-white border-b border-gray-300 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-slate-800">
+      <nav className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -243,7 +243,7 @@ export default function ClientsPage() {
         ) : (
           <div className="space-y-4">
             {clients.map(client => (
-              <div key={client.id} className="bg-white border border-gray-300 rounded-lg shadow-sm">
+              <div key={client.id} className="bg-white border border-gray-200 rounded-lg shadow-sm">
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
                     <button
@@ -286,7 +286,7 @@ export default function ClientsPage() {
                 </div>
 
                 {expandedClients.has(client.id) && sites[client.id] && (
-                  <div className="border-t border-gray-300 p-4 bg-gray-100">
+                  <div className="border-t border-gray-200 p-4 bg-gray-50">
                     <h4 className="font-semibold mb-3">Sites ({sites[client.id]?.length || 0})</h4>
                     {sites[client.id]?.length === 0 ? (
                       <p className="text-slate-600 text-sm">Aucun site</p>
@@ -375,8 +375,8 @@ export default function ClientsPage() {
       </main>
 
       {showClientModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 border border-gray-300 shadow-lg">
+        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl">
             <h2 className="text-xl font-bold mb-4">Nouveau client</h2>
             <div className="space-y-4">
               <div>
@@ -458,8 +458,8 @@ export default function ClientsPage() {
       )}
 
       {showSiteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 border border-gray-300 shadow-lg">
+        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl">
             <h2 className="text-xl font-bold mb-4">Nouveau site</h2>
             <div className="space-y-4">
               <div>

@@ -431,7 +431,7 @@ export default function PlanningPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-600 font-medium">Chargement du planning...</p>
@@ -441,8 +441,8 @@ export default function PlanningPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-300 sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
@@ -477,7 +477,7 @@ export default function PlanningPage() {
 
       <main className="flex-1 overflow-y-auto px-8 py-8">
         {profile?.role === 'admin' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
             <div className="flex gap-4 items-center">
               <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
                 <button
@@ -551,8 +551,8 @@ export default function PlanningPage() {
           </Button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg border-2 border-gray-400 overflow-hidden">
-          <div className="grid grid-cols-7 bg-slate-800 text-white border-b-2 border-slate-700">
+        <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+          <div className="grid grid-cols-7 bg-slate-800 text-white border-b border-slate-700">
             {dayNames.map(day => (
               <div key={day} className="px-2 py-4 text-center text-sm font-semibold">
                 {day}
@@ -972,7 +972,7 @@ export default function PlanningPage() {
                   {techniciens.map(tech => (
                     <label
                       key={tech.id}
-                      className="flex items-center gap-3 p-3 bg-[#141B2D] hover:bg-[#1E2A3F] border border-[#2D3B52] rounded-lg cursor-pointer transition-colors"
+                      className="flex items-center gap-3 p-3 bg-white hover:bg-blue-50 border border-slate-200 rounded-lg cursor-pointer transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -990,10 +990,10 @@ export default function PlanningPage() {
                             })
                           }
                         }}
-                        className="w-4 h-4 rounded border-[#2D3B52] text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+                        className="w-4 h-4 rounded border-slate-200 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
                       />
-                      <span className="text-slate-100">{tech.full_name}</span>
-                      <span className="text-xs text-slate-400">({tech.role})</span>
+                      <span className="text-slate-700 font-medium">{tech.full_name}</span>
+                      <span className="text-xs text-slate-500">({tech.role})</span>
                     </label>
                   ))}
                 </div>
