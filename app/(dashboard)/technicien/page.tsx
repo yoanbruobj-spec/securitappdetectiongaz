@@ -114,7 +114,7 @@ export default function TechnicienDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <aside className="w-64 bg-slate-100 border-r border-gray-400 flex flex-col">
-        <div className="p-6 border-b border-gray-400 bg-gradient-to-r from-red-600 to-red-700">
+        <div className="p-6 border-b border-gray-400 bg-slate-800">
           <div className="flex items-center justify-center">
             <Image
               src="/logo-securit-blanc.png"
