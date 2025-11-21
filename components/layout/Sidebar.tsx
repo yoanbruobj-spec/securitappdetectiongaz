@@ -90,18 +90,18 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
     }
 
     const colors: any = {
-      emerald: 'text-emerald-600 group-hover:text-emerald-700',
-      cyan: 'text-cyan-600 group-hover:text-cyan-700',
-      blue: 'text-blue-600 group-hover:text-blue-700',
-      purple: 'text-purple-600 group-hover:text-purple-700',
-      orange: 'text-orange-600 group-hover:text-orange-700',
-      pink: 'text-pink-600 group-hover:text-pink-700',
+      emerald: 'text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-300',
+      cyan: 'text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-700 dark:group-hover:text-cyan-300',
+      blue: 'text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300',
+      purple: 'text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300',
+      orange: 'text-orange-600 dark:text-orange-400 group-hover:text-orange-700 dark:group-hover:text-orange-300',
+      pink: 'text-pink-600 dark:text-pink-400 group-hover:text-pink-700 dark:group-hover:text-pink-300',
     }
 
     return {
-      bg: 'bg-gray-50 group-hover:bg-gray-100',
-      text: 'text-gray-700 group-hover:text-gray-900',
-      icon: colors[color] || 'text-gray-600'
+      bg: 'bg-gray-50 dark:bg-gray-800/50 group-hover:bg-gray-100 dark:group-hover:bg-gray-700/50',
+      text: 'text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white',
+      icon: colors[color] || 'text-gray-600 dark:text-gray-400'
     }
   }
 
@@ -139,7 +139,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
           x: isMobile ? (mobileOpen ? 0 : -280) : 0
         }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="fixed lg:relative h-screen glass-strong border-r-2 border-emerald-500/20 dark:border-emerald-500/30 flex flex-col shadow-2xl z-50 overflow-hidden relative"
+        className="fixed lg:relative h-screen bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border-r-2 border-emerald-500/20 dark:border-emerald-500/40 flex flex-col shadow-2xl z-50 overflow-hidden relative"
       >
         {/* Gradient mesh background animé */}
         <div className="absolute inset-0 -z-10 opacity-30">
@@ -199,14 +199,17 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
               transition={{ duration: 0.2 }}
               className="flex items-center justify-center"
             >
-              <Image
-                src="/logo-securit-blanc.png"
-                alt="SÉCUR'IT"
-                width={140}
-                height={35}
-                priority
-                className="object-contain"
-              />
+              {/* Logo avec fond adaptatif */}
+              <div className="relative px-4 py-3 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-700 dark:to-gray-800 shadow-xl">
+                <Image
+                  src="/logo-securit-blanc.png"
+                  alt="SÉCUR'IT"
+                  width={140}
+                  height={35}
+                  priority
+                  className="object-contain"
+                />
+              </div>
             </motion.div>
           ) : (
             <motion.div
