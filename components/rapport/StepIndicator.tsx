@@ -18,8 +18,8 @@ export function StepIndicator({ steps, currentStep, onStepClick }: StepIndicator
 
   return (
     <div className="w-full bg-gradient-to-br from-white/80 via-white/60 to-white/80 backdrop-blur-2xl border-b border-gray-200/50 sticky top-0 z-40 shadow-2xl shadow-black/5">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
-        <div className="flex items-center justify-between gap-2 lg:gap-0">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
+        <div className="flex items-center justify-between gap-1 sm:gap-2 lg:gap-0">
           {steps.map((step, index) => {
             const isActive = step.id === currentStep
             const isCompleted = index < currentIndex

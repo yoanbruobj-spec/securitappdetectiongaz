@@ -975,13 +975,13 @@ function InterventionPortablePageContent() {
                           </Button>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                           <div>
                             <label className="block text-sm font-medium text-slate-700 mb-2">Type de gaz</label>
                             <select
                               value={gaz.gaz}
                               onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'gaz', e.target.value)}
-                              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-slate-800"
+                              className="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-white border border-gray-200 rounded-lg text-slate-800"
                             >
                               <option value="">Sélectionner</option>
                               {ALL_GAZ.map(g => (
@@ -997,7 +997,7 @@ function InterventionPortablePageContent() {
                               value={gaz.gamme_mesure}
                               onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'gamme_mesure', e.target.value)}
                               placeholder="Ex: 0-100 ppm"
-                              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-slate-800"
+                              className="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-white border border-gray-200 rounded-lg text-slate-800"
                             />
                           </div>
 
@@ -1007,7 +1007,7 @@ function InterventionPortablePageContent() {
                               type="date"
                               value={gaz.date_remplacement}
                               onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'date_remplacement', e.target.value)}
-                              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-slate-800"
+                              className="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-white border border-gray-200 rounded-lg text-slate-800"
                             />
                           </div>
 
@@ -1017,14 +1017,14 @@ function InterventionPortablePageContent() {
                               type="date"
                               value={gaz.date_prochain_remplacement}
                               onChange={(e) => updateGaz(currentPortableIndex, gazIndex, 'date_prochain_remplacement', e.target.value)}
-                              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-slate-800"
+                              className="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-white border border-gray-200 rounded-lg text-slate-800"
                             />
                           </div>
                         </div>
 
                         <div className="mt-4 pt-4 border-t border-gray-200">
                           <h5 className="text-sm font-semibold text-slate-700 mb-3">Calibration zéro</h5>
-                          <div className="grid grid-cols-4 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                             <div>
                               <label className="block text-xs text-slate-600 mb-1">Gaz zéro</label>
                               <input
@@ -1072,7 +1072,7 @@ function InterventionPortablePageContent() {
 
                         <div className="mt-4 pt-4 border-t border-gray-200">
                           <h5 className="text-sm font-semibold text-slate-700 mb-3">Étalonnage sensibilité</h5>
-                          <div className="grid grid-cols-3 gap-4 mb-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3">
                             <div>
                               <label className="block text-xs text-slate-600 mb-1">Gaz</label>
                               <input
@@ -1104,7 +1104,7 @@ function InterventionPortablePageContent() {
                               />
                             </div>
                           </div>
-                          <div className="grid grid-cols-3 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                             <div>
                               <label className="block text-xs text-slate-600 mb-1">Unité</label>
                               <select
@@ -1145,7 +1145,7 @@ function InterventionPortablePageContent() {
 
                         <div className="mt-4 pt-4 border-t border-gray-200">
                           <h5 className="text-sm font-semibold text-slate-700 mb-3">Seuils d'alarme</h5>
-                          <div className="grid grid-cols-5 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                             <div>
                               <label className="block text-xs text-slate-600 mb-1">Seuil 1</label>
                               <input
