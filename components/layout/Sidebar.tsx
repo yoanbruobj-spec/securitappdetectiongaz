@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -15,8 +15,12 @@ import {
   ChevronRight,
   LogOut,
   Plus,
-  Settings
+  Settings,
+  Menu,
+  X,
+  Search
 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 interface SidebarProps {
   userRole?: 'admin' | 'technicien'
@@ -34,8 +38,26 @@ interface MenuItem {
 
 export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
+
+  // Détecter si on est sur mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024) // lg breakpoint
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Fermer le menu mobile lors du changement de route
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
 
   const menuItems: MenuItem[] = userRole === 'admin' ? [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/admin', color: 'emerald' },
@@ -79,13 +101,48 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
   }
 
   return (
-    <motion.aside
-      animate={{ width: collapsed ? 80 : 280 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="relative h-screen bg-white border-r border-gray-200 flex flex-col shadow-xl"
-    >
+    <>
+      {/* Bouton burger mobile */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg"
+      >
+        <Menu className="w-6 h-6 text-white" />
+      </button>
+
+      {/* Backdrop mobile */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMobileOpen(false)}
+            className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <motion.aside
+        initial={false}
+        animate={{
+          width: collapsed ? 80 : 280,
+          x: isMobile ? (mobileOpen ? 0 : -280) : 0
+        }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        className="fixed lg:relative h-screen bg-white border-r border-gray-200 flex flex-col shadow-xl z-50"
+      >
       {/* Header with Logo */}
-      <div className="h-20 border-b border-gray-200 bg-gradient-to-br from-gray-50 to-white flex items-center justify-center px-4 relative">
+      <div className="h-20 border-b border-gray-300 bg-gray-800 flex items-center justify-center px-4 relative">
+        {/* Bouton fermer mobile */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-600 transition"
+        >
+          <X className="w-5 h-5 text-white" />
+        </button>
+
         <AnimatePresence mode="wait">
           {!collapsed ? (
             <motion.div
@@ -102,7 +159,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
                 width={140}
                 height={35}
                 priority
-                className="object-contain invert"
+                className="object-contain"
               />
             </motion.div>
           ) : (
@@ -119,15 +176,15 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
           )}
         </AnimatePresence>
 
-        {/* Toggle Button */}
+        {/* Toggle Button - masqué sur mobile */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-md hover:shadow-lg hover:scale-110 transition-all z-10"
+          className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-gray-700 border border-gray-600 rounded-full items-center justify-center shadow-md hover:shadow-lg hover:scale-110 transition-all z-10"
         >
           {collapsed ? (
-            <ChevronRight className="w-3 h-3 text-gray-600" />
+            <ChevronRight className="w-3 h-3 text-white" />
           ) : (
-            <ChevronLeft className="w-3 h-3 text-gray-600" />
+            <ChevronLeft className="w-3 h-3 text-white" />
           )}
         </button>
       </div>
@@ -240,5 +297,6 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
         </button>
       </div>
     </motion.aside>
+    </>
   )
 }

@@ -173,13 +173,18 @@ export default function ScannerQRPage() {
         .update({ quantite: quantiteApres })
         .eq('id', scannedArticle.id)
 
-      alert('Mouvement enregistré !')
+      // Mise à jour immédiate de l'interface
+      setScannedArticle({ ...scannedArticle, quantite: quantiteApres })
 
-      // Réinitialiser
-      setScannedArticle(null)
-      setShowMouvementForm(false)
-      setMouvementData({ quantite: '', notes: '' })
-      setError(null)
+      alert('Mouvement enregistré ! Nouvelle quantité : ' + quantiteApres)
+
+      // Réinitialiser après un court délai pour voir le changement
+      setTimeout(() => {
+        setScannedArticle(null)
+        setShowMouvementForm(false)
+        setMouvementData({ quantite: '', notes: '' })
+        setError(null)
+      }, 1000)
     } catch (error: any) {
       console.error('Erreur mouvement:', error)
       alert('Erreur : ' + error.message)

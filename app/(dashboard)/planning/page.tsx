@@ -4,12 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Users, Building2, Clock, FileText, ArrowLeft, X, Save, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Users, Clock, X, Save, Trash2, FileText, List, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
-import { Skeleton } from '@/components/ui/Skeleton'
 
 // Fonction utilitaire pour formater les dates en tenant compte du timezone local
 function formatDateToLocal(date: Date): string {
@@ -37,6 +35,7 @@ export default function PlanningPage() {
   const [draggedPlanning, setDraggedPlanning] = useState<any>(null)
   const [viewMode, setViewMode] = useState<'global' | 'par_technicien'>('global')
   const [selectedTechnicienFilter, setSelectedTechnicienFilter] = useState<string>('')
+  const [mobileView, setMobileView] = useState<'calendar' | 'list'>('calendar')
   const [formData, setFormData] = useState({
     client_id: '',
     site_id: '',
@@ -78,7 +77,12 @@ export default function PlanningPage() {
 
   async function loadData() {
     setLoading(true)
+    await reloadData()
+    setLoading(false)
+  }
 
+  // Recharge les données sans afficher l'écran de chargement
+  async function reloadData() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
@@ -91,8 +95,6 @@ export default function PlanningPage() {
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
     const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
 
-    // Les policies RLS gèrent automatiquement l'accès
-    // Admin voit tout, Technicien voit uniquement ses interventions assignées
     const { data: planningData, error: planningError } = await supabase
       .from('planning_interventions')
       .select(`
@@ -111,8 +113,6 @@ export default function PlanningPage() {
     if (planningError) {
       console.error('Erreur chargement planning:', planningError)
     }
-
-    console.log('Planning data loaded:', planningData?.length, 'interventions')
 
     if (planningData) {
       const planningWithTech = await Promise.all(
@@ -176,8 +176,6 @@ export default function PlanningPage() {
     if (sitesData) {
       setSites(sitesData)
     }
-
-    setLoading(false)
   }
 
   function getDaysInMonth() {
@@ -312,7 +310,7 @@ export default function PlanningPage() {
 
       alert('Intervention planifiée avec succès')
       setShowCreateModal(false)
-      loadData()
+      reloadData()
     } catch (error: any) {
       console.error('Erreur:', error)
       alert('Erreur lors de la création: ' + error.message)
@@ -364,7 +362,7 @@ export default function PlanningPage() {
 
       alert('Modifications enregistrées avec succès')
       setShowEditModal(false)
-      await loadData()
+      await reloadData()
     } catch (error: any) {
       console.error('Erreur:', error)
       alert('Erreur lors de l\'enregistrement: ' + error.message)
@@ -388,7 +386,7 @@ export default function PlanningPage() {
 
       alert('Intervention supprimée avec succès')
       setShowEditModal(false)
-      loadData()
+      reloadData()
     } catch (error: any) {
       console.error('Erreur:', error)
       alert('Erreur lors de la suppression: ' + error.message)
@@ -404,7 +402,7 @@ export default function PlanningPage() {
 
       if (error) throw error
 
-      loadData()
+      reloadData()
     } catch (error: any) {
       console.error('Erreur:', error)
       alert('Erreur lors du déplacement: ' + error.message)
@@ -422,86 +420,95 @@ export default function PlanningPage() {
 
   const getStatusColor = (statut: string) => {
     switch(statut) {
-      case 'planifiee': return 'bg-blue-100 border-blue-500 text-blue-800'
-      case 'en_cours': return 'bg-amber-100 border-amber-500 text-amber-800'
-      case 'annulee': return 'bg-red-100 border-red-500 text-red-800'
-      default: return 'bg-gray-100 border-gray-500 text-gray-800'
+      case 'planifiee': return 'bg-blue-50 border-l-4 border-blue-500 text-blue-700'
+      case 'en_cours': return 'bg-amber-50 border-l-4 border-amber-500 text-amber-700'
+      case 'annulee': return 'bg-red-50 border-l-4 border-red-500 text-red-700'
+      default: return 'bg-gray-50 border-l-4 border-gray-500 text-gray-700'
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Chargement du planning...</p>
+          <div className="w-12 h-12 border-3 border-gray-200 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-gray-500 text-sm">Chargement...</p>
         </div>
       </div>
     )
   }
 
+  // Vue liste pour mobile
+  const allPlanningThisMonth = planningInterventions.filter(p => {
+    if (viewMode === 'par_technicien' && selectedTechnicienFilter) {
+      return p.techniciens.some((t: any) => t.technicien_id === selectedTechnicienFilter)
+    }
+    return true
+  })
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex flex-col">
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="px-8 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => router.push(profile?.role === 'admin' ? '/admin' : '/technicien')}
-              variant="ghost"
-              size="sm"
-              icon={<ArrowLeft className="w-4 h-4" />}
-            >
-              Retour
-            </Button>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header épuré */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="px-4 lg:px-6 py-3 lg:py-4">
+          <div className="flex items-center justify-between mb-3 lg:mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/20 flex items-center justify-center">
-                <CalendarIcon className="w-6 h-6 text-white" />
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition"
+                title="Retour au dashboard"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-600" />
+              </button>
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md">
+                <CalendarIcon className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
-                  {profile?.role === 'admin' ? 'Gestion des plannings' : 'Mon planning'}
+                <h1 className="text-lg lg:text-xl font-bold text-gray-900">
+                  Planning
                 </h1>
-                <p className="text-sm text-gray-600">Organisez et suivez vos interventions</p>
+                <p className="text-xs text-gray-500 hidden lg:block">
+                  {profile?.role === 'admin' ? 'Gérez vos interventions' : 'Vos interventions'}
+                </p>
               </div>
             </div>
+            <Button
+              onClick={openCreateModal}
+              variant="primary"
+              icon={<Plus className="w-4 h-4" />}
+              size="sm"
+              className="shadow-md"
+            >
+              <span className="hidden sm:inline">Nouveau</span>
+            </Button>
           </div>
-          <Button
-            onClick={openCreateModal}
-            variant="primary"
-            icon={<Plus className="w-5 h-5" />}
-          >
-            Nouvelle intervention
-          </Button>
-        </div>
-      </header>
 
-      <main className="flex-1 overflow-y-auto px-8 py-8">
-        {profile?.role === 'admin' && (
-          <div className="bg-white rounded-xl shadow-lg ring-1 ring-gray-200 p-4 mb-6">
-            <div className="flex gap-4 items-center">
-              <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
+          {/* Filtres épurés */}
+          {profile?.role === 'admin' && (
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="flex gap-1 p-0.5 bg-gray-100 rounded-lg flex-1 sm:flex-none">
                 <button
                   onClick={() => {
                     setViewMode('global')
                     setSelectedTechnicienFilter('')
                   }}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                  className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-xs font-medium transition ${
                     viewMode === 'global'
                     ? 'bg-white text-emerald-600 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-800'
+                    : 'text-gray-600'
                   }`}
                 >
-                  Vue globale
+                  Global
                 </button>
                 <button
                   onClick={() => setViewMode('par_technicien')}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
+                  className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center justify-center gap-1.5 ${
                     viewMode === 'par_technicien'
                     ? 'bg-white text-emerald-600 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-800'
+                    : 'text-gray-600'
                   }`}
                 >
-                  <Users className="w-4 h-4" />
+                  <Users className="w-3 h-3" />
                   Par technicien
                 </button>
               </div>
@@ -510,7 +517,7 @@ export default function PlanningPage() {
                 <select
                   value={selectedTechnicienFilter}
                   onChange={(e) => setSelectedTechnicienFilter(e.target.value)}
-                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-medium"
+                  className="flex-1 sm:flex-none px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-emerald-500"
                 >
                   <option value="">Tous les techniciens</option>
                   {techniciens.map(tech => (
@@ -519,275 +526,510 @@ export default function PlanningPage() {
                 </select>
               )}
             </div>
+          )}
+        </div>
+      </header>
+
+      <main className="flex-1 overflow-auto p-4 lg:p-6">
+        {/* Navigation mois épurée */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={previousMonth}
+            className="p-2 hover:bg-white rounded-lg transition"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <h2 className="text-base lg:text-lg font-bold text-gray-900">
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          </h2>
+          <button
+            onClick={nextMonth}
+            className="p-2 hover:bg-white rounded-lg transition"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+
+        {/* Switch vue mobile */}
+        <div className="lg:hidden flex gap-1 p-0.5 bg-gray-100 rounded-lg mb-4">
+          <button
+            onClick={() => setMobileView('calendar')}
+            className={`flex-1 px-3 py-2 rounded-md text-xs font-medium transition flex items-center justify-center gap-1.5 ${
+              mobileView === 'calendar'
+              ? 'bg-white text-emerald-600 shadow-sm'
+              : 'text-gray-600'
+            }`}
+          >
+            <CalendarIcon className="w-4 h-4" />
+            Calendrier
+          </button>
+          <button
+            onClick={() => setMobileView('list')}
+            className={`flex-1 px-3 py-2 rounded-md text-xs font-medium transition flex items-center justify-center gap-1.5 ${
+              mobileView === 'list'
+              ? 'bg-white text-emerald-600 shadow-sm'
+              : 'text-gray-600'
+            }`}
+          >
+            <List className="w-4 h-4" />
+            Liste
+          </button>
+        </div>
+
+        {/* Vue liste mobile */}
+        {mobileView === 'list' && (
+          <div className="lg:hidden space-y-2">
+            {allPlanningThisMonth.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-lg">
+                <CalendarIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p className="text-sm text-gray-500">Aucune intervention ce mois-ci</p>
+              </div>
+            ) : (
+              allPlanningThisMonth.map((planning) => (
+                <motion.div
+                  key={planning.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className={`p-3 rounded-lg cursor-pointer ${getStatusColor(planning.statut)}`}
+                  onClick={() => openEditModal(planning)}
+                >
+                  <div className="font-semibold text-sm mb-1">
+                    {planning.sites?.clients?.nom}
+                  </div>
+                  <div className="text-xs opacity-75 mb-2">
+                    {planning.sites?.nom}
+                  </div>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="flex items-center gap-1">
+                      <CalendarIcon className="w-3 h-3" />
+                      {new Date(planning.date_intervention).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                    </span>
+                    {planning.heure_debut && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {planning.heure_debut}
+                      </span>
+                    )}
+                    {planning.techniciens.length > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        {planning.techniciens.length}
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         )}
 
-        <div className="mb-6 flex items-center justify-between">
-          <Button
-            onClick={previousMonth}
-            variant="secondary"
-            icon={<ChevronLeft className="w-5 h-5" />}
-          >
-            Mois précédent
-          </Button>
-          <div className="text-center">
-            <motion.h2
-              className="text-3xl font-bold text-slate-800"
-              key={currentDate.toISOString()}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-            </motion.h2>
-            <p className="text-sm text-slate-500 mt-1">Cliquez sur une intervention pour la modifier</p>
-          </div>
-          <Button
-            onClick={nextMonth}
-            variant="secondary"
-            icon={<ChevronRight className="w-5 h-5" />}
-            className="flex-row-reverse"
-          >
-            Mois suivant
-          </Button>
-        </div>
+        {/* Vue calendrier - épurée */}
+        {(mobileView === 'calendar' || window.innerWidth >= 1024) && (
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            {/* En-têtes des jours */}
+            <div className="grid grid-cols-7 bg-gray-100 border-b border-gray-200">
+              {dayNames.map(day => (
+                <div key={day} className="px-1 py-2 text-center text-xs font-semibold text-gray-600">
+                  {day}
+                </div>
+              ))}
+            </div>
 
-        <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-200 overflow-hidden">
-          <div className="grid grid-cols-7 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white">
-            {dayNames.map(day => (
-              <div key={day} className="px-2 py-4 text-center text-sm font-semibold">
-                {day}
-              </div>
-            ))}
-          </div>
+            {/* Grille du calendrier */}
+            <div className="grid grid-cols-7 divide-x divide-y divide-gray-200">
+              {getDaysInMonth().map((date, index) => {
+                const dayPlanning = getPlanningForDate(date)
+                const isToday = date && date.toDateString() === new Date().toDateString()
 
-          <div className="grid grid-cols-7">
-            {getDaysInMonth().map((date, index) => {
-              const dayPlanning = getPlanningForDate(date)
-              const isToday = date && date.toDateString() === new Date().toDateString()
-
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: index * 0.01 }}
-                  onDragOver={(e) => {
-                    if (date && draggedPlanning) {
+                return (
+                  <div
+                    key={index}
+                    onDragOver={(e) => {
+                      if (date && draggedPlanning) {
+                        e.preventDefault()
+                        e.currentTarget.classList.add('bg-emerald-50')
+                      }
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove('bg-emerald-50')
+                    }}
+                    onDrop={(e) => {
                       e.preventDefault()
-                      e.currentTarget.classList.add('ring-2', 'ring-green-500')
-                    }
-                  }}
-                  onDragLeave={(e) => {
-                    e.currentTarget.classList.remove('ring-2', 'ring-green-500')
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault()
-                    e.currentTarget.classList.remove('ring-2', 'ring-green-500')
-                    if (date && draggedPlanning) {
-                      const newDate = formatDateToLocal(date)
-                      handleDateChange(draggedPlanning.id, newDate)
-                    }
-                  }}
-                  className={`min-h-[140px] p-3 border border-gray-300 ${!date ? 'bg-gray-200' : 'bg-white hover:bg-gray-50 transition-colors'} ${isToday ? 'ring-2 ring-inset ring-emerald-500 bg-emerald-50' : ''}`}
-                >
-                  {date && (
-                    <>
-                      <div className={`text-sm font-bold mb-2 ${isToday ? 'text-emerald-600' : 'text-slate-700'}`}>
-                        {date.getDate()}
-                      </div>
-                      <div className="space-y-2">
-                        {dayPlanning.map((planning, idx) => (
-                          <motion.div
-                            key={planning.id}
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: idx * 0.05 }}
-                            draggable={true}
-                            onDragStart={(e) => {
-                            setDraggedPlanning(planning)
-                            e.currentTarget.classList.add('opacity-50')
-                          }}
-                            onDragEnd={(e) => {
-                              e.currentTarget.classList.remove('opacity-50')
-                              setDraggedPlanning(null)
-                            }}
-                            className={`border-2 rounded px-2.5 py-2 text-xs cursor-pointer hover:shadow-md hover:scale-105 transition-all ${getStatusColor(planning.statut)}`}
-                            onClick={() => openEditModal(planning)}
-                          >
-                            <div className="font-bold truncate text-slate-800">
-                              {planning.sites?.clients?.nom}
-                            </div>
-                            <div className="text-slate-600 truncate text-[10px] mt-0.5">
-                              {planning.sites?.nom}
-                            </div>
-                            {planning.heure_debut && (
-                              <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-1.5">
-                                <Clock className="w-3 h-3" />
-                                {planning.heure_debut}{planning.heure_fin && ` - ${planning.heure_fin}`}
+                      e.currentTarget.classList.remove('bg-emerald-50')
+                      if (date && draggedPlanning) {
+                        const newDate = formatDateToLocal(date)
+                        handleDateChange(draggedPlanning.id, newDate)
+                      }
+                    }}
+                    className={`min-h-[80px] lg:min-h-[120px] p-1 lg:p-2 ${
+                      !date ? 'bg-gray-50' : isToday ? 'bg-emerald-50' : 'bg-white'
+                    } transition-colors`}
+                  >
+                    {date && (
+                      <>
+                        <div className={`text-xs lg:text-sm font-semibold mb-1 ${
+                          isToday ? 'text-emerald-600' : 'text-gray-700'
+                        }`}>
+                          {date.getDate()}
+                        </div>
+                        <div className="space-y-1">
+                          {dayPlanning.map((planning) => (
+                            <div
+                              key={planning.id}
+                              draggable={true}
+                              onDragStart={() => setDraggedPlanning(planning)}
+                              onDragEnd={() => setDraggedPlanning(null)}
+                              className={`px-1.5 py-1 rounded text-[10px] lg:text-xs cursor-pointer hover:shadow-md transition ${getStatusColor(planning.statut)}`}
+                              onClick={() => openEditModal(planning)}
+                            >
+                              <div className="font-semibold truncate">
+                                {planning.sites?.clients?.nom}
                               </div>
-                            )}
-                            {planning.techniciens.length > 0 && (
-                              <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-1">
-                                <Users className="w-3 h-3" />
-                                <span className="truncate">{planning.techniciens.map((t: any) => t.profiles?.full_name).join(', ')}</span>
-                              </div>
-                            )}
-                            {planning.notes && (
-                              <span className="inline-block mt-1.5 px-2 py-0.5 bg-amber-200 text-amber-700 rounded-full text-[9px] font-semibold">Note</span>
-                            )}
-                          </motion.div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </motion.div>
-              )
-            })}
+                              {planning.heure_debut && (
+                                <div className="flex items-center gap-0.5 opacity-75 mt-0.5">
+                                  <Clock className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
+                                  <span className="text-[9px] lg:text-[10px]">{planning.heure_debut}</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </main>
 
+      {/* Modal d'édition - épurée */}
       {showEditModal && selectedPlanning && (
-        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-2xl"
           >
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-slate-800">Modifier l'intervention</h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={<X className="w-5 h-5" />}
+            <div className="p-4 lg:p-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-900">Modifier</h2>
+                <button
                   onClick={() => setShowEditModal(false)}
-                />
+                  className="p-2 hover:bg-gray-100 rounded-lg transition"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
               </div>
 
-              <div className="bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-xl p-5 mb-6 border border-emerald-200">
-                <div className="font-bold text-lg mb-2 text-slate-800">{selectedPlanning.sites?.clients?.nom}</div>
-                <div className="text-sm text-slate-600 mb-1">{selectedPlanning.sites?.nom}</div>
+              {/* Info client/site */}
+              <div className="bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-lg p-3 mb-4 border border-emerald-200">
+                <div className="font-semibold text-sm mb-1">{selectedPlanning.sites?.clients?.nom}</div>
+                <div className="text-xs text-gray-600">{selectedPlanning.sites?.nom}</div>
                 {selectedPlanning.sites?.adresse && (
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-gray-500 mt-1">
                     {selectedPlanning.sites?.adresse}, {selectedPlanning.sites?.ville}
                   </div>
                 )}
               </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Client</label>
-                <select
-                  value={formData.client_id}
-                  onChange={(e) => {
-                    setFormData({ ...formData, client_id: e.target.value, site_id: '' })
-                  }}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                >
-                  <option value="">Sélectionner un client</option>
-                  {clients.map(client => (
-                    <option key={client.id} value={client.id}>{client.nom}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Site *</label>
-                <select
-                  value={formData.site_id}
-                  onChange={(e) => setFormData({ ...formData, site_id: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  required
-                >
-                  <option value="">Sélectionner un site</option>
-                  {sites.filter(s => !formData.client_id || s.client_id === formData.client_id).map(site => (
-                    <option key={site.id} value={site.id}>{site.nom}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+              {/* Formulaire */}
+              <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Date *</label>
-                  <input
-                    type="date"
-                    value={formData.date_intervention}
-                    onChange={(e) => setFormData({ ...formData, date_intervention: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Statut</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Client</label>
                   <select
-                    value={formData.statut}
-                    onChange={(e) => setFormData({ ...formData, statut: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                    value={formData.client_id}
+                    onChange={(e) => {
+                      setFormData({ ...formData, client_id: e.target.value, site_id: '' })
+                    }}
+                    className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
                   >
-                    <option value="planifiee">Planifiée</option>
-                    <option value="en_cours">En cours</option>
-                    <option value="annulee">Annulée</option>
+                    <option value="">Sélectionner un client</option>
+                    {clients.map(client => (
+                      <option key={client.id} value={client.id}>{client.nom}</option>
+                    ))}
                   </select>
                 </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Site *</label>
+                  <select
+                    value={formData.site_id}
+                    onChange={(e) => setFormData({ ...formData, site_id: e.target.value })}
+                    className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                    required
+                  >
+                    <option value="">Sélectionner un site</option>
+                    {sites.filter(s => !formData.client_id || s.client_id === formData.client_id).map(site => (
+                      <option key={site.id} value={site.id}>{site.nom}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Date *</label>
+                    <input
+                      type="date"
+                      value={formData.date_intervention}
+                      onChange={(e) => setFormData({ ...formData, date_intervention: e.target.value })}
+                      className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Statut</label>
+                    <select
+                      value={formData.statut}
+                      onChange={(e) => setFormData({ ...formData, statut: e.target.value })}
+                      className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="planifiee">Planifiée</option>
+                      <option value="en_cours">En cours</option>
+                      <option value="annulee">Annulée</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Type</label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="verification_periodique">Vérification périodique</option>
+                    <option value="maintenance_preventive">Maintenance préventive</option>
+                    <option value="reparation">Réparation</option>
+                    <option value="mise_en_service">Mise en service</option>
+                    <option value="diagnostic">Diagnostic</option>
+                    <option value="formation">Formation</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Heure début</label>
+                    <input
+                      type="time"
+                      value={formData.heure_debut}
+                      onChange={(e) => setFormData({ ...formData, heure_debut: e.target.value })}
+                      className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Heure fin</label>
+                    <input
+                      type="time"
+                      value={formData.heure_fin}
+                      onChange={(e) => setFormData({ ...formData, heure_fin: e.target.value })}
+                      className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Notes</label>
+                  <textarea
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    placeholder="Instructions, remarques..."
+                    rows={2}
+                    className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                {profile?.role === 'admin' && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">Techniciens</label>
+                    <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                      {techniciens.map(tech => (
+                        <label
+                          key={tech.id}
+                          className="flex items-center gap-2 p-2 hover:bg-gray-50 border border-gray-200 rounded-lg cursor-pointer text-xs"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.techniciens.includes(tech.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData({
+                                  ...formData,
+                                  techniciens: [...formData.techniciens, tech.id]
+                                })
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  techniciens: formData.techniciens.filter(id => id !== tech.id)
+                                })
+                              }
+                            }}
+                            className="w-4 h-4 rounded border-gray-300 text-emerald-500"
+                          />
+                          <span className="text-gray-700 font-medium">{tech.full_name}</span>
+                          <span className="text-gray-500">({tech.role})</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Type</label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+              {/* Actions */}
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition"
                 >
-                  <option value="verification_periodique">Vérification périodique</option>
-                  <option value="maintenance_preventive">Maintenance préventive</option>
-                  <option value="reparation">Réparation</option>
-                  <option value="mise_en_service">Mise en service</option>
-                  <option value="diagnostic">Diagnostic</option>
-                  <option value="formation">Formation</option>
-                </select>
+                  Annuler
+                </button>
+                <button
+                  onClick={handleDeletePlanning}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => handleCreateRapport(selectedPlanning)}
+                  className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                >
+                  <FileText className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleUpdatePlanning}
+                  className="flex-1 px-4 py-2 text-sm bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white rounded-lg transition flex items-center justify-center gap-2 shadow-md"
+                >
+                  <Save className="w-4 h-4" />
+                  Enregistrer
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Modal de création - épurée (même style) */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-2xl"
+          >
+            <div className="p-4 lg:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-900">Nouvelle intervention</h2>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Heure début</label>
-                  <input
-                    type="time"
-                    value={formData.heure_debut}
-                    onChange={(e) => setFormData({ ...formData, heure_debut: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Client *</label>
+                  <select
+                    value={formData.client_id}
+                    onChange={(e) => {
+                      setFormData({ ...formData, client_id: e.target.value, site_id: '' })
+                    }}
+                    className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                    required
+                  >
+                    <option value="">Sélectionner un client</option>
+                    {clients.map(client => (
+                      <option key={client.id} value={client.id}>{client.nom}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Site *</label>
+                  <select
+                    value={formData.site_id}
+                    onChange={(e) => setFormData({ ...formData, site_id: e.target.value })}
+                    className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500 disabled:opacity-50"
+                    required
+                    disabled={!formData.client_id}
+                  >
+                    <option value="">Sélectionner un site</option>
+                    {sites.filter(s => s.client_id === formData.client_id).map(site => (
+                      <option key={site.id} value={site.id}>{site.nom}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Date *</label>
+                    <input
+                      type="date"
+                      value={formData.date_intervention}
+                      onChange={(e) => setFormData({ ...formData, date_intervention: e.target.value })}
+                      className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Type</label>
+                    <select
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="verification_periodique">Vérification périodique</option>
+                      <option value="maintenance_preventive">Maintenance préventive</option>
+                      <option value="reparation">Réparation</option>
+                      <option value="mise_en_service">Mise en service</option>
+                      <option value="diagnostic">Diagnostic</option>
+                      <option value="formation">Formation</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Heure début</label>
+                    <input
+                      type="time"
+                      value={formData.heure_debut}
+                      onChange={(e) => setFormData({ ...formData, heure_debut: e.target.value })}
+                      className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Heure fin</label>
+                    <input
+                      type="time"
+                      value={formData.heure_fin}
+                      onChange={(e) => setFormData({ ...formData, heure_fin: e.target.value })}
+                      className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Notes</label>
+                  <textarea
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    placeholder="Instructions, remarques..."
+                    rows={2}
+                    className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-500"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Heure fin</label>
-                  <input
-                    type="time"
-                    value={formData.heure_fin}
-                    onChange={(e) => setFormData({ ...formData, heure_fin: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  />
-                </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Notes</label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Coordonnées, instructions, remarques..."
-                  rows={3}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-slate-400"
-                />
-              </div>
-
-              {profile?.role === 'admin' && (
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Techniciens / Admins assignés</label>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                  <label className="block text-xs font-semibold text-gray-700 mb-2">Techniciens</label>
+                  <div className="space-y-1.5 max-h-32 overflow-y-auto">
                     {techniciens.map(tech => (
                       <label
                         key={tech.id}
-                        className="flex items-center gap-3 p-3 bg-white hover:bg-emerald-50 border border-slate-200 rounded-lg cursor-pointer transition-colors"
+                        className="flex items-center gap-2 p-2 hover:bg-gray-50 border border-gray-200 rounded-lg cursor-pointer text-xs"
                       >
                         <input
                           type="checkbox"
@@ -805,218 +1047,31 @@ export default function PlanningPage() {
                               })
                             }
                           }}
-                          className="w-4 h-4 rounded border-[#2D3B52] text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
+                          className="w-4 h-4 rounded border-gray-300 text-emerald-500"
                         />
-                        <span className="text-slate-700 font-medium">{tech.full_name}</span>
-                        <span className="text-xs text-slate-500">({tech.role})</span>
+                        <span className="text-gray-700 font-medium">{tech.full_name}</span>
+                        <span className="text-gray-500">({tech.role})</span>
                       </label>
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
 
-            <div className="flex gap-2 mt-6">
-              <Button
-                onClick={() => setShowEditModal(false)}
-                variant="secondary"
-                className="flex-1"
-              >
-                Annuler
-              </Button>
-              <Button
-                onClick={handleDeletePlanning}
-                variant="ghost"
-                icon={<Trash2 className="w-4 h-4" />}
-                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-              >
-                Supprimer
-              </Button>
-              <Button
-                onClick={() => handleCreateRapport(selectedPlanning)}
-                variant="ghost"
-                icon={<FileText className="w-4 h-4" />}
-                className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
-              >
-                Créer rapport
-              </Button>
-              <Button
-                onClick={handleUpdatePlanning}
-                variant="primary"
-                icon={<Save className="w-4 h-4" />}
-                className="flex-1"
-              >
-                Enregistrer
-              </Button>
-            </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl"
-          >
-            <div className="p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-slate-800">Nouvelle intervention planifiée</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={<X className="w-5 h-5" />}
-                onClick={() => setShowCreateModal(false)}
-              />
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Client *</label>
-                <select
-                  value={formData.client_id}
-                  onChange={(e) => {
-                    setFormData({ ...formData, client_id: e.target.value, site_id: '' })
-                  }}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  required
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition"
                 >
-                  <option value="">Sélectionner un client</option>
-                  {clients.map(client => (
-                    <option key={client.id} value={client.id}>{client.nom}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Site *</label>
-                <select
-                  value={formData.site_id}
-                  onChange={(e) => setFormData({ ...formData, site_id: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  required
-                  disabled={!formData.client_id}
+                  Annuler
+                </button>
+                <button
+                  onClick={handleCreatePlanning}
+                  className="flex-1 px-4 py-2 text-sm bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white rounded-lg transition flex items-center justify-center gap-2 shadow-md"
                 >
-                  <option value="">Sélectionner un site</option>
-                  {sites.filter(s => s.client_id === formData.client_id).map(site => (
-                    <option key={site.id} value={site.id}>{site.nom}</option>
-                  ))}
-                </select>
+                  <Plus className="w-4 h-4" />
+                  Créer
+                </button>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Date *</label>
-                  <input
-                    type="date"
-                    value={formData.date_intervention}
-                    onChange={(e) => setFormData({ ...formData, date_intervention: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Type</label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  >
-                    <option value="verification_periodique">Vérification périodique</option>
-                    <option value="maintenance_preventive">Maintenance préventive</option>
-                    <option value="reparation">Réparation</option>
-                    <option value="mise_en_service">Mise en service</option>
-                    <option value="diagnostic">Diagnostic</option>
-                    <option value="formation">Formation</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Heure début</label>
-                  <input
-                    type="time"
-                    value={formData.heure_debut}
-                    onChange={(e) => setFormData({ ...formData, heure_debut: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Heure fin</label>
-                  <input
-                    type="time"
-                    value={formData.heure_fin}
-                    onChange={(e) => setFormData({ ...formData, heure_fin: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Notes</label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Coordonnées, instructions, remarques..."
-                  rows={3}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-slate-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Techniciens / Admins assignés</label>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {techniciens.map(tech => (
-                    <label
-                      key={tech.id}
-                      className="flex items-center gap-3 p-3 bg-white hover:bg-emerald-50 border border-slate-200 rounded-lg cursor-pointer transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.techniciens.includes(tech.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setFormData({
-                              ...formData,
-                              techniciens: [...formData.techniciens, tech.id]
-                            })
-                          } else {
-                            setFormData({
-                              ...formData,
-                              techniciens: formData.techniciens.filter(id => id !== tech.id)
-                            })
-                          }
-                        }}
-                        className="w-4 h-4 rounded border-slate-200 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
-                      />
-                      <span className="text-slate-700 font-medium">{tech.full_name}</span>
-                      <span className="text-xs text-slate-500">({tech.role})</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-2 mt-6">
-              <Button
-                onClick={() => setShowCreateModal(false)}
-                variant="secondary"
-                className="flex-1"
-              >
-                Annuler
-              </Button>
-              <Button
-                onClick={handleCreatePlanning}
-                variant="primary"
-                icon={<Plus className="w-4 h-4" />}
-                className="flex-1"
-              >
-                Créer
-              </Button>
-            </div>
             </div>
           </motion.div>
         </div>

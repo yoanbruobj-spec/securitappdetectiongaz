@@ -29,7 +29,12 @@
       "Bash(rm:*)",
       "Bash(cp:*)",
       "Bash(node -e:*)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(claude --version)",
+      "Bash(tasklist:*)",
+      "Bash(cmd.exe /c \"taskkill /F /IM node.exe\")",
+      "Bash(powershell -Command \"Get-Process node | Stop-Process -Force\")",
+      "Bash(powershell -Command \"Stop-Process -Id 27256 -Force\")"
     ],
     "deny": [],
     "ask": []

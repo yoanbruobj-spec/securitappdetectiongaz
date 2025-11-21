@@ -121,7 +121,7 @@ export default function InterventionsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex flex-col">
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <div className="px-8 py-5 flex items-center justify-between">
+        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ml-16 lg:ml-0">
           <div className="flex items-center gap-4">
             <Button
               onClick={() => router.push('/admin')}
@@ -136,37 +136,40 @@ export default function InterventionsPage() {
                 <FileText className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
+                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
                   Mes rapports
                 </h1>
-                <p className="text-sm text-gray-600">Gérez toutes vos interventions</p>
+                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Gérez toutes vos interventions</p>
               </div>
             </div>
           </div>
           <Button
             onClick={() => router.push('/select-rapport-type')}
             variant="primary"
-            icon={<Plus className="w-5 h-5" />}
+            icon={<Plus className="w-4 h-4 sm:w-5 sm:h-5" />}
+            className="w-full sm:w-auto"
           >
-            Nouvelle intervention
+            <span className="hidden sm:inline">Nouvelle intervention</span>
+            <span className="sm:hidden">Nouveau</span>
           </Button>
         </div>
       </header>
 
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto px-8 py-8">
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+          <div className="mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <h2 className="text-xl font-bold text-gray-900">
                 {filter === 'all' ? 'Toutes les interventions' :
                  filter === 'en_cours' ? 'Interventions en cours' :
                  'Interventions terminées'}
               </h2>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                 <Button
                   onClick={() => setFilter('all')}
                   variant={filter === 'all' ? 'primary' : 'secondary'}
                   size="sm"
+                  className="flex-1 sm:flex-none"
                 >
                   Toutes
                 </Button>
@@ -174,6 +177,7 @@ export default function InterventionsPage() {
                   onClick={() => setFilter('en_cours')}
                   variant={filter === 'en_cours' ? 'primary' : 'secondary'}
                   size="sm"
+                  className="flex-1 sm:flex-none"
                 >
                   En cours
                 </Button>
@@ -181,6 +185,7 @@ export default function InterventionsPage() {
                   onClick={() => setFilter('terminee')}
                   variant={filter === 'terminee' ? 'primary' : 'secondary'}
                   size="sm"
+                  className="flex-1 sm:flex-none"
                 >
                   Terminées
                 </Button>

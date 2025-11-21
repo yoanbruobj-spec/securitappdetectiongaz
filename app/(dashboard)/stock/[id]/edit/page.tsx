@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, Package, Save, Trash2 } from 'lucide-react'
+import { ArrowLeft, Package, Save, Trash2, X, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -19,6 +19,9 @@ export default function EditArticlePage() {
   const [categories, setCategories] = useState<StockCategorie[]>([])
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [currentPhotoUrl, setCurrentPhotoUrl] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     nom: '',
     reference: '',
@@ -70,6 +73,7 @@ export default function EditArticlePage() {
 
     if (art) {
       setArticle(art)
+      setCurrentPhotoUrl(art.photo_url)
       setFormData({
         nom: art.nom,
         reference: art.reference,
@@ -94,11 +98,84 @@ export default function EditArticlePage() {
     setLoading(false)
   }
 
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB max
+        alert('L\'image ne doit pas dépasser 5 MB')
+        return
+      }
+
+      setSelectedImage(file)
+
+      // Créer preview
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  function removeImage() {
+    setSelectedImage(null)
+    setImagePreview(null)
+  }
+
+  function removeCurrentPhoto() {
+    setCurrentPhotoUrl(null)
+  }
+
+  async function uploadImage(): Promise<string | null> {
+    if (!selectedImage) return null
+
+    try {
+      const fileExt = selectedImage.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+      const filePath = `stock-photos/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('stock-photos')
+        .upload(filePath, selectedImage)
+
+      if (uploadError) {
+        console.error('Erreur upload:', uploadError)
+        throw uploadError
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('stock-photos')
+        .getPublicUrl(filePath)
+
+      return publicUrl
+    } catch (error) {
+      console.error('Erreur lors de l\'upload de l\'image:', error)
+      return null
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setProcessing(true)
 
     try {
+      // Upload de la nouvelle image si présente
+      let photoUrl: string | null | undefined = currentPhotoUrl
+
+      if (selectedImage) {
+        const uploadedUrl = await uploadImage()
+        if (uploadedUrl) {
+          photoUrl = uploadedUrl
+        } else {
+          alert('Erreur lors de l\'upload de l\'image')
+        }
+      }
+
+      // Si l'image actuelle a été supprimée mais pas remplacée
+      if (!currentPhotoUrl && !selectedImage) {
+        photoUrl = null
+      }
+
       const { error } = await supabase
         .from('stock_articles')
         .update({
@@ -110,7 +187,8 @@ export default function EditArticlePage() {
           prix_unitaire: formData.prix_unitaire ? parseFloat(formData.prix_unitaire) : null,
           fournisseur: formData.fournisseur || null,
           seuil_alerte: formData.seuil_alerte,
-          description: formData.description || null
+          description: formData.description || null,
+          photo_url: photoUrl
         })
         .eq('id', params.id)
 
@@ -324,6 +402,80 @@ export default function EditArticlePage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     rows={3}
                   />
+                </div>
+
+                {/* Section upload d'image */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Photo de l'article
+                  </label>
+
+                  {/* Image actuelle */}
+                  {currentPhotoUrl && !imagePreview && (
+                    <div className="relative border-2 border-gray-200 rounded-lg p-4 mb-3">
+                      <button
+                        type="button"
+                        onClick={removeCurrentPhoto}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full transition z-10"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <img
+                        src={currentPhotoUrl}
+                        alt="Photo actuelle"
+                        className="w-full h-48 object-contain rounded-lg"
+                      />
+                      <p className="text-xs text-gray-500 text-center mt-2">Photo actuelle</p>
+                    </div>
+                  )}
+
+                  {/* Nouvelle image sélectionnée */}
+                  {imagePreview && (
+                    <div className="relative border-2 border-gray-200 rounded-lg p-4 mb-3">
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full transition z-10"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <img
+                        src={imagePreview}
+                        alt="Nouvelle photo"
+                        className="w-full h-48 object-contain rounded-lg"
+                      />
+                      <p className="text-xs text-gray-500 text-center mt-2">Nouvelle photo (sera uploadée)</p>
+                    </div>
+                  )}
+
+                  {/* Zone d'upload */}
+                  {!imagePreview && (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-400 transition">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                        id="image-upload-edit"
+                      />
+                      <label
+                        htmlFor="image-upload-edit"
+                        className="cursor-pointer flex flex-col items-center gap-2"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                          <ImageIcon className="w-6 h-6 text-purple-600" />
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          <span className="text-purple-600 font-medium">
+                            {currentPhotoUrl ? 'Remplacer l\'image' : 'Ajouter une image'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          PNG, JPG jusqu'à 5MB
+                        </div>
+                      </label>
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-gray-50 p-3 rounded-lg">

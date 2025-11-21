@@ -4,14 +4,19 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
-import { ArrowLeft, QrCode, Edit, Download, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
+import {
+  ArrowLeft, Edit, Download, TrendingUp, TrendingDown, AlertCircle,
+  ArrowRightLeft, Warehouse, MapPin, Truck
+} from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Input } from '@/components/ui/Input'
 import QRCodeLib from 'qrcode'
-import type { StockArticle, StockMouvement } from '@/types/stock'
+import type { StockArticle, StockMouvement, StockEmplacement, StockInventaire } from '@/types/stock'
+
+type ActionType = 'entree' | 'sortie' | 'transfert'
 
 export default function ArticleDetailPage() {
   const router = useRouter()
@@ -20,44 +25,40 @@ export default function ArticleDetailPage() {
   const qrCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const [article, setArticle] = useState<StockArticle | null>(null)
+  const [inventaire, setInventaire] = useState<StockInventaire[]>([])
+  const [emplacements, setEmplacements] = useState<StockEmplacement[]>([])
   const [mouvements, setMouvements] = useState<StockMouvement[]>([])
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState<string | null>(null)
-  const [showMouvementModal, setShowMouvementModal] = useState(false)
-  const [mouvementType, setMouvementType] = useState<'entree' | 'sortie'>('sortie')
-  const [mouvementData, setMouvementData] = useState({ quantite: 1, notes: '' })
+
+  // Modal
+  const [showModal, setShowModal] = useState(false)
+  const [actionType, setActionType] = useState<ActionType>('entree')
+  const [formData, setFormData] = useState({
+    quantite: 1,
+    notes: '',
+    emplacement_id: '', // Pour entrée/sortie
+    emplacement_source_id: '', // Pour transfert
+    emplacement_destination_id: '' // Pour transfert
+  })
   const [processing, setProcessing] = useState(false)
 
   useEffect(() => {
-    console.log('🔵 Component mounted, params.id:', params.id)
     checkAuth()
     loadData()
   }, [params.id])
 
-  // Générer QR code après chargement de l'article
+  // Générer QR code
   useEffect(() => {
-    console.log('🔄 useEffect QR déclenché', {
-      hasArticle: !!article,
-      articleId: article?.id,
-      hasCanvas: !!qrCanvasRef.current
-    })
-
     async function generateQR() {
-      if (!article) {
-        console.log('⏸️ QR: Pas d\'article')
-        return
-      }
-
+      if (!article) return
       if (!qrCanvasRef.current) {
-        console.log('⏸️ QR: Canvas ref non disponible, retry dans 100ms')
         setTimeout(generateQR, 100)
         return
       }
 
       try {
-        // Utiliser le qr_code existant ou générer un code à partir de l'ID
         const qrData = article.qr_code || `SECURIT-ART-${article.id}`
-        console.log('🔵 Génération QR code pour:', qrData)
 
         await QRCodeLib.toCanvas(qrCanvasRef.current, qrData, {
           width: 300,
@@ -68,24 +69,15 @@ export default function ArticleDetailPage() {
           }
         })
 
-        console.log('✅ QR code généré avec succès!')
-
-        // Si l'article n'avait pas de QR code, le sauvegarder
+        // Sauvegarder QR si absent
         if (!article.qr_code) {
-          console.log('💾 Sauvegarde du QR code en base...')
-          const { error } = await supabase
+          await supabase
             .from('stock_articles')
             .update({ qr_code: qrData })
             .eq('id', article.id)
-
-          if (error) {
-            console.error('❌ Erreur sauvegarde QR:', error)
-          } else {
-            console.log('✅ QR code sauvegardé en base:', qrData)
-          }
         }
       } catch (err) {
-        console.error('❌ Erreur génération QR:', err)
+        console.error('Erreur génération QR:', err)
       }
     }
 
@@ -112,7 +104,11 @@ export default function ArticleDetailPage() {
 
   async function loadData() {
     setLoading(true)
+    await reloadData()
+    setLoading(false)
+  }
 
+  async function reloadData() {
     // Charger article
     const { data: art } = await supabase
       .from('stock_articles')
@@ -123,99 +119,226 @@ export default function ArticleDetailPage() {
       .eq('id', params.id)
       .single()
 
-    if (art) {
-      console.log('📦 Article chargé:', art.nom, 'QR:', art.qr_code)
-      setArticle(art)
-    } else {
-      console.log('❌ Aucun article trouvé')
-    }
+    if (art) setArticle(art)
 
-    // Charger mouvements
-    const { data: mouvs, error: mouvsError } = await supabase
-      .from('stock_mouvements')
+    // Charger inventaire par emplacement
+    const { data: inv } = await supabase
+      .from('stock_inventaire')
+      .select(`
+        *,
+        stock_emplacements (
+          *,
+          profiles (id, full_name, email, role)
+        )
+      `)
+      .eq('article_id', params.id)
+      .order('quantite', { ascending: false })
+
+    if (inv) setInventaire(inv)
+
+    // Charger tous les emplacements
+    const { data: emps } = await supabase
+      .from('stock_emplacements')
       .select(`
         *,
         profiles (id, full_name, email, role)
       `)
+      .eq('actif', true)
+      .order('type', { ascending: true })
+
+    if (emps) setEmplacements(emps)
+
+    // Charger mouvements avec emplacements
+    const { data: mouvs } = await supabase
+      .from('stock_mouvements')
+      .select(`
+        *,
+        profiles (id, full_name, email, role),
+        emplacement_source:stock_emplacements!stock_mouvements_emplacement_source_id_fkey(id, nom, type),
+        emplacement_destination:stock_emplacements!stock_mouvements_emplacement_destination_id_fkey(id, nom, type)
+      `)
       .eq('article_id', params.id)
       .order('date_mouvement', { ascending: false })
 
-    if (mouvsError) {
-      console.error('Erreur chargement mouvements:', mouvsError)
-    } else {
-      console.log('Mouvements chargés:', mouvs?.length || 0, 'mouvement(s)')
-      if (mouvs) setMouvements(mouvs)
-    }
-
-    setLoading(false)
+    if (mouvs) setMouvements(mouvs)
   }
 
-  async function handleMouvement() {
-    if (!article || mouvementData.quantite <= 0) return
+  function openModal(type: ActionType) {
+    setActionType(type)
+
+    // Pré-remplir l'emplacement par défaut
+    const stockPrincipal = emplacements.find(e => e.type === 'principal')
+
+    setFormData({
+      quantite: 1,
+      notes: '',
+      emplacement_id: stockPrincipal?.id || '',
+      emplacement_source_id: stockPrincipal?.id || '',
+      emplacement_destination_id: ''
+    })
+    setShowModal(true)
+  }
+
+  async function handleSubmit() {
+    if (formData.quantite <= 0) {
+      alert('Quantité invalide')
+      return
+    }
 
     setProcessing(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      const quantiteAvant = article.quantite
-      const quantiteApres = mouvementType === 'entree'
-        ? quantiteAvant + mouvementData.quantite
-        : quantiteAvant - mouvementData.quantite
-
-      if (quantiteApres < 0) {
-        alert('Stock insuffisant !')
-        setProcessing(false)
-        return
+      if (actionType === 'transfert') {
+        await handleTransfert(user.id)
+      } else {
+        await handleEntreeSortie(user.id)
       }
 
-      // Créer mouvement
-      const { data: mouvData, error: mouvError } = await supabase
-        .from('stock_mouvements')
-        .insert([{
-          article_id: article.id,
-          type: mouvementType,
-          quantite: mouvementData.quantite,
-          quantite_avant: quantiteAvant,
-          quantite_apres: quantiteApres,
-          utilisateur_id: user.id,
-          notes: mouvementData.notes || null,
-          date_mouvement: new Date().toISOString()
-        }])
-        .select()
-
-      if (mouvError) {
-        console.error('Erreur insertion mouvement:', mouvError)
-        throw new Error('Erreur lors de l\'enregistrement du mouvement: ' + mouvError.message)
-      }
-
-      console.log('Mouvement créé:', mouvData)
-
-      // Mettre à jour quantité article
-      const { error: updateError } = await supabase
-        .from('stock_articles')
-        .update({ quantite: quantiteApres })
-        .eq('id', article.id)
-
-      if (updateError) {
-        console.error('Erreur mise à jour article:', updateError)
-        throw new Error('Erreur lors de la mise à jour du stock: ' + updateError.message)
-      }
-
-      console.log('Stock mis à jour:', quantiteAvant, '→', quantiteApres)
-
-      alert('Mouvement enregistré !')
-      setShowMouvementModal(false)
-      setMouvementData({ quantite: 1, notes: '' })
-
-      // Recharger les données
-      await loadData()
+      alert('Opération réussie !')
+      setShowModal(false)
+      setFormData({ quantite: 1, notes: '', emplacement_id: '', emplacement_source_id: '', emplacement_destination_id: '' })
+      reloadData()
     } catch (error: any) {
-      console.error('Erreur mouvement:', error)
+      console.error('Erreur:', error)
       alert('Erreur : ' + error.message)
     } finally {
       setProcessing(false)
     }
+  }
+
+  async function handleEntreeSortie(userId: string) {
+    if (!formData.emplacement_id) {
+      throw new Error('Sélectionnez un emplacement')
+    }
+
+    // Récupérer quantité actuelle dans cet emplacement
+    const invItem = inventaire.find(i => i.emplacement_id === formData.emplacement_id)
+    const quantiteAvant = invItem?.quantite || 0
+    const quantiteApres = actionType === 'entree'
+      ? quantiteAvant + formData.quantite
+      : quantiteAvant - formData.quantite
+
+    if (quantiteApres < 0) {
+      throw new Error('Stock insuffisant dans cet emplacement')
+    }
+
+    // Créer mouvement
+    await supabase
+      .from('stock_mouvements')
+      .insert([{
+        article_id: article!.id,
+        type: actionType,
+        quantite: formData.quantite,
+        quantite_avant: quantiteAvant,
+        quantite_apres: quantiteApres,
+        utilisateur_id: userId,
+        emplacement_destination_id: actionType === 'entree' ? formData.emplacement_id : null,
+        emplacement_source_id: actionType === 'sortie' ? formData.emplacement_id : null,
+        notes: formData.notes || null,
+        date_mouvement: new Date().toISOString()
+      }])
+
+    // Mettre à jour inventaire
+    if (quantiteApres === 0) {
+      // Supprimer la ligne si quantité = 0
+      await supabase
+        .from('stock_inventaire')
+        .delete()
+        .eq('article_id', article!.id)
+        .eq('emplacement_id', formData.emplacement_id)
+    } else {
+      // Upsert
+      await supabase
+        .from('stock_inventaire')
+        .upsert({
+          article_id: article!.id,
+          emplacement_id: formData.emplacement_id,
+          quantite: quantiteApres
+        }, {
+          onConflict: 'article_id,emplacement_id'
+        })
+    }
+
+    // Mettre à jour le stock total dans stock_articles
+    const stockTotal = inventaire.reduce((sum, inv) => {
+      if (inv.emplacement_id === formData.emplacement_id) {
+        return sum + quantiteApres
+      }
+      return sum + inv.quantite
+    }, 0)
+
+    await supabase
+      .from('stock_articles')
+      .update({ quantite: stockTotal })
+      .eq('id', article!.id)
+  }
+
+  async function handleTransfert(userId: string) {
+    if (!formData.emplacement_source_id || !formData.emplacement_destination_id) {
+      throw new Error('Sélectionnez les emplacements source et destination')
+    }
+
+    if (formData.emplacement_source_id === formData.emplacement_destination_id) {
+      throw new Error('Source et destination doivent être différentes')
+    }
+
+    // Récupérer quantités actuelles
+    const invSource = inventaire.find(i => i.emplacement_id === formData.emplacement_source_id)
+    const invDest = inventaire.find(i => i.emplacement_id === formData.emplacement_destination_id)
+
+    const qteSource = invSource?.quantite || 0
+    const qteDest = invDest?.quantite || 0
+
+    if (qteSource < formData.quantite) {
+      throw new Error('Stock insuffisant dans l\'emplacement source')
+    }
+
+    const nouvelleQteSource = qteSource - formData.quantite
+    const nouvelleQteDest = qteDest + formData.quantite
+
+    // Créer mouvement de transfert
+    await supabase
+      .from('stock_mouvements')
+      .insert([{
+        article_id: article!.id,
+        type: 'transfert',
+        quantite: formData.quantite,
+        quantite_avant: qteSource,
+        quantite_apres: nouvelleQteSource,
+        utilisateur_id: userId,
+        emplacement_source_id: formData.emplacement_source_id,
+        emplacement_destination_id: formData.emplacement_destination_id,
+        notes: formData.notes || null,
+        date_mouvement: new Date().toISOString()
+      }])
+
+    // Mettre à jour inventaire source
+    if (nouvelleQteSource === 0) {
+      await supabase
+        .from('stock_inventaire')
+        .delete()
+        .eq('article_id', article!.id)
+        .eq('emplacement_id', formData.emplacement_source_id)
+    } else {
+      await supabase
+        .from('stock_inventaire')
+        .update({ quantite: nouvelleQteSource })
+        .eq('article_id', article!.id)
+        .eq('emplacement_id', formData.emplacement_source_id)
+    }
+
+    // Mettre à jour inventaire destination
+    await supabase
+      .from('stock_inventaire')
+      .upsert({
+        article_id: article!.id,
+        emplacement_id: formData.emplacement_destination_id,
+        quantite: nouvelleQteDest
+      }, {
+        onConflict: 'article_id,emplacement_id'
+      })
   }
 
   function downloadQR() {
@@ -225,6 +348,24 @@ export default function ArticleDetailPage() {
     link.download = `QR_${article.reference}.png`
     link.href = url
     link.click()
+  }
+
+  function getEmplacementColor(type: string) {
+    switch (type) {
+      case 'principal': return 'bg-green-100 text-green-700 border-green-300'
+      case 'chantier': return 'bg-orange-100 text-orange-700 border-orange-300'
+      case 'vehicule': return 'bg-blue-100 text-blue-700 border-blue-300'
+      default: return 'bg-gray-100 text-gray-700 border-gray-300'
+    }
+  }
+
+  function getEmplacementIcon(type: string) {
+    switch (type) {
+      case 'principal': return <Warehouse className="w-4 h-4" />
+      case 'chantier': return <MapPin className="w-4 h-4" />
+      case 'vehicule': return <Truck className="w-4 h-4" />
+      default: return null
+    }
   }
 
   if (loading) {
@@ -243,7 +384,8 @@ export default function ArticleDetailPage() {
     )
   }
 
-  const isAlerte = article.quantite <= article.seuil_alerte
+  const stockTotal = inventaire.reduce((sum, inv) => sum + inv.quantite, 0)
+  const isAlerte = stockTotal <= article.seuil_alerte
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -263,24 +405,25 @@ export default function ArticleDetailPage() {
           </div>
           <div className="flex gap-2">
             <Button
-              onClick={() => {
-                setShowMouvementModal(true)
-                setMouvementType('sortie')
-              }}
+              onClick={() => openModal('sortie')}
               variant="secondary"
               icon={<TrendingDown className="w-5 h-5" />}
             >
               Sortie
             </Button>
             <Button
-              onClick={() => {
-                setShowMouvementModal(true)
-                setMouvementType('entree')
-              }}
+              onClick={() => openModal('entree')}
               variant="primary"
               icon={<TrendingUp className="w-5 h-5" />}
             >
               Entrée
+            </Button>
+            <Button
+              onClick={() => openModal('transfert')}
+              variant="secondary"
+              icon={<ArrowRightLeft className="w-5 h-5" />}
+            >
+              Transfert
             </Button>
             {userRole === 'admin' && (
               <Button
@@ -301,6 +444,17 @@ export default function ArticleDetailPage() {
           <div className="col-span-2 space-y-6">
             <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
               <h2 className="text-lg font-semibold text-slate-800 mb-4">Informations</h2>
+
+              {article.photo_url && (
+                <div className="mb-6">
+                  <img
+                    src={article.photo_url}
+                    alt={article.nom}
+                    className="w-full h-64 object-cover rounded-lg border-2 border-gray-200"
+                  />
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-slate-500">Référence</p>
@@ -312,13 +466,13 @@ export default function ArticleDetailPage() {
                 </div>
                 {article.emplacement && (
                   <div>
-                    <p className="text-sm text-slate-500">Emplacement</p>
+                    <p className="text-sm text-slate-500">Emplacement physique</p>
                     <p className="font-medium text-slate-800">📍 {article.emplacement}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-sm text-slate-500">Stock actuel</p>
-                  <p className="text-2xl font-bold text-slate-800">{article.quantite} unités</p>
+                  <p className="text-sm text-slate-500">Stock total</p>
+                  <p className="text-2xl font-bold text-slate-800">{stockTotal} unités</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Seuil d'alerte</p>
@@ -351,6 +505,51 @@ export default function ArticleDetailPage() {
               )}
             </Card>
 
+            {/* Répartition par emplacement */}
+            <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
+              <h2 className="text-lg font-semibold text-slate-800 mb-4">Répartition du stock</h2>
+              {inventaire.length === 0 ? (
+                <p className="text-slate-500 text-center py-8">Stock vide</p>
+              ) : (
+                <div className="space-y-3">
+                  {inventaire.map((inv, index) => (
+                    <motion.div
+                      key={inv.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`flex items-center justify-between p-3 rounded-lg border-2 ${getEmplacementColor(inv.stock_emplacements?.type || '')}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-white/50 flex items-center justify-center">
+                          {getEmplacementIcon(inv.stock_emplacements?.type || '')}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm">
+                            {inv.stock_emplacements?.nom}
+                          </p>
+                          {inv.stock_emplacements?.profiles && (
+                            <p className="text-xs opacity-75">
+                              {inv.stock_emplacements.profiles.full_name}
+                            </p>
+                          )}
+                          {inv.stock_emplacements?.chantier_info?.client && (
+                            <p className="text-xs opacity-75">
+                              Client: {inv.stock_emplacements.chantier_info.client}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold">{inv.quantite}</p>
+                        <p className="text-xs opacity-75">unités</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
             {/* Historique */}
             <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
               <h2 className="text-lg font-semibold text-slate-800 mb-4">Historique des mouvements</h2>
@@ -367,18 +566,24 @@ export default function ArticleDetailPage() {
                       className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
                     >
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        mouv.type === 'entree' ? 'bg-green-100' : 'bg-red-100'
+                        mouv.type === 'entree' ? 'bg-green-100' :
+                        mouv.type === 'sortie' ? 'bg-red-100' :
+                        'bg-blue-100'
                       }`}>
                         {mouv.type === 'entree' ? (
                           <TrendingUp className="w-5 h-5 text-green-600" />
-                        ) : (
+                        ) : mouv.type === 'sortie' ? (
                           <TrendingDown className="w-5 h-5 text-red-600" />
+                        ) : (
+                          <ArrowRightLeft className="w-5 h-5 text-blue-600" />
                         )}
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mb-1">
                           <p className="font-medium text-slate-800">
-                            {mouv.type === 'entree' ? 'ENTRÉE' : 'SORTIE'} {mouv.type === 'entree' ? '+' : '-'}{mouv.quantite} unités
+                            {mouv.type === 'entree' ? 'ENTRÉE' :
+                             mouv.type === 'sortie' ? 'SORTIE' :
+                             'TRANSFERT'} {mouv.type === 'entree' ? '+' : mouv.type === 'sortie' ? '-' : ''}{mouv.quantite} unités
                           </p>
                           <p className="text-sm text-slate-500">
                             {new Date(mouv.date_mouvement).toLocaleString('fr-FR')}
@@ -387,9 +592,20 @@ export default function ArticleDetailPage() {
                         <p className="text-sm text-slate-600">
                           {mouv.profiles?.full_name}
                         </p>
-                        <p className="text-xs text-slate-500">
-                          Stock: {mouv.quantite_avant} → {mouv.quantite_apres}
-                        </p>
+                        {mouv.type === 'transfert' && mouv.emplacement_source && mouv.emplacement_destination ? (
+                          <p className="text-xs text-slate-500 mt-1">
+                            De: <span className="font-medium">{(mouv.emplacement_source as any).nom}</span> →
+                            Vers: <span className="font-medium">{(mouv.emplacement_destination as any).nom}</span>
+                          </p>
+                        ) : mouv.type === 'entree' && mouv.emplacement_destination ? (
+                          <p className="text-xs text-slate-500 mt-1">
+                            Vers: <span className="font-medium">{(mouv.emplacement_destination as any).nom}</span>
+                          </p>
+                        ) : mouv.type === 'sortie' && mouv.emplacement_source ? (
+                          <p className="text-xs text-slate-500 mt-1">
+                            De: <span className="font-medium">{(mouv.emplacement_source as any).nom}</span>
+                          </p>
+                        ) : null}
                         {mouv.notes && (
                           <p className="text-sm text-slate-600 mt-1">💬 {mouv.notes}</p>
                         )}
@@ -401,7 +617,7 @@ export default function ArticleDetailPage() {
             </Card>
           </div>
 
-          {/* QR Code */}
+          {/* QR Code + Alerte */}
           <div className="space-y-6">
             <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
               <h2 className="text-lg font-semibold text-slate-800 mb-4">QR Code</h2>
@@ -427,7 +643,7 @@ export default function ArticleDetailPage() {
                   <div>
                     <h3 className="font-semibold text-red-800 mb-1">Stock faible</h3>
                     <p className="text-sm text-red-700">
-                      Le stock est en dessous du seuil d'alerte ({article.seuil_alerte} unités).
+                      Le stock total est en dessous du seuil d'alerte ({article.seuil_alerte} unités).
                       Pensez à réapprovisionner.
                     </p>
                   </div>
@@ -438,17 +654,84 @@ export default function ArticleDetailPage() {
         </div>
       </main>
 
-      {/* Modal mouvement */}
-      {showMouvementModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <Card variant="glass" padding="lg" className="bg-white max-w-md w-full mx-4">
+      {/* Modal Mouvement/Transfert */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card variant="glass" padding="lg" className="bg-white max-w-md w-full">
             <h2 className="text-xl font-bold text-slate-800 mb-4">
-              {mouvementType === 'entree' ? 'Entrée' : 'Sortie'} de stock
+              {actionType === 'entree' ? 'Entrée de stock' :
+               actionType === 'sortie' ? 'Sortie de stock' :
+               'Transfert de stock'}
             </h2>
+
             <div className="space-y-4">
-              <div>
-                <p className="text-sm text-slate-600 mb-2">Stock actuel: <span className="font-bold">{article.quantite}</span> unités</p>
-              </div>
+              {actionType === 'transfert' ? (
+                <>
+                  {/* Source */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Emplacement source *
+                    </label>
+                    <select
+                      value={formData.emplacement_source_id}
+                      onChange={(e) => setFormData({ ...formData, emplacement_source_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Sélectionner...</option>
+                      {emplacements.map(emp => {
+                        const invItem = inventaire.find(i => i.emplacement_id === emp.id)
+                        if (!invItem || invItem.quantite === 0) return null
+                        return (
+                          <option key={emp.id} value={emp.id}>
+                            {emp.nom} ({invItem.quantite} unités)
+                          </option>
+                        )
+                      })}
+                    </select>
+                  </div>
+
+                  {/* Destination */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Emplacement destination *
+                    </label>
+                    <select
+                      value={formData.emplacement_destination_id}
+                      onChange={(e) => setFormData({ ...formData, emplacement_destination_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Sélectionner...</option>
+                      {emplacements.filter(e => e.id !== formData.emplacement_source_id).map(emp => (
+                        <option key={emp.id} value={emp.id}>
+                          {emp.nom}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Emplacement *
+                  </label>
+                  <select
+                    value={formData.emplacement_id}
+                    onChange={(e) => setFormData({ ...formData, emplacement_id: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="">Sélectionner...</option>
+                    {emplacements.map(emp => {
+                      const invItem = inventaire.find(i => i.emplacement_id === emp.id)
+                      return (
+                        <option key={emp.id} value={emp.id}>
+                          {emp.nom} {invItem ? `(${invItem.quantite} unités)` : '(vide)'}
+                        </option>
+                      )
+                    })}
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Quantité *
@@ -456,32 +739,34 @@ export default function ArticleDetailPage() {
                 <Input
                   type="number"
                   min="1"
-                  value={mouvementData.quantite}
-                  onChange={(e) => setMouvementData({ ...mouvementData, quantite: parseInt(e.target.value) || 1 })}
+                  value={formData.quantite}
+                  onChange={(e) => setFormData({ ...formData, quantite: parseInt(e.target.value) || 1 })}
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Notes (optionnel)
                 </label>
                 <textarea
-                  value={mouvementData.notes}
-                  onChange={(e) => setMouvementData({ ...mouvementData, notes: e.target.value })}
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Ex: Intervention site ABC, N° série: 12345..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                   rows={3}
                 />
               </div>
+
               <div className="flex justify-end gap-3 mt-6">
                 <Button
-                  onClick={() => setShowMouvementModal(false)}
+                  onClick={() => setShowModal(false)}
                   variant="secondary"
                   disabled={processing}
                 >
                   Annuler
                 </Button>
                 <Button
-                  onClick={handleMouvement}
+                  onClick={handleSubmit}
                   variant="primary"
                   disabled={processing}
                 >
