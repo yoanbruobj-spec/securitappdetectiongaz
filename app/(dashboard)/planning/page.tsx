@@ -380,30 +380,37 @@ export default function PlanningPage() {
     setTouchStartPos({ x: touch.clientX, y: touch.clientY })
     setDraggedPlanning(planning)
 
-    // Créer un élément visuel pour le drag
+    // Créer un élément visuel pour le drag après un court délai
     setTimeout(() => {
       setIsDragging(true)
       const target = e.currentTarget as HTMLElement
       setDraggedElement(target)
       target.style.opacity = '0.5'
-    }, 100)
+    }, 150)
   }
 
   function handleTouchMove(e: React.TouchEvent) {
-    if (!isDragging || !touchStartPos) return
+    if (!touchStartPos) return
 
     const touch = e.touches[0]
     const deltaX = touch.clientX - touchStartPos.x
     const deltaY = touch.clientY - touchStartPos.y
 
-    // Vérifier si on se déplace assez pour considérer comme un drag
-    if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+    // Commencer le drag si mouvement significatif
+    if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+      if (!isDragging) {
+        setIsDragging(true)
+        const target = e.currentTarget as HTMLElement
+        setDraggedElement(target)
+        target.style.opacity = '0.5'
+      }
       e.preventDefault()
     }
   }
 
-  function handleTouchEnd(e: React.TouchEvent, targetDate: Date | null) {
-    if (!isDragging || !draggedPlanning || !targetDate) {
+  function handleTouchEnd(e: React.TouchEvent) {
+    // Si pas de drag, ne rien faire (le onClick va gérer)
+    if (!isDragging || !draggedPlanning) {
       setIsDragging(false)
       setTouchStartPos(null)
       setDraggedPlanning(null)
@@ -414,14 +421,25 @@ export default function PlanningPage() {
       return
     }
 
-    const touch = e.changedTouches[0]
-    const element = document.elementFromPoint(touch.clientX, touch.clientY)
+    // Empêcher le click si on a draggé
+    e.preventDefault()
 
-    if (element && element.classList.contains('calendar-day')) {
-      const newDate = formatDateToLocal(targetDate)
-      handleDateChange(draggedPlanning.id, newDate)
+    const touch = e.changedTouches[0]
+    let element = document.elementFromPoint(touch.clientX, touch.clientY)
+
+    // Remonter dans le DOM pour trouver le calendar-day
+    while (element && !element.classList.contains('calendar-day')) {
+      element = element.parentElement
     }
 
+    if (element && element.classList.contains('calendar-day')) {
+      const dateStr = element.getAttribute('data-date')
+      if (dateStr) {
+        handleDateChange(draggedPlanning.id, dateStr)
+      }
+    }
+
+    // Réinitialiser
     if (draggedElement) {
       draggedElement.style.opacity = '1'
       setDraggedElement(null)
@@ -429,6 +447,13 @@ export default function PlanningPage() {
     setIsDragging(false)
     setTouchStartPos(null)
     setDraggedPlanning(null)
+  }
+
+  function handlePlanningClick(planning: any) {
+    // N'ouvrir le modal que si on n'est pas en train de faire un drag
+    if (!isDragging) {
+      openEditModal(planning)
+    }
   }
 
   async function handleDeletePlanning() {
@@ -516,7 +541,7 @@ export default function PlanningPage() {
           <div className="flex items-center justify-between mb-2 lg:mb-4">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => router.push('/dashboard')}
+                onClick={() => router.push('/admin')}
                 className="p-2 hover:bg-gray-100 rounded-lg transition"
                 title="Retour au dashboard"
               >
@@ -706,6 +731,7 @@ export default function PlanningPage() {
                 return (
                   <div
                     key={index}
+                    data-date={date ? formatDateToLocal(date) : ''}
                     onDragOver={(e) => {
                       if (date && draggedPlanning) {
                         e.preventDefault()
@@ -743,9 +769,9 @@ export default function PlanningPage() {
                               onDragEnd={() => setDraggedPlanning(null)}
                               onTouchStart={(e) => handleTouchStart(e, planning)}
                               onTouchMove={handleTouchMove}
-                              onTouchEnd={(e) => handleTouchEnd(e, date)}
+                              onTouchEnd={handleTouchEnd}
                               className={`px-1.5 py-1 rounded text-[10px] lg:text-xs cursor-pointer hover:shadow-md transition touch-none ${getStatusColor(planning.statut)}`}
-                              onClick={() => openEditModal(planning)}
+                              onClick={() => handlePlanningClick(planning)}
                             >
                               <div className="font-semibold truncate">
                                 {planning.sites?.clients?.nom}
