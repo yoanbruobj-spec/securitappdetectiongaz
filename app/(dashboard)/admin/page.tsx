@@ -142,12 +142,12 @@ export default function AdminDashboard() {
           userName={profile?.full_name}
           onLogout={handleLogout}
         />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6 sticky top-0 z-30 ml-16 lg:ml-0">
+        <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
+          <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6 sticky top-0 z-30">
             <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2" />
             <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
           </header>
-          <main className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-10 ml-16 lg:ml-0">
+          <main className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-10">
             <DashboardSkeleton />
           </main>
         </div>
@@ -174,9 +174,9 @@ export default function AdminDashboard() {
         onLogout={handleLogout}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         {/* Header GLASSMORPHISM */}
-        <header className="glass-strong border-b border-white/20 px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6 sticky top-0 z-20 shadow-lg ml-16 lg:ml-0">
+        <header className="glass-strong border-b border-white/20 px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6 sticky top-0 z-20 shadow-lg">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -214,7 +214,7 @@ export default function AdminDashboard() {
           </motion.div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-10 ml-16 lg:ml-0">
+        <main className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-10">
           {/* Stats Cards - Design GLASSMORPHISM 3D */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8 lg:mb-12">
             <QuickStatGlass
