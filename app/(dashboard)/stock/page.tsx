@@ -118,13 +118,13 @@ export default function StockInventairePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header épuré */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col">
+      {/* Header glassmorphism */}
+      <header className="bg-gradient-to-r from-white/80 via-white/60 to-white/80 dark:from-gray-800/80 dark:via-gray-900/60 dark:to-gray-800/80 backdrop-blur-2xl border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-50 shadow-xl">
         <div className="px-4 lg:px-6 py-3 lg:py-4">
           <div className="flex items-center justify-between mb-3 lg:mb-4">
             <div className="flex items-center gap-3">
-              <button
+              <Button
                 onClick={() => {
                   if (userRole === 'admin') {
                     router.push('/admin')
@@ -134,37 +134,40 @@ export default function StockInventairePage() {
                     router.back()
                   }
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition flex items-center justify-center"
-                title="Retour au dashboard"
+                variant="ghost"
+                size="sm"
+                icon={<ArrowLeft className="w-4 h-4" />}
               >
-                <ArrowLeft className="w-5 h-5 text-gray-700" />
-              </button>
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md">
-                <Package className="w-5 h-5 text-white" />
+                <span className="hidden sm:inline">Retour</span>
+              </Button>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/50">
+                <Package className="w-5 h-5 text-white" strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="text-lg lg:text-xl font-bold text-gray-900">
+                <h1 className="text-lg lg:text-xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400 bg-clip-text text-transparent">
                   Inventaire
                 </h1>
-                <p className="text-xs text-gray-500 hidden lg:block">Gérez votre stock avec QR codes</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 hidden lg:block">Gérez votre stock avec QR codes</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 onClick={() => router.push('/stock/scanner')}
-                className="p-2 lg:px-4 lg:py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-lg hover:from-emerald-600 hover:to-cyan-600 transition shadow-md flex items-center gap-2"
+                variant="primary"
+                size="sm"
+                icon={<Camera className="w-4 h-4 lg:w-5 lg:h-5" />}
               >
-                <Camera className="w-4 h-4 lg:w-5 lg:h-5" />
-                <span className="hidden lg:inline text-sm">Scanner</span>
-              </button>
+                <span className="hidden lg:inline">Scanner</span>
+              </Button>
               {userRole === 'admin' && (
-                <button
+                <Button
                   onClick={() => router.push('/stock/nouveau')}
-                  className="p-2 lg:px-4 lg:py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center gap-2"
+                  variant="secondary"
+                  size="sm"
+                  icon={<Plus className="w-4 h-4 lg:w-5 lg:h-5" />}
                 >
-                  <Plus className="w-4 h-4 lg:w-5 lg:h-5" />
-                  <span className="hidden lg:inline text-sm">Nouveau</span>
-                </button>
+                  <span className="hidden lg:inline">Nouveau</span>
+                </Button>
               )}
             </div>
           </div>
