@@ -232,9 +232,9 @@ export function CommandPalette() {
             transition={{ type: 'spring', stiffness: 500, damping: 35 }}
             className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-2xl z-[9999] px-4"
           >
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
               {/* Search Input */}
-              <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-200">
                 <Search className="w-5 h-5 text-gray-400" />
                 <input
                   ref={inputRef}
@@ -242,9 +242,9 @@ export function CommandPalette() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Rechercher une commande ou une action..."
-                  className="flex-1 bg-transparent outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 text-base"
+                  className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-400 text-base"
                 />
-                <kbd className="hidden sm:inline-block px-2 py-1 text-xs font-semibold text-gray-500 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
+                <kbd className="hidden sm:inline-block px-2 py-1 text-xs font-semibold text-gray-500 bg-gray-100 border border-gray-300 rounded">
                   ESC
                 </kbd>
               </div>
@@ -261,7 +261,7 @@ export function CommandPalette() {
                   <>
                     {Object.entries(groupedCommands).map(([category, cmds]) => (
                       <div key={category} className="mb-4">
-                        <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           {category}
                         </div>
                         <div className="space-y-1">
@@ -278,14 +278,14 @@ export function CommandPalette() {
                                 className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
                                   isSelected
                                     ? 'bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 ring-2 ring-emerald-500/50'
-                                    : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    : 'hover:bg-gray-50'
                                 }`}
                               >
                                 <div
                                   className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
                                     isSelected
                                       ? 'bg-gradient-to-br from-emerald-500 to-cyan-500 text-white'
-                                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                                      : 'bg-gray-100 text-gray-600'
                                   }`}
                                 >
                                   <Icon className="w-5 h-5" />
@@ -293,13 +293,13 @@ export function CommandPalette() {
                                 <div className="flex-1 text-left">
                                   <p
                                     className={`text-sm font-medium ${
-                                      isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
+                                      isSelected ? 'text-gray-900' : 'text-gray-700'
                                     }`}
                                   >
                                     {cmd.label}
                                   </p>
                                   {cmd.description && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{cmd.description}</p>
+                                    <p className="text-xs text-gray-500">{cmd.description}</p>
                                   )}
                                 </div>
                                 {isSelected && <ArrowRight className="w-4 h-4 text-emerald-600" />}
@@ -314,24 +314,24 @@ export function CommandPalette() {
               </div>
 
               {/* Footer */}
-              <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 bg-gray-50 dark:bg-gray-800/50">
+              <div className="border-t border-gray-200 px-4 py-3 bg-gray-50">
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1.5">
-                      <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">
+                      <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-[10px] font-semibold">
                         ↑↓
                       </kbd>
                       <span>Naviguer</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">
+                      <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-[10px] font-semibold">
                         ↵
                       </kbd>
                       <span>Sélectionner</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-[10px] font-semibold">
+                    <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-[10px] font-semibold">
                       ⌘K
                     </kbd>
                     <span>pour ouvrir</span>

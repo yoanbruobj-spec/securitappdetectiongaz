@@ -28,37 +28,37 @@ export function QuickStatGlass({
       gradient: 'from-emerald-500 to-emerald-600',
       glow: 'group-hover:shadow-[0_0_40px_rgba(16,185,129,0.6)]',
       ring: 'ring-emerald-500/30',
-      text: 'text-emerald-600 dark:text-emerald-400',
+      text: 'text-emerald-600',
     },
     cyan: {
       gradient: 'from-cyan-500 to-cyan-600',
       glow: 'group-hover:shadow-[0_0_40px_rgba(6,182,212,0.6)]',
       ring: 'ring-cyan-500/30',
-      text: 'text-cyan-600 dark:text-cyan-400',
+      text: 'text-cyan-600',
     },
     blue: {
       gradient: 'from-blue-500 to-blue-600',
       glow: 'group-hover:shadow-[0_0_40px_rgba(59,130,246,0.6)]',
       ring: 'ring-blue-500/30',
-      text: 'text-blue-600 dark:text-blue-400',
+      text: 'text-blue-600',
     },
     purple: {
       gradient: 'from-purple-500 to-purple-600',
       glow: 'group-hover:shadow-[0_0_40px_rgba(168,85,247,0.6)]',
       ring: 'ring-purple-500/30',
-      text: 'text-purple-600 dark:text-purple-400',
+      text: 'text-purple-600',
     },
     orange: {
       gradient: 'from-orange-500 to-orange-600',
       glow: 'group-hover:shadow-[0_0_40px_rgba(249,115,22,0.6)]',
       ring: 'ring-orange-500/30',
-      text: 'text-orange-600 dark:text-orange-400',
+      text: 'text-orange-600',
     },
     pink: {
       gradient: 'from-pink-500 to-pink-600',
       glow: 'group-hover:shadow-[0_0_40px_rgba(236,72,153,0.6)]',
       ring: 'ring-pink-500/30',
-      text: 'text-pink-600 dark:text-pink-400',
+      text: 'text-pink-600',
     },
   }
 
@@ -133,8 +133,8 @@ export function QuickStatGlass({
             transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-xl shadow-lg ${
               trend.isPositive
-                ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
-                : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-red-100 text-red-700'
             }`}
           >
             <motion.div
@@ -153,7 +153,7 @@ export function QuickStatGlass({
       </div>
 
       {/* Title */}
-      <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wider">
+      <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider">
         {title}
       </h3>
 
@@ -162,7 +162,7 @@ export function QuickStatGlass({
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
-        className="text-4xl font-black text-gray-900 dark:text-gray-100 mb-2"
+        className="text-4xl font-black text-gray-900 mb-2"
       >
         <motion.span
           initial={{ filter: 'blur(10px)' }}

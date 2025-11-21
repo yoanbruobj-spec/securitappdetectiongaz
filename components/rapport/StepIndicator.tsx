@@ -17,7 +17,7 @@ export function StepIndicator({ steps, currentStep, onStepClick }: StepIndicator
   const currentIndex = steps.findIndex(s => s.id === currentStep)
 
   return (
-    <div className="w-full bg-gradient-to-br from-white/80 via-white/60 to-white/80 dark:from-gray-900/80 dark:via-gray-800/60 dark:to-gray-900/80 backdrop-blur-2xl border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-40 shadow-2xl shadow-black/5">
+    <div className="w-full bg-gradient-to-br from-white/80 via-white/60 to-white/80 backdrop-blur-2xl border-b border-gray-200/50 sticky top-0 z-40 shadow-2xl shadow-black/5">
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
         <div className="flex items-center justify-between gap-2 lg:gap-0">
           {steps.map((step, index) => {
@@ -43,7 +43,7 @@ export function StepIndicator({ steps, currentStep, onStepClick }: StepIndicator
                         ? 'bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-2xl'
                         : isCompleted
                         ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg'
-                        : 'bg-white/60 dark:bg-gray-700/60 backdrop-blur-xl border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400'
+                        : 'bg-white/60 backdrop-blur-xl border border-gray-300 text-gray-500'
                     }`}
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -105,10 +105,10 @@ export function StepIndicator({ steps, currentStep, onStepClick }: StepIndicator
                     <div
                       className={`font-semibold transition-all ${
                         isActive
-                          ? 'text-emerald-600 dark:text-emerald-400 text-base lg:text-lg'
+                          ? 'text-emerald-600 text-base lg:text-lg'
                           : isCompleted
-                          ? 'text-emerald-600 dark:text-emerald-500 text-sm lg:text-base'
-                          : 'text-gray-500 dark:text-gray-400 text-sm'
+                          ? 'text-emerald-600 text-sm lg:text-base'
+                          : 'text-gray-500 text-sm'
                       }`}
                     >
                       {step.label}
@@ -118,7 +118,7 @@ export function StepIndicator({ steps, currentStep, onStepClick }: StepIndicator
 
                 {/* Connecting line */}
                 {index < steps.length - 1 && (
-                  <div className="flex-1 mx-2 lg:mx-4 h-1 bg-gray-200/50 dark:bg-gray-700/50 rounded-full overflow-hidden backdrop-blur-sm">
+                  <div className="flex-1 mx-2 lg:mx-4 h-1 bg-gray-200/50 rounded-full overflow-hidden backdrop-blur-sm">
                     <motion.div
                       className={`h-full rounded-full ${
                         index < currentIndex
@@ -143,10 +143,10 @@ export function StepIndicator({ steps, currentStep, onStepClick }: StepIndicator
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+          <p className="text-sm font-semibold text-emerald-600">
             {steps[currentIndex]?.label}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Étape {currentIndex + 1} sur {steps.length}
           </p>
         </motion.div>

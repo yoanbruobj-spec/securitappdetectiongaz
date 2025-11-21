@@ -155,7 +155,7 @@ export default function InterventionDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -164,9 +164,9 @@ export default function InterventionDetailPage() {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 mx-auto mb-4 border-4 border-gray-200 dark:border-gray-700 border-t-emerald-500 rounded-full"
+            className="w-16 h-16 mx-auto mb-4 border-4 border-gray-200 border-t-emerald-500 rounded-full"
           />
-          <p className="text-slate-600 dark:text-slate-400">Chargement...</p>
+          <p className="text-slate-600">Chargement...</p>
         </motion.div>
       </div>
     )
@@ -174,14 +174,14 @@ export default function InterventionDetailPage() {
 
   if (!intervention) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <p className="text-slate-600 dark:text-slate-400">Intervention non trouvée</p>
+          <p className="text-slate-600">Intervention non trouvée</p>
           <Button
             onClick={() => router.push('/interventions')}
             variant="secondary"
@@ -206,12 +206,12 @@ export default function InterventionDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Header */}
       <motion.nav
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="bg-gradient-to-r from-white/80 via-white/60 to-white/80 dark:from-gray-800/80 dark:via-gray-900/60 dark:to-gray-800/80 backdrop-blur-2xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-xl sticky top-0 z-50"
+        className="bg-gradient-to-r from-white/80 via-white/60 to-white/80 backdrop-blur-2xl border-b border-gray-200/50 shadow-xl sticky top-0 z-50"
       >
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -225,10 +225,10 @@ export default function InterventionDetailPage() {
                 <span className="hidden sm:inline">Retour</span>
               </Button>
               <div>
-                <h1 className="text-lg lg:text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400 bg-clip-text text-transparent">
+                <h1 className="text-lg lg:text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
                   Intervention du {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
                 </h1>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                <p className="text-sm text-slate-600 mt-1">
                   {intervention.sites?.clients?.nom}
                 </p>
               </div>
@@ -269,7 +269,7 @@ export default function InterventionDetailPage() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/50">
                   <FileText className="w-5 h-5 text-white" strokeWidth={2.5} />
                 </div>
-                <h2 className="text-xl lg:text-2xl font-bold text-slate-800 dark:text-slate-100">
+                <h2 className="text-xl lg:text-2xl font-bold text-slate-800">
                   Informations générales
                 </h2>
               </div>
@@ -280,15 +280,15 @@ export default function InterventionDetailPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="bg-gradient-to-br from-white/60 to-gray-50/60 dark:from-gray-800/60 dark:to-gray-900/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/50"
+                  className="bg-gradient-to-br from-white/60 to-gray-50/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    <MapPin className="w-4 h-4 text-emerald-600" />
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Client
                     </p>
                   </div>
-                  <p className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                  <p className="text-lg font-bold text-slate-800">
                     {intervention.sites?.clients?.nom}
                   </p>
                 </motion.div>
@@ -298,18 +298,18 @@ export default function InterventionDetailPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.25 }}
-                  className="bg-gradient-to-br from-white/60 to-gray-50/60 dark:from-gray-800/60 dark:to-gray-900/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/50"
+                  className="bg-gradient-to-br from-white/60 to-gray-50/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    <MapPin className="w-4 h-4 text-cyan-600" />
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Site
                     </p>
                   </div>
-                  <p className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                  <p className="text-lg font-bold text-slate-800">
                     {intervention.sites?.nom}
                   </p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  <p className="text-sm text-slate-600 mt-1">
                     {intervention.sites?.adresse}, {intervention.sites?.ville}
                   </p>
                 </motion.div>
@@ -319,15 +319,15 @@ export default function InterventionDetailPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="bg-gradient-to-br from-white/60 to-gray-50/60 dark:from-gray-800/60 dark:to-gray-900/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/50"
+                  className="bg-gradient-to-br from-white/60 to-gray-50/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    <Calendar className="w-4 h-4 text-blue-600" />
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Date
                     </p>
                   </div>
-                  <p className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                  <p className="text-lg font-bold text-slate-800">
                     {new Date(intervention.date_intervention).toLocaleDateString('fr-FR', {
                       weekday: 'long',
                       year: 'numeric',
@@ -342,15 +342,15 @@ export default function InterventionDetailPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.35 }}
-                  className="bg-gradient-to-br from-white/60 to-gray-50/60 dark:from-gray-800/60 dark:to-gray-900/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/50"
+                  className="bg-gradient-to-br from-white/60 to-gray-50/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    <Clock className="w-4 h-4 text-purple-600" />
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Horaires
                     </p>
                   </div>
-                  <p className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                  <p className="text-lg font-bold text-slate-800">
                     {intervention.heure_debut && intervention.heure_fin
                       ? `${intervention.heure_debut} - ${intervention.heure_fin}`
                       : '-'}
@@ -362,15 +362,15 @@ export default function InterventionDetailPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="bg-gradient-to-br from-white/60 to-gray-50/60 dark:from-gray-800/60 dark:to-gray-900/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/50"
+                  className="bg-gradient-to-br from-white/60 to-gray-50/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Tag className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    <Tag className="w-4 h-4 text-orange-600" />
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Type
                     </p>
                   </div>
-                  <p className="text-lg font-bold text-slate-800 dark:text-slate-100 capitalize">
+                  <p className="text-lg font-bold text-slate-800 capitalize">
                     {intervention.type?.replace(/_/g, ' ')}
                   </p>
                 </motion.div>
@@ -380,11 +380,11 @@ export default function InterventionDetailPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.45 }}
-                  className="bg-gradient-to-br from-white/60 to-gray-50/60 dark:from-gray-800/60 dark:to-gray-900/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/50"
+                  className="bg-gradient-to-br from-white/60 to-gray-50/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Statut
                     </p>
                   </div>
@@ -410,7 +410,7 @@ export default function InterventionDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                     </svg>
                   </div>
-                  <h2 className="text-xl lg:text-2xl font-bold text-slate-800 dark:text-slate-100">
+                  <h2 className="text-xl lg:text-2xl font-bold text-slate-800">
                     Centrales
                   </h2>
                 </div>
@@ -421,10 +421,10 @@ export default function InterventionDetailPage() {
 
               {centrales.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                    <AlertCircle className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <AlertCircle className="w-8 h-8 text-gray-400" />
                   </div>
-                  <p className="text-slate-600 dark:text-slate-400">Aucune centrale enregistrée</p>
+                  <p className="text-slate-600">Aucune centrale enregistrée</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -434,9 +434,9 @@ export default function InterventionDetailPage() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 * index }}
-                      className="bg-gradient-to-br from-gray-50/80 to-white/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-5 hover:shadow-lg hover:border-emerald-300/50 dark:hover:border-emerald-700/50 transition-all"
+                      className="bg-gradient-to-br from-gray-50/80 to-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-5 hover:shadow-lg hover:border-emerald-300/50 transition-all"
                     >
-                      <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                      <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 text-white text-xs flex items-center justify-center font-bold">
                           {index + 1}
                         </span>
@@ -444,23 +444,23 @@ export default function InterventionDetailPage() {
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-sm">
                         <div>
-                          <p className="text-slate-500 dark:text-slate-400 font-medium mb-1">Marque</p>
-                          <p className="text-slate-800 dark:text-slate-100 font-semibold">{centrale.marque}</p>
+                          <p className="text-slate-500 font-medium mb-1">Marque</p>
+                          <p className="text-slate-800 font-semibold">{centrale.marque}</p>
                         </div>
                         <div>
-                          <p className="text-slate-500 dark:text-slate-400 font-medium mb-1">Modèle</p>
-                          <p className="text-slate-800 dark:text-slate-100 font-semibold">{centrale.modele}</p>
+                          <p className="text-slate-500 font-medium mb-1">Modèle</p>
+                          <p className="text-slate-800 font-semibold">{centrale.modele}</p>
                         </div>
                         <div>
-                          <p className="text-slate-500 dark:text-slate-400 font-medium mb-1">N° série</p>
-                          <p className="text-slate-800 dark:text-slate-100 font-semibold">{centrale.numero_serie || '-'}</p>
+                          <p className="text-slate-500 font-medium mb-1">N° série</p>
+                          <p className="text-slate-800 font-semibold">{centrale.numero_serie || '-'}</p>
                         </div>
                         <div>
-                          <p className="text-slate-500 dark:text-slate-400 font-medium mb-1">Firmware</p>
-                          <p className="text-slate-800 dark:text-slate-100 font-semibold">{centrale.firmware || '-'}</p>
+                          <p className="text-slate-500 font-medium mb-1">Firmware</p>
+                          <p className="text-slate-800 font-semibold">{centrale.firmware || '-'}</p>
                         </div>
                         <div>
-                          <p className="text-slate-500 dark:text-slate-400 font-medium mb-1">État général</p>
+                          <p className="text-slate-500 font-medium mb-1">État général</p>
                           <Badge
                             variant={centrale.etat_general === 'bon' ? 'success' : centrale.etat_general === 'moyen' ? 'warning' : 'danger'}
                             size="sm"

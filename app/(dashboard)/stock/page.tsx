@@ -118,9 +118,9 @@ export default function StockInventairePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex flex-col">
       {/* Header glassmorphism */}
-      <header className="bg-gradient-to-r from-white/80 via-white/60 to-white/80 dark:from-gray-800/80 dark:via-gray-900/60 dark:to-gray-800/80 backdrop-blur-2xl border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-50 shadow-xl">
+      <header className="bg-gradient-to-r from-white/80 via-white/60 to-white/80 backdrop-blur-2xl border-b border-gray-200/50 sticky top-0 z-50 shadow-xl">
         <div className="px-4 lg:px-6 py-3 lg:py-4">
           <div className="flex items-center justify-between mb-3 lg:mb-4">
             <div className="flex items-center gap-3">
@@ -144,10 +144,10 @@ export default function StockInventairePage() {
                 <Package className="w-5 h-5 text-white" strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="text-lg lg:text-xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400 bg-clip-text text-transparent">
+                <h1 className="text-lg lg:text-xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
                   Inventaire
                 </h1>
-                <p className="text-xs text-slate-600 dark:text-slate-400 hidden lg:block">Gérez votre stock avec QR codes</p>
+                <p className="text-xs text-slate-600 hidden lg:block">Gérez votre stock avec QR codes</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

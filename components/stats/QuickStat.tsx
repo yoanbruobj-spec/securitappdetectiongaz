@@ -77,7 +77,7 @@ export function QuickStat({
       whileTap={onClick ? { scale: 0.98 } : {}}
       onClick={onClick}
       className={`
-        relative bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg ring-1 ${colors.ring}
+        relative bg-white rounded-2xl p-6 shadow-lg ring-1 ${colors.ring}
         ${onClick ? `cursor-pointer transition-all duration-300 ${colors.hover}` : ''}
         overflow-hidden group
       `}
@@ -100,8 +100,8 @@ export function QuickStat({
             transition={{ delay: 0.2 }}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg ${
               trend.isPositive
-                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-red-100 text-red-700'
             }`}
           >
             {trend.isPositive ? (
@@ -115,14 +115,14 @@ export function QuickStat({
       </div>
 
       {/* Title */}
-      <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{title}</h3>
+      <h3 className="text-sm font-medium text-gray-600 mb-1">{title}</h3>
 
       {/* Value */}
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
-        className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3"
+        className="text-3xl font-bold text-gray-900 mb-3"
       >
         {value}
       </motion.div>
@@ -133,7 +133,7 @@ export function QuickStat({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
+          className="mt-4 pt-4 border-t border-gray-200"
         >
           <MiniChart data={sparklineData} color={color} height={32} width={180} />
         </motion.div>

@@ -32,19 +32,19 @@ export function Table<T extends { id?: string | number }>({
 }: TableProps<T>) {
   const variantStyles = {
     default: {
-      wrapper: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
-      header: 'bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700',
-      row: 'border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30'
+      wrapper: 'bg-white border border-gray-200',
+      header: 'bg-gray-50 border-b border-gray-200',
+      row: 'border-b border-gray-100 hover:bg-gray-50'
     },
     glass: {
-      wrapper: 'bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl',
-      header: 'bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-700/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50',
-      row: 'border-b border-gray-100/30 dark:border-gray-700/30 hover:bg-white/40 dark:hover:bg-gray-700/40 backdrop-blur-sm'
+      wrapper: 'bg-white/60 backdrop-blur-xl border border-gray-200/50 shadow-xl',
+      header: 'bg-gradient-to-r from-gray-50/80 to-white/80 backdrop-blur-sm border-b border-gray-200/50',
+      row: 'border-b border-gray-100/30 hover:bg-white/40 backdrop-blur-sm'
     },
     premium: {
-      wrapper: 'bg-gradient-to-br from-white/80 via-white/60 to-white/80 dark:from-gray-800/80 dark:via-gray-900/60 dark:to-gray-800/80 backdrop-blur-2xl border-2 border-gray-200/80 dark:border-gray-700/80 shadow-2xl shadow-black/10',
-      header: 'bg-gradient-to-r from-emerald-50/50 via-cyan-50/50 to-emerald-50/50 dark:from-emerald-900/20 dark:via-cyan-900/20 dark:to-emerald-900/20 backdrop-blur-sm border-b-2 border-emerald-200/50 dark:border-emerald-700/50',
-      row: 'border-b border-gray-100/30 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-emerald-50/30 hover:to-cyan-50/30 dark:hover:from-emerald-900/10 dark:hover:to-cyan-900/10 backdrop-blur-sm'
+      wrapper: 'bg-gradient-to-br from-white/80 via-white/60 to-white/80 backdrop-blur-2xl border-2 border-gray-200/80 shadow-2xl shadow-black/10',
+      header: 'bg-gradient-to-r from-emerald-50/50 via-cyan-50/50 to-emerald-50/50 backdrop-blur-sm border-b-2 border-emerald-200/50',
+      row: 'border-b border-gray-100/30 hover:bg-gradient-to-r hover:from-emerald-50/30 hover:to-cyan-50/30 backdrop-blur-sm'
     }
   }
 
@@ -67,9 +67,9 @@ export function Table<T extends { id?: string | number }>({
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-12 h-12 border-4 border-gray-200 dark:border-gray-700 border-t-emerald-500 rounded-full mb-4"
+            className="w-12 h-12 border-4 border-gray-200 border-t-emerald-500 rounded-full mb-4"
           />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Chargement...</p>
+          <p className="text-sm text-gray-500">Chargement...</p>
         </div>
       </motion.div>
     )
@@ -87,13 +87,13 @@ export function Table<T extends { id?: string | number }>({
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4"
+            className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4"
           >
-            <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>
           </motion.div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{emptyMessage}</p>
+          <p className="text-sm text-gray-500">{emptyMessage}</p>
         </div>
       </motion.div>
     )
@@ -116,7 +116,7 @@ export function Table<T extends { id?: string | number }>({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05, duration: 0.3 }}
-                  className={`px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 ${alignmentClasses[column.align || 'left']}`}
+                  className={`px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-700 ${alignmentClasses[column.align || 'left']}`}
                   style={{ width: column.width }}
                 >
                   {column.label}
@@ -138,7 +138,7 @@ export function Table<T extends { id?: string | number }>({
                 {columns.map((column) => (
                   <td
                     key={column.key}
-                    className={`px-6 py-4 text-sm text-gray-900 dark:text-gray-100 ${alignmentClasses[column.align || 'left']}`}
+                    className={`px-6 py-4 text-sm text-gray-900 ${alignmentClasses[column.align || 'left']}`}
                   >
                     {column.render
                       ? column.render(item, rowIndex)

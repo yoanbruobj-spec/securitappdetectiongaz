@@ -26,29 +26,28 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
     const variantStyles = {
       default: `
-        bg-white dark:bg-gray-800
-        border border-gray-200 dark:border-gray-700
+        bg-white
+        border border-gray-200
         focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
       `,
       glass: `
-        bg-white/60 dark:bg-gray-800/60
+        bg-white/60
         backdrop-blur-xl
-        border border-gray-200/50 dark:border-gray-700/50
+        border border-gray-200/50
         shadow-lg shadow-black/5
         focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/30
         focus:shadow-emerald-500/20 focus:shadow-xl
-        hover:border-gray-300 dark:hover:border-gray-600
+        hover:border-gray-300
         transition-all duration-300
       `,
       premium: `
         bg-gradient-to-br from-white/80 to-gray-50/80
-        dark:from-gray-800/80 dark:to-gray-900/80
         backdrop-blur-2xl
-        border-2 border-gray-200/80 dark:border-gray-700/80
+        border-2 border-gray-200/80
         shadow-2xl shadow-black/10
         focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/30
         focus:shadow-emerald-500/30 focus:shadow-2xl
-        hover:border-gray-300 dark:hover:border-gray-600
+        hover:border-gray-300
         hover:shadow-xl
         transition-all duration-500
       `
@@ -58,7 +57,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       <div className="w-full">
         {label && (
           <motion.label
-            className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+            className="block text-sm font-semibold text-gray-700 mb-2"
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -79,11 +78,11 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
               w-full px-4 py-3.5
               ${variantStyles[variant]}
               rounded-xl
-              text-gray-900 dark:text-gray-100
-              placeholder:text-gray-400 dark:placeholder:text-gray-500
+              text-gray-900
+              placeholder:text-gray-400
               disabled:opacity-50 disabled:cursor-not-allowed
               resize-none
-              ${error ? 'border-red-400 dark:border-red-500 focus:border-red-500 focus:ring-red-500/30' : ''}
+              ${error ? 'border-red-400 focus:border-red-500 focus:ring-red-500/30' : ''}
               ${className}
             `}
             onFocus={() => setIsFocused(true)}
@@ -109,7 +108,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
               <motion.p
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-xs text-gray-500 dark:text-gray-400"
+                className="text-xs text-gray-500"
               >
                 {helperText}
               </motion.p>
@@ -118,7 +117,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
               <motion.p
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-sm text-red-500 dark:text-red-400 flex items-center gap-1"
+                className="text-sm text-red-500 flex items-center gap-1"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -135,8 +134,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
               animate={{ opacity: 1 }}
               className={`text-xs ${
                 maxCount && currentLength > maxCount
-                  ? 'text-red-500 dark:text-red-400'
-                  : 'text-gray-500 dark:text-gray-400'
+                  ? 'text-red-500'
+                  : 'text-gray-500'
               }`}
             >
               {currentLength}{maxCount && ` / ${maxCount}`}

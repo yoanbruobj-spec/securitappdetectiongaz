@@ -59,7 +59,7 @@ export function ProgressRing({
           stroke="currentColor"
           strokeWidth={strokeWidth}
           fill="none"
-          className="text-gray-200 dark:text-gray-700"
+          className="text-gray-200"
         />
 
         {/* Progress circle */}
@@ -97,13 +97,13 @@ export function ProgressRing({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
-                className="text-2xl font-bold text-gray-900 dark:text-gray-100"
+                className="text-2xl font-bold text-gray-900"
               >
                 {Math.round(percentage)}%
               </motion.div>
             )}
             {label && (
-              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{label}</div>
+              <div className="text-xs text-gray-600 mt-1">{label}</div>
             )}
           </>
         )}

@@ -136,17 +136,17 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen flex bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <Sidebar
           userRole="admin"
           userName={profile?.full_name}
           onLogout={handleLogout}
         />
         <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
-          <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 sticky top-0 z-30">
+          <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 sticky top-0 z-30">
             <div className="ml-16 lg:ml-0">
-              <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2" />
-              <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2" />
+              <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
             </div>
           </header>
           <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
 
       <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         {/* Header GLASSMORPHISM */}
-        <header className="glass-strong border-b border-white/20 dark:border-gray-700/50 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 sticky top-0 z-30 ml-0 lg:ml-0 shadow-lg">
+        <header className="glass-strong border-b border-white/20 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 sticky top-0 z-30 ml-0 lg:ml-0 shadow-lg">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -188,13 +188,13 @@ export default function AdminDashboard() {
               <h1 className="text-xl sm:text-2xl lg:text-4xl font-black text-gradient drop-shadow-lg">
                 Tableau de bord
               </h1>
-              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mt-2 font-medium hidden sm:block">
+              <p className="text-sm sm:text-base text-gray-700 mt-2 font-medium hidden sm:block">
                 Bienvenue {profile?.full_name} <span className="inline-block animate-float">👋</span>
               </p>
             </div>
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="hidden sm:flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300 glass px-5 py-3 rounded-2xl shadow-xl ring-2 ring-emerald-500/20"
+              className="hidden sm:flex items-center gap-3 text-sm text-gray-700 glass px-5 py-3 rounded-2xl shadow-xl ring-2 ring-emerald-500/20"
             >
               <motion.svg
                 animate={{ rotate: 360 }}
@@ -267,12 +267,12 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               className="mb-8 sm:mb-10 lg:mb-12"
             >
-              <div className="glass-strong rounded-3xl p-6 sm:p-8 shadow-2xl ring-2 ring-red-500/30 dark:ring-red-500/40 relative overflow-hidden">
+              <div className="glass-strong rounded-3xl p-6 sm:p-8 shadow-2xl ring-2 ring-red-500/30 relative overflow-hidden">
                 {/* Glow effect animé */}
                 <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-orange-500/10 to-red-500/10 animate-gradient opacity-50" />
 
                 {/* Header avec badge d'alerte */}
-                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b-2 border-red-200/50 dark:border-red-800/50">
+                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b-2 border-red-200/50">
                   <div className="flex items-center gap-4">
                     <motion.div
                       animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
@@ -295,7 +295,7 @@ export default function AdminDashboard() {
                           {stockAlertes.length}
                         </motion.span>
                       </div>
-                      <p className="text-base text-gray-600 dark:text-gray-400">
+                      <p className="text-base text-gray-600">
                         Article{stockAlertes.length > 1 ? 's' : ''} nécessitant un réapprovisionnement
                       </p>
                     </div>
@@ -329,7 +329,7 @@ export default function AdminDashboard() {
                       whileHover={{ y: -4, scale: 1.02 }}
                       transition={{ delay: index * 0.08 }}
                       onClick={() => router.push(`/stock/${article.id}`)}
-                      className="cursor-pointer glass rounded-2xl p-6 ring-2 ring-red-400/30 dark:ring-red-500/40 hover:ring-red-500/50 dark:hover:ring-red-400/60 hover:shadow-2xl transition-all duration-300 group relative overflow-hidden"
+                      className="cursor-pointer glass rounded-2xl p-6 ring-2 ring-red-400/30 hover:ring-red-500/50 hover:shadow-2xl transition-all duration-300 group relative overflow-hidden"
                     >
                       {/* Gradient glow on hover */}
                       <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 via-orange-500/0 to-red-500/0 group-hover:from-red-500/10 group-hover:via-orange-500/10 group-hover:to-red-500/10 transition-all duration-500" />
@@ -343,28 +343,28 @@ export default function AdminDashboard() {
                           <Package className="relative w-6 h-6 text-white drop-shadow-lg" />
                         </motion.div>
                         <div className="relative flex-1 min-w-0">
-                          <h4 className="font-black text-base text-gray-900 dark:text-gray-100 mb-0.5 truncate group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
+                          <h4 className="font-black text-base text-gray-900 mb-0.5 truncate group-hover:text-red-600 transition-colors duration-300">
                             {article.nom}
                           </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className="text-sm text-gray-600">
                             Réf: <span className="font-medium">{article.reference}</span>
                           </p>
                         </div>
                       </div>
 
-                      <div className="relative flex items-center justify-between glass rounded-xl p-3 ring-1 ring-red-300/30 dark:ring-red-700/40">
+                      <div className="relative flex items-center justify-between glass rounded-xl p-3 ring-1 ring-red-300/30">
                         <div>
-                          <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wide">Stock actuel</p>
+                          <p className="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Stock actuel</p>
                           <div className="flex items-baseline gap-2">
                             <motion.span
                               initial={{ scale: 0.5, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               transition={{ delay: index * 0.08 + 0.2 }}
-                              className="text-3xl font-black text-red-600 dark:text-red-400"
+                              className="text-3xl font-black text-red-600"
                             >
                               {article.quantite}
                             </motion.span>
-                            <span className="text-lg font-semibold text-gray-500 dark:text-gray-500">/ {article.seuil_alerte}</span>
+                            <span className="text-lg font-semibold text-gray-500">/ {article.seuil_alerte}</span>
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-2">
@@ -372,7 +372,7 @@ export default function AdminDashboard() {
                             ⚠️ ALERTE
                           </Badge>
                           {article.emplacement && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                            <p className="text-xs text-gray-500 flex items-center gap-1">
                               <span>📍</span>
                               <span className="truncate max-w-[120px]">{article.emplacement}</span>
                             </p>
@@ -385,10 +385,10 @@ export default function AdminDashboard() {
 
                 {/* Footer si plus d'articles */}
                 {stockAlertes.length > 6 && (
-                  <div className="mt-6 pt-6 border-t-2 border-red-100 dark:border-red-900/50 text-center">
+                  <div className="mt-6 pt-6 border-t-2 border-red-100 text-center">
                     <button
                       onClick={() => router.push('/stock')}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 font-semibold rounded-xl transition"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-red-50 hover:bg-red-100 text-red-700 font-semibold rounded-xl transition"
                     >
                       <AlertTriangle className="w-5 h-5" />
                       Voir les {stockAlertes.length - 6} autres alertes
@@ -407,7 +407,7 @@ export default function AdminDashboard() {
               transition={{ delay: 0.3 }}
               className="lg:col-span-2 order-2 lg:order-1"
             >
-              <div className="glass-strong rounded-3xl p-6 sm:p-8 shadow-2xl ring-2 ring-emerald-500/20 dark:ring-emerald-500/30 relative overflow-hidden">
+              <div className="glass-strong rounded-3xl p-6 sm:p-8 shadow-2xl ring-2 ring-emerald-500/20 relative overflow-hidden">
                 {/* Gradient glow animé */}
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-cyan-500/5 to-emerald-500/5 animate-gradient opacity-50" />
 
@@ -427,7 +427,7 @@ export default function AdminDashboard() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => router.push('/interventions')}
-                    className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-bold flex items-center gap-1 glass px-4 py-2 rounded-xl shadow-lg transition group"
+                    className="text-sm text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1 glass px-4 py-2 rounded-xl shadow-lg transition group"
                   >
                     Tout voir
                     <motion.svg
@@ -464,14 +464,14 @@ export default function AdminDashboard() {
                             router.push(`/intervention/${intervention.id}`)
                           }
                         }}
-                        className="relative cursor-pointer group glass rounded-2xl p-5 ring-1 ring-gray-300/30 dark:ring-gray-600/30 hover:ring-emerald-400/50 dark:hover:ring-emerald-500/50 hover:shadow-2xl transition-all duration-300 overflow-hidden"
+                        className="relative cursor-pointer group glass rounded-2xl p-5 ring-1 ring-gray-300/30 hover:ring-emerald-400/50 hover:shadow-2xl transition-all duration-300 overflow-hidden"
                       >
                         {/* Gradient glow on hover */}
                         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 via-cyan-500/0 to-emerald-500/0 group-hover:from-emerald-500/10 group-hover:via-cyan-500/10 group-hover:to-emerald-500/10 transition-all duration-500" />
                         <div className="relative flex justify-between items-start mb-2">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <p className="font-black text-gray-900 dark:text-gray-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300">
+                              <p className="font-black text-gray-900 group-hover:text-emerald-600 transition-colors duration-300">
                                 {intervention.sites?.clients?.nom}
                               </p>
                               <Badge

@@ -18,7 +18,7 @@ export function Skeleton({
   animation = 'wave',
   ...props
 }: SkeletonProps) {
-  const baseClasses = 'bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800'
+  const baseClasses = 'bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200'
 
   const variantClasses = {
     text: 'rounded h-4',
@@ -45,7 +45,7 @@ export function Skeleton({
         {...props}
       >
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent"
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
           animate={{
             x: ['-100%', '100%'],
           }}
@@ -71,7 +71,7 @@ export function Skeleton({
 // Composants pré-configurés pour usage rapide
 export function CardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg ring-1 ring-gray-200 dark:ring-gray-700">
+    <div className="bg-white rounded-2xl p-6 shadow-lg ring-1 ring-gray-200">
       <div className="flex items-center gap-4 mb-6">
         <Skeleton variant="circular" width={48} height={48} />
         <div className="flex-1">
@@ -90,7 +90,7 @@ export function CardSkeleton() {
 
 export function TableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg ring-1 ring-gray-200 dark:ring-gray-700">
+    <div className="bg-white rounded-2xl p-6 shadow-lg ring-1 ring-gray-200">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <Skeleton variant="text" width={200} height={24} />
@@ -98,7 +98,7 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
       </div>
 
       {/* Table Header */}
-      <div className="grid grid-cols-4 gap-4 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="grid grid-cols-4 gap-4 mb-4 pb-4 border-b border-gray-200">
         {[...Array(4)].map((_, i) => (
           <Skeleton key={i} variant="text" width="80%" />
         ))}
@@ -126,7 +126,7 @@ export function DashboardSkeleton() {
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
-            className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg ring-1 ring-gray-200 dark:ring-gray-700"
+            className="bg-white rounded-2xl p-6 shadow-lg ring-1 ring-gray-200"
           >
             <div className="flex items-center justify-between mb-4">
               <Skeleton variant="circular" width={40} height={40} />
@@ -157,7 +157,7 @@ export function ListSkeleton({ items = 5 }: { items?: number }) {
       {[...Array(items)].map((_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700"
+          className="bg-white rounded-xl p-4 shadow-sm ring-1 ring-gray-200"
         >
           <div className="flex items-center gap-4">
             <Skeleton variant="circular" width={48} height={48} />

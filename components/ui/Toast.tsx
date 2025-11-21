@@ -113,11 +113,11 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
   }
 
   const backgrounds = {
-    success: 'bg-white dark:bg-gray-800 border-l-4 border-emerald-500',
-    error: 'bg-white dark:bg-gray-800 border-l-4 border-red-500',
-    warning: 'bg-white dark:bg-gray-800 border-l-4 border-amber-500',
-    info: 'bg-white dark:bg-gray-800 border-l-4 border-blue-500',
-    loading: 'bg-white dark:bg-gray-800 border-l-4 border-gray-400',
+    success: 'bg-white border-l-4 border-emerald-500',
+    error: 'bg-white border-l-4 border-red-500',
+    warning: 'bg-white border-l-4 border-amber-500',
+    info: 'bg-white border-l-4 border-blue-500',
+    loading: 'bg-white border-l-4 border-gray-400',
   }
 
   return (
@@ -130,9 +130,9 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
     >
       <div className="flex-shrink-0 mt-0.5">{icons[toast.type]}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{toast.title}</p>
+        <p className="text-sm font-semibold text-gray-900">{toast.title}</p>
         {toast.description && (
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{toast.description}</p>
+          <p className="text-xs text-gray-600 mt-1">{toast.description}</p>
         )}
         {toast.action && (
           <button
@@ -140,7 +140,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
               toast.action?.onClick()
               onDismiss()
             }}
-            className="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 mt-2 transition-colors"
+            className="text-xs font-medium text-emerald-600 hover:text-emerald-700 mt-2 transition-colors"
           >
             {toast.action.label}
           </button>
@@ -149,7 +149,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
       {toast.type !== 'loading' && (
         <button
           onClick={onDismiss}
-          className="flex-shrink-0 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          className="flex-shrink-0 p-1 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <X className="w-4 h-4 text-gray-500" />
         </button>

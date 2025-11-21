@@ -18,13 +18,9 @@ import {
   Settings,
   Menu,
   X,
-  Search,
-  Moon,
-  Sun,
-  Monitor
+  Search
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useTheme } from '@/lib/design-system/useTheme'
 
 interface SidebarProps {
   userRole?: 'admin' | 'technicien'
@@ -46,7 +42,6 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  const { theme, setTheme, resolvedTheme } = useTheme()
 
   // Détecter si on est sur mobile
   useEffect(() => {
@@ -90,18 +85,18 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
     }
 
     const colors: any = {
-      emerald: 'text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-300',
-      cyan: 'text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-700 dark:group-hover:text-cyan-300',
-      blue: 'text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300',
-      purple: 'text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300',
-      orange: 'text-orange-600 dark:text-orange-400 group-hover:text-orange-700 dark:group-hover:text-orange-300',
-      pink: 'text-pink-600 dark:text-pink-400 group-hover:text-pink-700 dark:group-hover:text-pink-300',
+      emerald: 'text-emerald-600 group-hover:text-emerald-700',
+      cyan: 'text-cyan-600 group-hover:text-cyan-700',
+      blue: 'text-blue-600 group-hover:text-blue-700',
+      purple: 'text-purple-600 group-hover:text-purple-700',
+      orange: 'text-orange-600 group-hover:text-orange-700',
+      pink: 'text-pink-600 group-hover:text-pink-700',
     }
 
     return {
-      bg: 'bg-gray-50 dark:bg-gray-800/50 group-hover:bg-gray-100 dark:group-hover:bg-gray-700/50',
-      text: 'text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white',
-      icon: colors[color] || 'text-gray-600 dark:text-gray-400'
+      bg: 'bg-gray-50 group-hover:bg-gray-100',
+      text: 'text-gray-700 group-hover:text-gray-900',
+      icon: colors[color] || 'text-gray-600'
     }
   }
 
@@ -139,7 +134,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
           x: isMobile ? (mobileOpen ? 0 : -280) : 0
         }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="fixed lg:relative h-screen bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border-r-2 border-emerald-500/20 dark:border-emerald-500/40 flex flex-col shadow-2xl z-50 overflow-hidden relative"
+        className="fixed lg:relative h-screen bg-white/95 backdrop-blur-2xl border-r-2 border-emerald-500/20 flex flex-col shadow-2xl z-50 overflow-hidden relative"
       >
         {/* Gradient mesh background animé */}
         <div className="absolute inset-0 -z-10 opacity-30">
@@ -155,7 +150,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="absolute top-0 left-0 w-[200px] h-[200px] bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-40"
+            className="absolute top-0 left-0 w-[200px] h-[200px] bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
           />
           <motion.div
             animate={{
@@ -170,11 +165,11 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
               ease: "easeInOut",
               delay: 1
             }}
-            className="absolute bottom-0 right-0 w-[250px] h-[250px] bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-40"
+            className="absolute bottom-0 right-0 w-[250px] h-[250px] bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
           />
         </div>
       {/* Header with Logo - GLASSMORPHISM */}
-      <div className="relative h-20 border-b-2 border-emerald-500/20 dark:border-emerald-500/30 glass flex items-center justify-center px-4 overflow-hidden">
+      <div className="relative h-20 border-b-2 border-emerald-500/20 glass flex items-center justify-center px-4 overflow-hidden">
         {/* Glow effect animé */}
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-cyan-500/5 to-emerald-500/5 animate-gradient opacity-50" />
 
@@ -186,7 +181,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
           className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-red-500/10 transition shadow-lg relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-red-500/0 group-hover:from-red-500/20 group-hover:to-red-500/20 transition-all duration-300" />
-          <X className="relative w-5 h-5 text-gray-700 dark:text-gray-300 drop-shadow-sm" />
+          <X className="relative w-5 h-5 text-gray-700 drop-shadow-sm" />
         </motion.button>
 
         <AnimatePresence mode="wait">
@@ -200,7 +195,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
               className="flex items-center justify-center"
             >
               {/* Logo avec fond adaptatif */}
-              <div className="relative px-4 py-3 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-700 dark:to-gray-800 shadow-xl">
+              <div className="relative px-4 py-3 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 shadow-xl">
                 <Image
                   src="/logo-securit-blanc.png"
                   alt="SÉCUR'IT"
@@ -287,7 +282,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
               className={`relative w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-3 rounded-2xl transition-all group overflow-hidden ${
                 active
                   ? 'glass ring-2 ring-emerald-500/30 shadow-xl'
-                  : 'hover:glass hover:ring-1 hover:ring-gray-300/30 dark:hover:ring-gray-600/30'
+                  : 'hover:glass hover:ring-1 hover:ring-gray-300/30'
               }`}
             >
               {/* Glow effect pour item actif */}
@@ -298,7 +293,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
               <div className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                 active
                   ? 'bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg'
-                  : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800'
+                  : 'group-hover:bg-gray-100'
               }`}>
                 {active && <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 blur-md opacity-50 animate-pulse-glow" />}
                 <Icon className={`relative w-5 h-5 flex-shrink-0 ${active ? 'text-white drop-shadow-lg' : colors.icon}`} />
@@ -310,7 +305,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: 'auto' }}
                     exit={{ opacity: 0, width: 0 }}
-                    className={`relative font-bold whitespace-nowrap overflow-hidden ${active ? 'text-gray-900 dark:text-gray-100' : colors.text}`}
+                    className={`relative font-bold whitespace-nowrap overflow-hidden ${active ? 'text-gray-900' : colors.text}`}
                   >
                     {item.label}
                   </motion.span>
@@ -331,7 +326,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
       </nav>
 
       {/* User Profile & Logout - GLASSMORPHISM */}
-      <div className="relative border-t-2 border-emerald-500/20 dark:border-emerald-500/30 p-4 glass">
+      <div className="relative border-t-2 border-emerald-500/20 p-4 glass">
         {/* Glow effect */}
         <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/5 via-cyan-500/5 to-transparent opacity-50" />
 
@@ -344,9 +339,9 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
               exit={{ opacity: 0, y: 10 }}
               className="relative mb-3 p-3 glass rounded-2xl ring-1 ring-emerald-500/20"
             >
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Connecté en tant que</p>
-              <p className="text-sm text-gray-900 dark:text-gray-100 font-black truncate">{userName}</p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold capitalize">{userRole}</p>
+              <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Connecté en tant que</p>
+              <p className="text-sm text-gray-900 font-black truncate">{userName}</p>
+              <p className="text-xs text-emerald-600 font-bold capitalize">{userRole}</p>
             </motion.div>
           ) : (
             <motion.div
@@ -364,61 +359,9 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
           )}
         </AnimatePresence>
 
-        {/* Theme Switcher - GLASSMORPHISM */}
-        <div className={`relative mb-2 flex ${collapsed ? 'justify-center' : 'gap-1'} p-1 glass rounded-2xl ring-1 ring-gray-300/20 dark:ring-gray-600/20`}>
-          {!collapsed ? (
-            <>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setTheme('light')}
-                className={`relative flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all overflow-hidden ${
-                  resolvedTheme === 'light'
-                    ? 'glass-strong ring-2 ring-emerald-500/30 text-emerald-600 dark:text-emerald-400 shadow-lg'
-                    : 'text-gray-600 dark:text-gray-400 hover:glass'
-                }`}
-                title="Mode clair"
-              >
-                {resolvedTheme === 'light' && <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 animate-gradient" />}
-                <Sun className="relative w-4 h-4" />
-                <span className="relative text-xs font-bold">Clair</span>
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setTheme('dark')}
-                className={`relative flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all overflow-hidden ${
-                  resolvedTheme === 'dark'
-                    ? 'glass-strong ring-2 ring-emerald-500/30 text-emerald-600 dark:text-emerald-400 shadow-lg'
-                    : 'text-gray-600 dark:text-gray-400 hover:glass'
-                }`}
-                title="Mode sombre"
-              >
-                {resolvedTheme === 'dark' && <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 animate-gradient" />}
-                <Moon className="relative w-4 h-4" />
-                <span className="relative text-xs font-bold">Sombre</span>
-              </motion.button>
-            </>
-          ) : (
-            <motion.button
-              whileHover={{ scale: 1.1, rotate: 180 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className="relative p-2 glass rounded-xl transition-colors overflow-hidden"
-              title={resolvedTheme === 'dark' ? 'Mode clair' : 'Mode sombre'}
-            >
-              {resolvedTheme === 'dark' ? (
-                <Sun className="relative w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              ) : (
-                <Moon className="relative w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              )}
-            </motion.button>
-          )}
-        </div>
-
         <button
           onClick={onLogout}
-          className={`w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all group`}
+          className={`w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-2.5 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all group`}
         >
           <LogOut className="w-4 h-4 flex-shrink-0" />
           <AnimatePresence>
