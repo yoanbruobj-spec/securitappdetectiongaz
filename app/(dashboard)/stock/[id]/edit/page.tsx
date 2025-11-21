@@ -244,38 +244,42 @@ export default function EditArticlePage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b border-gray-300 shadow-sm sticky top-0 z-50">
-        <div className="px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => router.push(`/stock/${params.id}`)}
-              variant="ghost"
-              size="sm"
-              icon={<ArrowLeft className="w-4 h-4" />}
-            >
-              Retour
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-purple-500 shadow-lg shadow-purple-500/20 flex items-center justify-center">
-                <Package className="w-5 h-5 text-white" />
+        <div className="px-4 lg:px-8 py-3 lg:py-4">
+          <div className="flex items-center justify-between mb-2 lg:mb-0">
+            <div className="flex items-center gap-2 lg:gap-3">
+              <Button
+                onClick={() => router.push(`/stock/${params.id}`)}
+                variant="ghost"
+                size="sm"
+                icon={<ArrowLeft className="w-4 h-4" />}
+              >
+                <span className="hidden sm:inline">Retour</span>
+              </Button>
+              <div className="flex items-center gap-2 lg:gap-3">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-gradient-to-br from-purple-600 to-purple-500 shadow-lg shadow-purple-500/20 flex items-center justify-center">
+                  <Package className="w-4 lg:w-5 h-4 lg:h-5 text-white" />
+                </div>
+                <h1 className="text-base lg:text-xl font-bold text-slate-800">Modifier</h1>
               </div>
-              <h1 className="text-xl font-bold text-slate-800">Modifier l'article</h1>
             </div>
+            <Button
+              onClick={handleDelete}
+              variant="danger"
+              icon={<Trash2 className="w-4 lg:w-5 h-4 lg:h-5" />}
+              className="text-xs lg:text-sm px-3 lg:px-4"
+            >
+              <span className="hidden sm:inline">Supprimer</span>
+              <span className="sm:hidden">🗑️</span>
+            </Button>
           </div>
-          <Button
-            onClick={handleDelete}
-            variant="danger"
-            icon={<Trash2 className="w-5 h-5" />}
-          >
-            Supprimer
-          </Button>
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-8 py-6">
+      <main className="flex-1 overflow-y-auto px-4 lg:px-8 py-4 lg:py-6">
         <div className="max-w-3xl mx-auto">
           <form onSubmit={handleSubmit}>
             <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
-              <div className="space-y-4">
+              <div className="space-y-3 lg:space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -406,24 +410,24 @@ export default function EditArticlePage() {
 
                 {/* Section upload d'image */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-xs lg:text-sm font-medium text-slate-700 mb-2">
                     Photo de l'article
                   </label>
 
                   {/* Image actuelle */}
                   {currentPhotoUrl && !imagePreview && (
-                    <div className="relative border-2 border-gray-200 rounded-lg p-4 mb-3">
+                    <div className="relative border-2 border-gray-200 rounded-lg p-3 lg:p-4 mb-3">
                       <button
                         type="button"
                         onClick={removeCurrentPhoto}
                         className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full transition z-10"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3 lg:w-4 h-3 lg:h-4" />
                       </button>
                       <img
                         src={currentPhotoUrl}
                         alt="Photo actuelle"
-                        className="w-full h-48 object-contain rounded-lg"
+                        className="w-full h-32 lg:h-48 object-contain rounded-lg bg-gray-50"
                       />
                       <p className="text-xs text-gray-500 text-center mt-2">Photo actuelle</p>
                     </div>
@@ -431,18 +435,18 @@ export default function EditArticlePage() {
 
                   {/* Nouvelle image sélectionnée */}
                   {imagePreview && (
-                    <div className="relative border-2 border-gray-200 rounded-lg p-4 mb-3">
+                    <div className="relative border-2 border-gray-200 rounded-lg p-3 lg:p-4 mb-3">
                       <button
                         type="button"
                         onClick={removeImage}
                         className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full transition z-10"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3 lg:w-4 h-3 lg:h-4" />
                       </button>
                       <img
                         src={imagePreview}
                         alt="Nouvelle photo"
-                        className="w-full h-48 object-contain rounded-lg"
+                        className="w-full h-32 lg:h-48 object-contain rounded-lg bg-gray-50"
                       />
                       <p className="text-xs text-gray-500 text-center mt-2">Nouvelle photo (sera uploadée)</p>
                     </div>
@@ -450,7 +454,7 @@ export default function EditArticlePage() {
 
                   {/* Zone d'upload */}
                   {!imagePreview && (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-400 transition">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 lg:p-6 text-center hover:border-purple-400 transition">
                       <input
                         type="file"
                         accept="image/*"
@@ -462,15 +466,15 @@ export default function EditArticlePage() {
                         htmlFor="image-upload-edit"
                         className="cursor-pointer flex flex-col items-center gap-2"
                       >
-                        <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                          <ImageIcon className="w-6 h-6 text-purple-600" />
+                        <div className="w-10 lg:w-12 h-10 lg:h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                          <ImageIcon className="w-5 lg:w-6 h-5 lg:h-6 text-purple-600" />
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-xs lg:text-sm text-gray-600">
                           <span className="text-purple-600 font-medium">
                             {currentPhotoUrl ? 'Remplacer l\'image' : 'Ajouter une image'}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-400">
+                        <div className="text-[10px] lg:text-xs text-gray-400">
                           PNG, JPG jusqu'à 5MB
                         </div>
                       </label>
@@ -488,19 +492,21 @@ export default function EditArticlePage() {
                 </div>
               </div>
 
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="mt-4 lg:mt-6 flex flex-col sm:flex-row justify-end gap-2 lg:gap-3">
                 <Button
                   type="button"
                   onClick={() => router.push(`/stock/${params.id}`)}
                   variant="secondary"
+                  className="w-full sm:w-auto text-sm lg:text-base"
                 >
                   Annuler
                 </Button>
                 <Button
                   type="submit"
                   variant="primary"
-                  icon={<Save className="w-5 h-5" />}
+                  icon={<Save className="w-4 lg:w-5 h-4 lg:h-5" />}
                   disabled={processing}
+                  className="w-full sm:w-auto text-sm lg:text-base"
                 >
                   {processing ? 'Enregistrement...' : 'Enregistrer'}
                 </Button>

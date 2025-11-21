@@ -343,39 +343,38 @@ export default function ScannerQRPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b border-gray-300 shadow-sm sticky top-0 z-50">
-        <div className="px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => router.push('/stock')}
-              variant="ghost"
-              size="sm"
-              icon={<ArrowLeft className="w-4 h-4" />}
-            >
-              Retour
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 shadow-lg shadow-blue-500/20 flex items-center justify-center">
-                <Camera className="w-5 h-5 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-slate-800">Scanner QR</h1>
+        <div className="px-4 lg:px-8 py-3 lg:py-4 flex items-center gap-3">
+          <Button
+            onClick={() => router.push('/stock')}
+            variant="ghost"
+            size="sm"
+            icon={<ArrowLeft className="w-4 h-4" />}
+          >
+            <span className="hidden sm:inline">Retour</span>
+          </Button>
+          <div className="flex items-center gap-2 lg:gap-3">
+            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 shadow-lg shadow-blue-500/20 flex items-center justify-center">
+              <Camera className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
             </div>
+            <h1 className="text-base lg:text-xl font-bold text-slate-800">Scanner QR</h1>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-8 py-6">
+      <main className="flex-1 overflow-y-auto px-4 lg:px-8 py-4 lg:py-6">
         <div className="max-w-2xl mx-auto">
           {!scanning && !scannedArticle && !error && (
             <Card variant="glass" padding="lg" className="bg-white border border-gray-300 text-center">
-              <Camera className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-              <h2 className="text-xl font-semibold text-slate-800 mb-2">Scanner un QR code</h2>
-              <p className="text-slate-600 mb-6">
-                Scannez le QR code collé sur l'étagère pour effectuer une entrée ou sortie de stock
+              <Camera className="w-12 lg:w-16 h-12 lg:h-16 mx-auto mb-3 lg:mb-4 text-slate-400" />
+              <h2 className="text-lg lg:text-xl font-semibold text-slate-800 mb-2">Scanner un QR code</h2>
+              <p className="text-sm lg:text-base text-slate-600 mb-4 lg:mb-6 px-2">
+                Scannez le QR code collé sur l'étagère pour effectuer une entrée, sortie ou transfert de stock
               </p>
               <Button
                 onClick={startScanner}
                 variant="primary"
-                icon={<Camera className="w-5 h-5" />}
+                icon={<Camera className="w-4 lg:w-5 h-4 lg:h-5" />}
+                className="text-sm lg:text-base"
               >
                 Démarrer le scanner
               </Button>
@@ -419,54 +418,54 @@ export default function ScannerQRPage() {
           )}
 
           {scannedArticle && showMouvementForm && (
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
-                <h2 className="text-xl font-bold text-slate-800 mb-4">Article scanné</h2>
+                <h2 className="text-lg lg:text-xl font-bold text-slate-800 mb-3 lg:mb-4">Article scanné</h2>
                 <div className="space-y-2">
-                  <p className="text-lg font-semibold text-slate-800">{scannedArticle.nom}</p>
-                  <p className="text-sm text-slate-600">Réf: {scannedArticle.reference}</p>
+                  <p className="text-base lg:text-lg font-semibold text-slate-800">{scannedArticle.nom}</p>
+                  <p className="text-xs lg:text-sm text-slate-600">Réf: {scannedArticle.reference}</p>
                   {scannedArticle.emplacement && (
-                    <p className="text-sm text-slate-600">📍 {scannedArticle.emplacement}</p>
+                    <p className="text-xs lg:text-sm text-slate-600">📍 {scannedArticle.emplacement}</p>
                   )}
-                  <p className="text-lg font-bold text-slate-800 mt-3">
+                  <p className="text-base lg:text-lg font-bold text-slate-800 mt-2 lg:mt-3">
                     Stock actuel: {scannedArticle.quantite} unités
                   </p>
                 </div>
               </Card>
 
               <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
-                <h3 className="font-semibold text-slate-800 mb-4">Type de mouvement</h3>
-                <div className="grid grid-cols-3 gap-2 mb-4">
+                <h3 className="text-base lg:text-lg font-semibold text-slate-800 mb-3 lg:mb-4">Type de mouvement</h3>
+                <div className="grid grid-cols-3 gap-2 mb-3 lg:mb-4">
                   <Button
                     onClick={() => setMouvementType('entree')}
                     variant={mouvementType === 'entree' ? 'primary' : 'secondary'}
-                    icon={<TrendingUp className="w-4 h-4" />}
-                    className="h-16 text-xs"
+                    icon={<TrendingUp className="w-3 lg:w-4 h-3 lg:h-4" />}
+                    className="h-12 lg:h-16 text-[10px] lg:text-xs px-1 lg:px-3"
                   >
                     ENTRÉE
                   </Button>
                   <Button
                     onClick={() => setMouvementType('sortie')}
                     variant={mouvementType === 'sortie' ? 'primary' : 'secondary'}
-                    icon={<TrendingDown className="w-4 h-4" />}
-                    className="h-16 text-xs"
+                    icon={<TrendingDown className="w-3 lg:w-4 h-3 lg:h-4" />}
+                    className="h-12 lg:h-16 text-[10px] lg:text-xs px-1 lg:px-3"
                   >
                     SORTIE
                   </Button>
                   <Button
                     onClick={() => setMouvementType('transfert')}
                     variant={mouvementType === 'transfert' ? 'primary' : 'secondary'}
-                    icon={<ArrowRightLeft className="w-4 h-4" />}
-                    className="h-16 text-xs"
+                    icon={<ArrowRightLeft className="w-3 lg:w-4 h-3 lg:h-4" />}
+                    className="h-12 lg:h-16 text-[10px] lg:text-xs px-1 lg:px-3"
                   >
-                    TRANSFERT
+                    TRANSF.
                   </Button>
                 </div>
 
                 {/* Affichage de la répartition du stock */}
                 {inventaire.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs font-medium text-slate-700 mb-2">Répartition actuelle :</p>
+                  <div className="mb-3 lg:mb-4">
+                    <p className="text-xs lg:text-sm font-medium text-slate-700 mb-2">Répartition actuelle :</p>
                     <div className="space-y-1">
                       {inventaire.map(inv => (
                         <div key={inv.id} className={`px-3 py-2 rounded-lg border text-sm ${getEmplacementColor(inv.stock_emplacements?.type || '')}`}>
@@ -564,9 +563,9 @@ export default function ScannerQRPage() {
                   </div>
                 )}
 
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-xs lg:text-sm font-medium text-slate-700 mb-1">
                       Quantité *
                     </label>
                     <Input
@@ -575,28 +574,28 @@ export default function ScannerQRPage() {
                       placeholder="Ex: 2"
                       value={mouvementData.quantite}
                       onChange={(e) => setMouvementData({ ...mouvementData, quantite: e.target.value })}
-                      className="text-lg text-center"
+                      className="text-base lg:text-lg text-center"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-xs lg:text-sm font-medium text-slate-700 mb-1">
                       Notes (optionnel)
                     </label>
                     <textarea
                       value={mouvementData.notes}
                       onChange={(e) => setMouvementData({ ...mouvementData, notes: e.target.value })}
                       placeholder="Ex: Intervention site ABC, N° série: 12345..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       rows={3}
                     />
                   </div>
 
-                  <div className="flex gap-3 pt-4">
+                  <div className="flex gap-2 lg:gap-3 pt-3 lg:pt-4">
                     <Button
                       onClick={resetScanner}
                       variant="secondary"
-                      className="flex-1"
+                      className="flex-1 text-sm lg:text-base"
                       disabled={processing}
                     >
                       Annuler
@@ -604,7 +603,7 @@ export default function ScannerQRPage() {
                     <Button
                       onClick={handleMouvement}
                       variant="primary"
-                      className="flex-1"
+                      className="flex-1 text-sm lg:text-base"
                       disabled={processing}
                     >
                       {processing ? 'Traitement...' : 'Valider'}

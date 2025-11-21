@@ -60,8 +60,10 @@ export default function ArticleDetailPage() {
       try {
         const qrData = article.qr_code || `SECURIT-ART-${article.id}`
 
+        // Taille responsive du QR code
+        const isMobile = window.innerWidth < 768
         await QRCodeLib.toCanvas(qrCanvasRef.current, qrData, {
-          width: 300,
+          width: isMobile ? 180 : 300,
           margin: 2,
           color: {
             dark: '#000000',
@@ -390,67 +392,75 @@ export default function ArticleDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b border-gray-300 shadow-sm sticky top-0 z-50">
-        <div className="px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="px-4 lg:px-8 py-3 lg:py-4">
+          <div className="flex items-center gap-2 lg:gap-4 mb-3">
             <Button
               onClick={() => router.push('/stock')}
               variant="ghost"
               size="sm"
               icon={<ArrowLeft className="w-4 h-4" />}
             >
-              Retour
+              <span className="hidden sm:inline">Retour</span>
             </Button>
-            <h1 className="text-xl font-bold text-slate-800">{article.nom}</h1>
-            {isAlerte && <Badge variant="danger">Alerte stock</Badge>}
+            <h1 className="text-base lg:text-xl font-bold text-slate-800 flex-1 truncate">{article.nom}</h1>
+            {isAlerte && <Badge variant="danger" size="sm">Alerte</Badge>}
           </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => openModal('sortie')}
-              variant="secondary"
-              icon={<TrendingDown className="w-5 h-5" />}
-            >
-              Sortie
-            </Button>
+          <div className="flex gap-2 overflow-x-auto pb-2">
             <Button
               onClick={() => openModal('entree')}
               variant="primary"
-              icon={<TrendingUp className="w-5 h-5" />}
+              icon={<TrendingUp className="w-4 lg:w-5 h-4 lg:h-5" />}
+              className="flex-shrink-0 text-xs lg:text-sm px-3 lg:px-4"
             >
-              Entrée
+              <span className="hidden sm:inline">Entrée</span>
+              <span className="sm:hidden">+</span>
+            </Button>
+            <Button
+              onClick={() => openModal('sortie')}
+              variant="secondary"
+              icon={<TrendingDown className="w-4 lg:w-5 h-4 lg:h-5" />}
+              className="flex-shrink-0 text-xs lg:text-sm px-3 lg:px-4"
+            >
+              <span className="hidden sm:inline">Sortie</span>
+              <span className="sm:hidden">-</span>
             </Button>
             <Button
               onClick={() => openModal('transfert')}
               variant="secondary"
-              icon={<ArrowRightLeft className="w-5 h-5" />}
+              icon={<ArrowRightLeft className="w-4 lg:w-5 h-4 lg:h-5" />}
+              className="flex-shrink-0 text-xs lg:text-sm px-3 lg:px-4"
             >
-              Transfert
+              <span className="hidden sm:inline">Transfert</span>
+              <span className="sm:hidden">↔</span>
             </Button>
             {userRole === 'admin' && (
               <Button
                 onClick={() => router.push(`/stock/${article.id}/edit`)}
                 variant="secondary"
-                icon={<Edit className="w-5 h-5" />}
+                icon={<Edit className="w-4 lg:w-5 h-4 lg:h-5" />}
+                className="flex-shrink-0 text-xs lg:text-sm px-3 lg:px-4"
               >
-                Modifier
+                <span className="hidden lg:inline">Modifier</span>
+                <span className="lg:hidden">✏️</span>
               </Button>
             )}
           </div>
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-8 py-6">
-        <div className="grid grid-cols-3 gap-6">
+      <main className="flex-1 overflow-y-auto px-4 lg:px-8 py-4 lg:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* Infos article */}
-          <div className="col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 lg:space-y-6">
             <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
-              <h2 className="text-lg font-semibold text-slate-800 mb-4">Informations</h2>
+              <h2 className="text-base lg:text-lg font-semibold text-slate-800 mb-3 lg:mb-4">Informations</h2>
 
               {article.photo_url && (
-                <div className="mb-6">
+                <div className="mb-4 lg:mb-6">
                   <img
                     src={article.photo_url}
                     alt={article.nom}
-                    className="w-full h-64 object-cover rounded-lg border-2 border-gray-200"
+                    className="w-full h-40 lg:h-64 object-contain bg-gray-50 rounded-lg border-2 border-gray-200"
                   />
                 </div>
               )}
@@ -507,7 +517,7 @@ export default function ArticleDetailPage() {
 
             {/* Répartition par emplacement */}
             <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
-              <h2 className="text-lg font-semibold text-slate-800 mb-4">Répartition du stock</h2>
+              <h2 className="text-base lg:text-lg font-semibold text-slate-800 mb-3 lg:mb-4">Répartition du stock</h2>
               {inventaire.length === 0 ? (
                 <p className="text-slate-500 text-center py-8">Stock vide</p>
               ) : (
@@ -552,7 +562,7 @@ export default function ArticleDetailPage() {
 
             {/* Historique */}
             <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
-              <h2 className="text-lg font-semibold text-slate-800 mb-4">Historique des mouvements</h2>
+              <h2 className="text-base lg:text-lg font-semibold text-slate-800 mb-3 lg:mb-4">Historique des mouvements</h2>
               {mouvements.length === 0 ? (
                 <p className="text-slate-500 text-center py-8">Aucun mouvement</p>
               ) : (
@@ -618,18 +628,18 @@ export default function ArticleDetailPage() {
           </div>
 
           {/* QR Code + Alerte */}
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
-              <h2 className="text-lg font-semibold text-slate-800 mb-4">QR Code</h2>
+              <h2 className="text-base lg:text-lg font-semibold text-slate-800 mb-3 lg:mb-4">QR Code</h2>
               <div className="flex flex-col items-center">
-                <canvas ref={qrCanvasRef} className="border-2 border-gray-300 rounded-lg" />
-                <p className="text-sm text-slate-600 mt-3 text-center">{article.reference}</p>
-                <p className="text-xs text-slate-400 text-center">{article.qr_code}</p>
+                <canvas ref={qrCanvasRef} className="border-2 border-gray-300 rounded-lg max-w-full" />
+                <p className="text-xs lg:text-sm text-slate-600 mt-2 lg:mt-3 text-center truncate max-w-full px-2">{article.reference}</p>
+                <p className="text-[10px] lg:text-xs text-slate-400 text-center truncate max-w-full px-2">{article.qr_code}</p>
                 <Button
                   onClick={downloadQR}
                   variant="secondary"
-                  className="mt-4 w-full"
-                  icon={<Download className="w-4 h-4" />}
+                  className="mt-3 lg:mt-4 w-full text-xs lg:text-sm"
+                  icon={<Download className="w-3 lg:w-4 h-3 lg:h-4" />}
                 >
                   Télécharger QR
                 </Button>
