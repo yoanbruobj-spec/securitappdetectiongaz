@@ -178,7 +178,7 @@ export default function AdminDashboard() {
 
       <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         {/* Header GLASSMORPHISM */}
-        <header className="glass-strong border-b border-white/20 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 sticky top-0 z-30 ml-0 lg:ml-0 shadow-lg">
+        <header className="glass-strong border-b border-white/20 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 sticky top-0 z-20 ml-0 lg:ml-0 shadow-lg">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}

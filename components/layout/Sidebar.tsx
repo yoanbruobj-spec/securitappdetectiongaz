@@ -328,7 +328,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
       {/* User Profile & Logout - GLASSMORPHISM */}
       <div className="relative border-t-2 border-emerald-500/20 p-4 glass">
         {/* Glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/5 via-cyan-500/5 to-transparent opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/5 via-cyan-500/5 to-transparent opacity-50 pointer-events-none" />
 
         <AnimatePresence mode="wait">
           {!collapsed ? (
@@ -361,7 +361,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
 
         <button
           onClick={onLogout}
-          className={`w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-2.5 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all group`}
+          className={`relative z-10 w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-2.5 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all group cursor-pointer`}
         >
           <LogOut className="w-4 h-4 flex-shrink-0" />
           <AnimatePresence>
