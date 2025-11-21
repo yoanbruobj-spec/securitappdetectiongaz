@@ -18,9 +18,13 @@ import {
   Settings,
   Menu,
   X,
-  Search
+  Search,
+  Moon,
+  Sun,
+  Monitor
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { useTheme } from '@/lib/design-system/useTheme'
 
 interface SidebarProps {
   userRole?: 'admin' | 'technicien'
@@ -42,6 +46,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
+  const { theme, setTheme, resolvedTheme } = useTheme()
 
   // Détecter si on est sur mobile
   useEffect(() => {
@@ -131,7 +136,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
           x: isMobile ? (mobileOpen ? 0 : -280) : 0
         }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="fixed lg:relative h-screen bg-white border-r border-gray-200 flex flex-col shadow-xl z-50"
+        className="fixed lg:relative h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col shadow-xl z-50"
       >
       {/* Header with Logo */}
       <div className="h-20 border-b border-gray-300 bg-gray-800 flex items-center justify-center px-4 relative">
@@ -248,7 +253,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
       </nav>
 
       {/* User Profile & Logout */}
-      <div className="border-t border-gray-200 p-4">
+      <div className="border-t border-gray-200 dark:border-gray-700 p-4">
         <AnimatePresence mode="wait">
           {!collapsed ? (
             <motion.div
@@ -258,9 +263,9 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
               exit={{ opacity: 0 }}
               className="mb-3"
             >
-              <p className="text-xs text-gray-500 mb-1">Connecté en tant que</p>
-              <p className="text-sm text-gray-800 font-semibold truncate">{userName}</p>
-              <p className="text-xs text-gray-500 capitalize">{userRole}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Connecté en tant que</p>
+              <p className="text-sm text-gray-800 dark:text-gray-200 font-semibold truncate">{userName}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{userRole}</p>
             </motion.div>
           ) : (
             <motion.div
@@ -277,9 +282,53 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
           )}
         </AnimatePresence>
 
+        {/* Theme Switcher */}
+        <div className={`mb-2 flex ${collapsed ? 'justify-center' : 'gap-1'} p-1 bg-gray-100 dark:bg-gray-800 rounded-xl`}>
+          {!collapsed ? (
+            <>
+              <button
+                onClick={() => setTheme('light')}
+                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                  resolvedTheme === 'light'
+                    ? 'bg-white dark:bg-gray-700 text-emerald-600 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+                title="Mode clair"
+              >
+                <Sun className="w-4 h-4" />
+                <span className="text-xs font-medium">Clair</span>
+              </button>
+              <button
+                onClick={() => setTheme('dark')}
+                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                  resolvedTheme === 'dark'
+                    ? 'bg-white dark:bg-gray-700 text-emerald-600 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+                title="Mode sombre"
+              >
+                <Moon className="w-4 h-4" />
+                <span className="text-xs font-medium">Sombre</span>
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title={resolvedTheme === 'dark' ? 'Mode clair' : 'Mode sombre'}
+            >
+              {resolvedTheme === 'dark' ? (
+                <Sun className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              )}
+            </button>
+          )}
+        </div>
+
         <button
           onClick={onLogout}
-          className={`w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-2.5 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all group`}
+          className={`w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all group`}
         >
           <LogOut className="w-4 h-4 flex-shrink-0" />
           <AnimatePresence>
