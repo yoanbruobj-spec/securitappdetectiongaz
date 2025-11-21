@@ -178,17 +178,17 @@ export default function AdminDashboard() {
 
       <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         {/* Header GLASSMORPHISM */}
-        <header className="glass-strong border-b border-white/20 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 sticky top-0 z-20 ml-0 lg:ml-0 shadow-lg">
+        <header className="glass-strong border-b border-white/20 px-3 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6 sticky top-0 z-20 ml-0 lg:ml-0 shadow-lg">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between ml-16 lg:ml-0"
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 ml-14 sm:ml-16 lg:ml-0"
           >
             <div>
-              <h1 className="text-xl sm:text-2xl lg:text-4xl font-black text-gradient drop-shadow-lg">
+              <h1 className="text-lg sm:text-2xl lg:text-4xl font-black text-gradient drop-shadow-lg">
                 Tableau de bord
               </h1>
-              <p className="text-sm sm:text-base text-gray-700 mt-2 font-medium hidden sm:block">
+              <p className="text-xs sm:text-sm lg:text-base text-gray-700 mt-1 sm:mt-2 font-medium">
                 Bienvenue {profile?.full_name} <span className="inline-block animate-float">👋</span>
               </p>
             </div>
@@ -216,9 +216,9 @@ export default function AdminDashboard() {
           </motion.div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+        <main className="flex-1 overflow-y-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-10">
           {/* Stats Cards - Design GLASSMORPHISM 3D */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-8 sm:mb-10 lg:mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8 lg:mb-12">
             <QuickStatGlass
               title="Total Interventions"
               value={stats.interventions}
@@ -265,37 +265,37 @@ export default function AdminDashboard() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-8 sm:mb-10 lg:mb-12"
+              className="mb-6 sm:mb-8 lg:mb-12"
             >
-              <div className="glass-strong rounded-3xl p-6 sm:p-8 shadow-2xl ring-2 ring-red-500/30 relative overflow-hidden">
+              <div className="glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl ring-2 ring-red-500/30 relative overflow-hidden">
                 {/* Glow effect animé */}
                 <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-orange-500/10 to-red-500/10 animate-gradient opacity-50" />
 
                 {/* Header avec badge d'alerte */}
-                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b-2 border-red-200/50">
-                  <div className="flex items-center gap-4">
+                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 pb-4 sm:pb-6 border-b-2 border-red-200/50">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     <motion.div
                       animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
                       transition={{ duration: 2, repeat: Infinity }}
-                      className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-orange-600 flex items-center justify-center shadow-2xl"
+                      className="relative w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-orange-600 flex items-center justify-center shadow-2xl"
                     >
-                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-red-500 to-orange-600 blur-xl opacity-60 animate-pulse-glow" />
-                      <AlertTriangle className="relative w-7 h-7 text-white drop-shadow-lg" />
+                      <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-red-500 to-orange-600 blur-xl opacity-60 animate-pulse-glow" />
+                      <AlertTriangle className="relative w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-white drop-shadow-lg" />
                     </motion.div>
                     <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-2xl font-black bg-gradient-to-r from-red-600 via-orange-600 to-red-600 bg-clip-text text-transparent drop-shadow-sm">
+                      <div className="flex items-center gap-2 sm:gap-3 mb-1">
+                        <h3 className="text-lg sm:text-xl lg:text-2xl font-black bg-gradient-to-r from-red-600 via-orange-600 to-red-600 bg-clip-text text-transparent drop-shadow-sm">
                           Alertes de stock
                         </h3>
                         <motion.span
                           animate={{ scale: [1, 1.1, 1] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
-                          className="px-3 py-1 bg-gradient-to-r from-red-500 to-orange-500 text-white text-sm font-bold rounded-full shadow-lg"
+                          className="px-2 py-0.5 sm:px-3 sm:py-1 bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs sm:text-sm font-bold rounded-full shadow-lg"
                         >
                           {stockAlertes.length}
                         </motion.span>
                       </div>
-                      <p className="text-base text-gray-600">
+                      <p className="text-xs sm:text-sm lg:text-base text-gray-600">
                         Article{stockAlertes.length > 1 ? 's' : ''} nécessitant un réapprovisionnement
                       </p>
                     </div>
@@ -304,7 +304,7 @@ export default function AdminDashboard() {
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => router.push('/stock')}
-                    className="px-5 py-2.5 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold rounded-xl flex items-center gap-2 transition shadow-xl hover:shadow-2xl hover:glow-purple self-start sm:self-center"
+                    className="px-4 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white text-sm sm:text-base font-bold rounded-lg sm:rounded-xl flex items-center justify-center gap-2 transition shadow-xl hover:shadow-2xl hover:glow-purple w-full sm:w-auto"
                   >
                     Gérer le stock
                     <motion.svg
@@ -320,7 +320,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Liste des articles en alerte */}
-                <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6">
+                <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
                   {stockAlertes.slice(0, 6).map((article, index) => (
                     <motion.div
                       key={article.id}
@@ -329,52 +329,52 @@ export default function AdminDashboard() {
                       whileHover={{ y: -4, scale: 1.02 }}
                       transition={{ delay: index * 0.08 }}
                       onClick={() => router.push(`/stock/${article.id}`)}
-                      className="cursor-pointer glass rounded-2xl p-6 ring-2 ring-red-400/30 hover:ring-red-500/50 hover:shadow-2xl transition-all duration-300 group relative overflow-hidden"
+                      className="cursor-pointer glass rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 ring-2 ring-red-400/30 hover:ring-red-500/50 hover:shadow-2xl transition-all duration-300 group relative overflow-hidden"
                     >
                       {/* Gradient glow on hover */}
                       <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 via-orange-500/0 to-red-500/0 group-hover:from-red-500/10 group-hover:via-orange-500/10 group-hover:to-red-500/10 transition-all duration-500" />
-                      <div className="relative flex items-center gap-4 mb-5">
+                      <div className="relative flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
                         <motion.div
                           whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
                           transition={{ duration: 0.5 }}
-                          className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center flex-shrink-0 shadow-lg"
+                          className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center flex-shrink-0 shadow-lg"
                         >
-                          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 blur-lg opacity-50 animate-pulse-glow" />
-                          <Package className="relative w-6 h-6 text-white drop-shadow-lg" />
+                          <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-br from-red-500 to-orange-500 blur-lg opacity-50 animate-pulse-glow" />
+                          <Package className="relative w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-lg" />
                         </motion.div>
                         <div className="relative flex-1 min-w-0">
-                          <h4 className="font-black text-base text-gray-900 mb-0.5 truncate group-hover:text-red-600 transition-colors duration-300">
+                          <h4 className="font-black text-sm sm:text-base text-gray-900 mb-0.5 truncate group-hover:text-red-600 transition-colors duration-300">
                             {article.nom}
                           </h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-xs sm:text-sm text-gray-600 truncate">
                             Réf: <span className="font-medium">{article.reference}</span>
                           </p>
                         </div>
                       </div>
 
-                      <div className="relative flex items-center justify-between glass rounded-xl p-3 ring-1 ring-red-300/30">
-                        <div>
+                      <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 glass rounded-lg sm:rounded-xl p-3 ring-1 ring-red-300/30">
+                        <div className="flex-1">
                           <p className="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Stock actuel</p>
-                          <div className="flex items-baseline gap-2">
+                          <div className="flex items-baseline gap-1.5 sm:gap-2">
                             <motion.span
                               initial={{ scale: 0.5, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               transition={{ delay: index * 0.08 + 0.2 }}
-                              className="text-3xl font-black text-red-600"
+                              className="text-2xl sm:text-3xl font-black text-red-600"
                             >
                               {article.quantite}
                             </motion.span>
-                            <span className="text-lg font-semibold text-gray-500">/ {article.seuil_alerte}</span>
+                            <span className="text-base sm:text-lg font-semibold text-gray-500">/ {article.seuil_alerte}</span>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <Badge variant="danger" size="sm" className="text-xs font-bold px-3 py-1">
+                        <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 sm:gap-2">
+                          <Badge variant="danger" size="sm" className="text-xs font-bold px-2 sm:px-3 py-1 whitespace-nowrap">
                             ⚠️ ALERTE
                           </Badge>
                           {article.emplacement && (
                             <p className="text-xs text-gray-500 flex items-center gap-1">
                               <span>📍</span>
-                              <span className="truncate max-w-[120px]">{article.emplacement}</span>
+                              <span className="truncate max-w-[100px] sm:max-w-[120px]">{article.emplacement}</span>
                             </p>
                           )}
                         </div>
@@ -399,7 +399,7 @@ export default function AdminDashboard() {
             </motion.div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Recent Interventions - GLASSMORPHISM */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -407,19 +407,19 @@ export default function AdminDashboard() {
               transition={{ delay: 0.3 }}
               className="lg:col-span-2 order-2 lg:order-1"
             >
-              <div className="glass-strong rounded-3xl p-6 sm:p-8 shadow-2xl ring-2 ring-emerald-500/20 relative overflow-hidden">
+              <div className="glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl ring-2 ring-emerald-500/20 relative overflow-hidden">
                 {/* Gradient glow animé */}
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-cyan-500/5 to-emerald-500/5 animate-gradient opacity-50" />
 
-                <div className="relative flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-black text-gradient flex items-center gap-3">
+                <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+                  <h3 className="text-base sm:text-lg lg:text-xl font-black text-gradient flex items-center gap-2 sm:gap-3">
                     <motion.div
                       whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
                       transition={{ duration: 0.5 }}
-                      className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-xl"
+                      className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-xl"
                     >
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 blur-lg opacity-60 animate-pulse-glow" />
-                      <FileText className="relative w-5 h-5 text-white drop-shadow-lg" />
+                      <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 blur-lg opacity-60 animate-pulse-glow" />
+                      <FileText className="relative w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-lg" />
                     </motion.div>
                     Dernières interventions
                   </h3>
@@ -427,7 +427,7 @@ export default function AdminDashboard() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => router.push('/interventions')}
-                    className="text-sm text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1 glass px-4 py-2 rounded-xl shadow-lg transition group"
+                    className="text-xs sm:text-sm text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1 glass px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-lg transition group"
                   >
                     Tout voir
                     <motion.svg
@@ -449,7 +449,7 @@ export default function AdminDashboard() {
                     description="Les interventions apparaîtront ici"
                   />
                 ) : (
-                  <div className="relative space-y-4">
+                  <div className="relative space-y-3 sm:space-y-4">
                     {recentInterventions.map((intervention, index) => (
                       <motion.div
                         key={intervention.id}
@@ -464,29 +464,30 @@ export default function AdminDashboard() {
                             router.push(`/intervention/${intervention.id}`)
                           }
                         }}
-                        className="relative cursor-pointer group glass rounded-2xl p-5 ring-1 ring-gray-300/30 hover:ring-emerald-400/50 hover:shadow-2xl transition-all duration-300 overflow-hidden"
+                        className="relative cursor-pointer group glass rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 ring-1 ring-gray-300/30 hover:ring-emerald-400/50 hover:shadow-2xl transition-all duration-300 overflow-hidden"
                       >
                         {/* Gradient glow on hover */}
                         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 via-cyan-500/0 to-emerald-500/0 group-hover:from-emerald-500/10 group-hover:via-cyan-500/10 group-hover:to-emerald-500/10 transition-all duration-500" />
-                        <div className="relative flex justify-between items-start mb-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-black text-gray-900 group-hover:text-emerald-600 transition-colors duration-300">
+                        <div className="relative flex flex-col sm:flex-row justify-between items-start gap-2 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
+                              <p className="font-black text-sm sm:text-base text-gray-900 group-hover:text-emerald-600 transition-colors duration-300 truncate">
                                 {intervention.sites?.clients?.nom}
                               </p>
                               <Badge
                                 variant={intervention.type_rapport === 'portable' ? 'info' : 'default'}
                                 size="sm"
+                                className="text-xs"
                               >
                                 {intervention.type_rapport === 'portable' ? 'Portable' : 'Fixe'}
                               </Badge>
                             </div>
-                            <p className="text-sm text-gray-600 flex items-center gap-2">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-1.5 truncate">
+                              <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                               </svg>
-                              {intervention.sites?.nom}
+                              <span className="truncate">{intervention.sites?.nom}</span>
                             </p>
                           </div>
                           <Badge
@@ -496,13 +497,14 @@ export default function AdminDashboard() {
                               'warning'
                             }
                             size="sm"
+                            className="text-xs flex-shrink-0"
                           >
                             {intervention.statut === 'terminee' ? 'Terminée' :
                              intervention.statut === 'en_cours' ? 'En cours' :
                              'Planifiée'}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
                           <span className="flex items-center gap-1">
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />

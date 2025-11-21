@@ -503,19 +503,19 @@ function InterventionPortablePageContent() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header avec titre et infos */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+          <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition"
+              className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition flex-shrink-0"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              Retour
+              <span className="text-sm sm:text-base">Retour</span>
             </button>
-            <div className="h-6 w-px bg-gray-300"></div>
-            <h1 className="text-2xl font-bold text-slate-800">Nouveau Rapport - Détection Portable</h1>
+            <div className="h-5 sm:h-6 w-px bg-gray-300"></div>
+            <h1 className="text-base sm:text-lg lg:text-2xl font-bold text-slate-800 truncate">Nouveau Rapport - Détection Portable</h1>
           </div>
           {planningInterventionId && (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
@@ -532,21 +532,21 @@ function InterventionPortablePageContent() {
       <StepIndicator steps={steps} currentStep={currentSection} onStepClick={handleStepClick} />
 
       {/* Contenu principal */}
-      <main className="max-w-7xl mx-auto px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Gestion des portables */}
         {currentSection === 'portable' && (
-          <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+          <div className="mb-4 sm:mb-6 bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 {portables.length > 1 ? (
                   <>
-                    <span className="text-sm font-medium text-slate-700">Détecteur portable sélectionné :</span>
-                    <div className="flex gap-2">
+                    <span className="text-xs sm:text-sm font-medium text-slate-700">Détecteur portable sélectionné :</span>
+                    <div className="flex flex-wrap gap-2">
                       {portables.map((_, index) => (
                         <button
                           key={index}
                           onClick={() => setCurrentPortableIndex(index)}
-                          className={`px-4 py-2 rounded-lg font-medium transition ${
+                          className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition ${
                             currentPortableIndex === index
                               ? 'bg-blue-600 text-white shadow-md'
                               : 'bg-gray-100 text-slate-700 hover:bg-gray-200'
@@ -559,16 +559,16 @@ function InterventionPortablePageContent() {
                   </>
                 ) : (
                   <div className="flex items-center gap-2 text-slate-700">
-                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
-                    <span className="font-medium">Configuration du détecteur portable</span>
+                    <span className="text-sm sm:text-base font-medium">Configuration du détecteur portable</span>
                   </div>
                 )}
               </div>
               <button
                 onClick={addPortable}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition shadow-sm"
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm sm:text-base font-medium transition shadow-sm w-full sm:w-auto"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -593,13 +593,13 @@ function InterventionPortablePageContent() {
                 }
                 className="max-w-4xl mx-auto"
               >
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   <FormField label="Date d'intervention" required error={!dateIntervention ? 'Date requise' : ''}>
                     <input
                       type="date"
                       value={dateIntervention}
                       onChange={(e) => setDateIntervention(e.target.value)}
-                      className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
+                      className={`w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
                         !dateIntervention
                           ? 'border-red-300 focus:ring-red-500'
                           : 'border-gray-300 focus:ring-blue-500'
@@ -611,7 +611,7 @@ function InterventionPortablePageContent() {
                       type="time"
                       value={heureDebut}
                       onChange={(e) => setHeureDebut(e.target.value)}
-                      className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
+                      className={`w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
                         !heureDebut
                           ? 'border-red-300 focus:ring-red-500'
                           : 'border-gray-300 focus:ring-blue-500'
@@ -623,7 +623,7 @@ function InterventionPortablePageContent() {
                       type="time"
                       value={heureFin}
                       onChange={(e) => setHeureFin(e.target.value)}
-                      className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
+                      className={`w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-white border rounded-lg focus:outline-none focus:ring-2 transition ${
                         !heureFin
                           ? 'border-red-300 focus:ring-red-500'
                           : 'border-gray-300 focus:ring-blue-500'
@@ -654,11 +654,11 @@ function InterventionPortablePageContent() {
                   required
                   error={typeIntervention.length === 0 ? 'Au moins un type requis' : ''}
                 >
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                     {['Vérification périodique', 'Maintenance préventive', 'Réparation', 'Mise en service', 'Diagnostic', 'Formation'].map(type => (
                       <label
                         key={type}
-                        className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition ${
+                        className={`flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 border rounded-lg cursor-pointer transition ${
                           typeIntervention.includes(type)
                             ? 'bg-blue-50 border-blue-300'
                             : 'bg-white border-gray-300 hover:border-gray-400'
@@ -674,9 +674,9 @@ function InterventionPortablePageContent() {
                               setTypeIntervention(typeIntervention.filter(t => t !== type))
                             }
                           }}
-                          className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 flex-shrink-0"
                         />
-                        <span className="text-slate-800 font-medium">{type}</span>
+                        <span className="text-slate-800 text-sm sm:text-base font-medium">{type}</span>
                       </label>
                     ))}
                   </div>
@@ -769,14 +769,14 @@ function InterventionPortablePageContent() {
                   />
                 </FormField>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <FormField label="Contact sur site">
                     <input
                       type="text"
                       value={contactSite}
                       onChange={(e) => setContactSite(e.target.value)}
                       placeholder="Nom du contact"
-                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     />
                   </FormField>
                   <FormField label="Téléphone contact">
@@ -785,7 +785,7 @@ function InterventionPortablePageContent() {
                       value={telContact}
                       onChange={(e) => setTelContact(e.target.value)}
                       placeholder="06 12 34 56 78"
-                      className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                     />
                   </FormField>
                 </div>
@@ -862,14 +862,14 @@ function InterventionPortablePageContent() {
               <Card variant="glass" padding="lg">
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Informations générales</h3>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Marque *</label>
                     <input
                       type="text"
                       value={portables[currentPortableIndex].marque}
                       onChange={(e) => updatePortable(currentPortableIndex, 'marque', e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-white border border-gray-200 rounded-lg text-slate-800"
                       required
                     />
                   </div>
@@ -880,7 +880,7 @@ function InterventionPortablePageContent() {
                       type="text"
                       value={portables[currentPortableIndex].modele}
                       onChange={(e) => updatePortable(currentPortableIndex, 'modele', e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-white border border-gray-200 rounded-lg text-slate-800"
                       required
                     />
                   </div>
@@ -891,7 +891,7 @@ function InterventionPortablePageContent() {
                       type="text"
                       value={portables[currentPortableIndex].numero_serie}
                       onChange={(e) => updatePortable(currentPortableIndex, 'numero_serie', e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-white border border-gray-200 rounded-lg text-slate-800"
                       required
                     />
                   </div>
@@ -901,7 +901,7 @@ function InterventionPortablePageContent() {
                     <select
                       value={portables[currentPortableIndex].etat_general}
                       onChange={(e) => updatePortable(currentPortableIndex, 'etat_general', e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-slate-800"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-white border border-gray-200 rounded-lg text-slate-800"
                     >
                       <option value="Bon">Bon</option>
                       <option value="Moyen">Moyen</option>
@@ -912,33 +912,33 @@ function InterventionPortablePageContent() {
 
                 <div className="mt-6">
                   <h4 className="text-sm font-medium text-slate-700 mb-3">Vérifications fonctionnelles</h4>
-                  <div className="flex gap-6">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={portables[currentPortableIndex].alarme_sonore}
                         onChange={(e) => updatePortable(currentPortableIndex, 'alarme_sonore', e.target.checked)}
-                        className="w-4 h-4"
+                        className="w-4 h-4 flex-shrink-0"
                       />
-                      <span className="text-slate-800">Alarme sonore</span>
+                      <span className="text-sm sm:text-base text-slate-800">Alarme sonore</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={portables[currentPortableIndex].alarme_visuelle}
                         onChange={(e) => updatePortable(currentPortableIndex, 'alarme_visuelle', e.target.checked)}
-                        className="w-4 h-4"
+                        className="w-4 h-4 flex-shrink-0"
                       />
-                      <span className="text-slate-800">Alarme visuelle</span>
+                      <span className="text-sm sm:text-base text-slate-800">Alarme visuelle</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={portables[currentPortableIndex].alarme_vibrante}
                         onChange={(e) => updatePortable(currentPortableIndex, 'alarme_vibrante', e.target.checked)}
-                        className="w-4 h-4"
+                        className="w-4 h-4 flex-shrink-0"
                       />
-                      <span className="text-slate-800">Alarme vibrante</span>
+                      <span className="text-sm sm:text-base text-slate-800">Alarme vibrante</span>
                     </label>
                   </div>
                 </div>
@@ -1331,25 +1331,25 @@ function InterventionPortablePageContent() {
 
         {/* Footer fixe avec boutons d'action */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
-          <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0">
             <button
               onClick={() => router.push('/admin')}
-              className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-slate-700 rounded-lg font-medium transition"
+              className="flex items-center justify-center gap-2 px-4 py-2 sm:px-6 sm:py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-slate-700 rounded-lg text-sm sm:text-base font-medium transition"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
               Annuler
             </button>
 
-            <div className="flex items-center gap-3">
-              <div className="text-sm text-slate-600">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+              <div className="text-xs sm:text-sm text-slate-600 text-center">
                 {portables.length} portable{portables.length > 1 ? 's' : ''} configuré{portables.length > 1 ? 's' : ''}
               </div>
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex items-center gap-2 px-8 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition shadow-md"
+                className="flex items-center justify-center gap-2 px-6 py-2 sm:px-8 sm:py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm sm:text-base font-semibold transition shadow-md w-full sm:w-auto min-h-[44px]"
               >
                 {loading ? (
                   <>
