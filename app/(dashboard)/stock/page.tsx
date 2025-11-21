@@ -368,11 +368,11 @@ export default function StockInventairePage() {
                           <div className="flex justify-between items-start gap-3">
                             {/* Image de l'article */}
                             {article.photo_url && (
-                              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-lg overflow-hidden border-2 border-gray-200 flex-shrink-0">
+                              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-lg overflow-hidden border-2 border-gray-200 flex-shrink-0 bg-gray-50 flex items-center justify-center">
                                 <img
                                   src={article.photo_url}
                                   alt={article.nom}
-                                  className="w-full h-full object-cover"
+                                  className="w-full h-full object-contain"
                                 />
                               </div>
                             )}
@@ -435,11 +435,11 @@ export default function StockInventairePage() {
                   >
                     {/* Image de l'article */}
                     {article.photo_url && (
-                      <div className="w-full h-32 rounded-lg overflow-hidden border-2 border-gray-200 mb-3">
+                      <div className="w-full h-32 rounded-lg overflow-hidden border-2 border-gray-200 mb-3 bg-gray-50 flex items-center justify-center">
                         <img
                           src={article.photo_url}
                           alt={article.nom}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                       </div>
                     )}
