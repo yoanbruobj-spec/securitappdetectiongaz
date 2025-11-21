@@ -4,11 +4,11 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Html5Qrcode } from 'html5-qrcode'
-import { ArrowLeft, Camera, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Camera, TrendingUp, TrendingDown, AlertCircle, ArrowRightLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
-import type { StockArticle } from '@/types/stock'
+import type { StockArticle, StockEmplacement, StockInventaire } from '@/types/stock'
 
 export default function ScannerQRPage() {
   const router = useRouter()
@@ -16,9 +16,16 @@ export default function ScannerQRPage() {
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const [scanning, setScanning] = useState(false)
   const [scannedArticle, setScannedArticle] = useState<StockArticle | null>(null)
+  const [inventaire, setInventaire] = useState<StockInventaire[]>([])
+  const [emplacements, setEmplacements] = useState<StockEmplacement[]>([])
   const [showMouvementForm, setShowMouvementForm] = useState(false)
-  const [mouvementType, setMouvementType] = useState<'entree' | 'sortie'>('sortie')
-  const [mouvementData, setMouvementData] = useState({ quantite: '', notes: '' })
+  const [mouvementType, setMouvementType] = useState<'entree' | 'sortie' | 'transfert'>('sortie')
+  const [mouvementData, setMouvementData] = useState({
+    quantite: '',
+    notes: '',
+    emplacement_source_id: '',
+    emplacement_destination_id: ''
+  })
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -122,6 +129,31 @@ export default function ScannerQRPage() {
       return
     }
 
+    // Charger l'inventaire par emplacement
+    const { data: inv } = await supabase
+      .from('stock_inventaire')
+      .select(`
+        *,
+        stock_emplacements (
+          *,
+          profiles (id, full_name, email, role)
+        )
+      `)
+      .eq('article_id', article.id)
+      .order('quantite', { ascending: false })
+
+    if (inv) setInventaire(inv)
+
+    // Charger tous les emplacements actifs
+    const { data: emps } = await supabase
+      .from('stock_emplacements')
+      .select('*, profiles (id, full_name, email, role)')
+      .eq('actif', true)
+      .order('type', { ascending: true })
+      .order('nom', { ascending: true })
+
+    if (emps) setEmplacements(emps)
+
     setScannedArticle(article)
     setShowMouvementForm(true)
   }
@@ -142,47 +174,137 @@ export default function ScannerQRPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      const quantiteAvant = scannedArticle.quantite
-      const quantiteApres = mouvementType === 'entree'
-        ? quantiteAvant + quantite
-        : quantiteAvant - quantite
+      if (mouvementType === 'transfert') {
+        // Mode transfert
+        if (!mouvementData.emplacement_source_id || !mouvementData.emplacement_destination_id) {
+          alert('Veuillez sélectionner les emplacements source et destination')
+          setProcessing(false)
+          return
+        }
 
-      if (quantiteApres < 0) {
-        alert('Stock insuffisant !')
-        setProcessing(false)
-        return
-      }
+        const invSource = inventaire.find(i => i.emplacement_id === mouvementData.emplacement_source_id)
+        const invDest = inventaire.find(i => i.emplacement_id === mouvementData.emplacement_destination_id)
 
-      // Créer mouvement
-      await supabase
-        .from('stock_mouvements')
-        .insert([{
+        const qteSource = invSource?.quantite || 0
+        const qteDest = invDest?.quantite || 0
+
+        if (qteSource < quantite) {
+          alert('Stock insuffisant dans l\'emplacement source !')
+          setProcessing(false)
+          return
+        }
+
+        const nouvelleQteSource = qteSource - quantite
+        const nouvelleQteDest = qteDest + quantite
+
+        // Créer le mouvement de transfert
+        await supabase.from('stock_mouvements').insert([{
+          article_id: scannedArticle.id,
+          type: 'transfert',
+          quantite: quantite,
+          quantite_avant: qteSource,
+          quantite_apres: nouvelleQteSource,
+          utilisateur_id: user.id,
+          emplacement_source_id: mouvementData.emplacement_source_id,
+          emplacement_destination_id: mouvementData.emplacement_destination_id,
+          notes: mouvementData.notes || null,
+          date_mouvement: new Date().toISOString()
+        }])
+
+        // Mettre à jour l'inventaire source
+        if (nouvelleQteSource === 0) {
+          await supabase.from('stock_inventaire').delete()
+            .eq('article_id', scannedArticle.id)
+            .eq('emplacement_id', mouvementData.emplacement_source_id)
+        } else {
+          await supabase.from('stock_inventaire').update({ quantite: nouvelleQteSource })
+            .eq('article_id', scannedArticle.id)
+            .eq('emplacement_id', mouvementData.emplacement_source_id)
+        }
+
+        // Mettre à jour l'inventaire destination
+        await supabase.from('stock_inventaire').upsert({
+          article_id: scannedArticle.id,
+          emplacement_id: mouvementData.emplacement_destination_id,
+          quantite: nouvelleQteDest
+        }, { onConflict: 'article_id,emplacement_id' })
+
+        alert('Transfert effectué avec succès !')
+      } else {
+        // Mode entrée/sortie classique
+        if (!mouvementData.emplacement_destination_id && mouvementType === 'entree') {
+          alert('Veuillez sélectionner un emplacement de destination')
+          setProcessing(false)
+          return
+        }
+        if (!mouvementData.emplacement_source_id && mouvementType === 'sortie') {
+          alert('Veuillez sélectionner un emplacement source')
+          setProcessing(false)
+          return
+        }
+
+        const quantiteAvant = scannedArticle.quantite
+        const quantiteApres = mouvementType === 'entree'
+          ? quantiteAvant + quantite
+          : quantiteAvant - quantite
+
+        if (quantiteApres < 0) {
+          alert('Stock insuffisant !')
+          setProcessing(false)
+          return
+        }
+
+        // Créer mouvement
+        await supabase.from('stock_mouvements').insert([{
           article_id: scannedArticle.id,
           type: mouvementType,
           quantite: quantite,
           quantite_avant: quantiteAvant,
           quantite_apres: quantiteApres,
           utilisateur_id: user.id,
+          emplacement_source_id: mouvementType === 'sortie' ? mouvementData.emplacement_source_id : null,
+          emplacement_destination_id: mouvementType === 'entree' ? mouvementData.emplacement_destination_id : null,
           notes: mouvementData.notes || null,
           date_mouvement: new Date().toISOString()
         }])
 
-      // Mettre à jour quantité article
-      await supabase
-        .from('stock_articles')
-        .update({ quantite: quantiteApres })
-        .eq('id', scannedArticle.id)
+        // Mettre à jour l'inventaire
+        if (mouvementType === 'entree') {
+          const empId = mouvementData.emplacement_destination_id
+          const invCurrent = inventaire.find(i => i.emplacement_id === empId)
+          const newQte = (invCurrent?.quantite || 0) + quantite
 
-      // Mise à jour immédiate de l'interface
-      setScannedArticle({ ...scannedArticle, quantite: quantiteApres })
+          await supabase.from('stock_inventaire').upsert({
+            article_id: scannedArticle.id,
+            emplacement_id: empId,
+            quantite: newQte
+          }, { onConflict: 'article_id,emplacement_id' })
+        } else {
+          const empId = mouvementData.emplacement_source_id
+          const invCurrent = inventaire.find(i => i.emplacement_id === empId)
+          const newQte = (invCurrent?.quantite || 0) - quantite
 
-      alert('Mouvement enregistré ! Nouvelle quantité : ' + quantiteApres)
+          if (newQte === 0) {
+            await supabase.from('stock_inventaire').delete()
+              .eq('article_id', scannedArticle.id)
+              .eq('emplacement_id', empId)
+          } else {
+            await supabase.from('stock_inventaire').update({ quantite: newQte })
+              .eq('article_id', scannedArticle.id)
+              .eq('emplacement_id', empId)
+          }
+        }
 
-      // Réinitialiser après un court délai pour voir le changement
+        alert('Mouvement enregistré ! Nouvelle quantité totale : ' + quantiteApres)
+      }
+
+      // Réinitialiser après un court délai
       setTimeout(() => {
         setScannedArticle(null)
         setShowMouvementForm(false)
-        setMouvementData({ quantite: '', notes: '' })
+        setInventaire([])
+        setEmplacements([])
+        setMouvementData({ quantite: '', notes: '', emplacement_source_id: '', emplacement_destination_id: '' })
         setError(null)
       }, 1000)
     } catch (error: any) {
@@ -196,8 +318,26 @@ export default function ScannerQRPage() {
   function resetScanner() {
     setScannedArticle(null)
     setShowMouvementForm(false)
-    setMouvementData({ quantite: '', notes: '' })
+    setInventaire([])
+    setEmplacements([])
+    setMouvementData({ quantite: '', notes: '', emplacement_source_id: '', emplacement_destination_id: '' })
     setError(null)
+  }
+
+  function getEmplacementColor(type: string) {
+    switch (type) {
+      case 'principal': return 'bg-green-100 text-green-700 border-green-300'
+      case 'chantier': return 'bg-orange-100 text-orange-700 border-orange-300'
+      case 'vehicule': return 'bg-blue-100 text-blue-700 border-blue-300'
+      default: return 'bg-gray-100 text-gray-700 border-gray-300'
+    }
+  }
+
+  function getEmplacementLabel(emp: StockEmplacement) {
+    if (emp.type === 'vehicule' && emp.profiles) {
+      return `${emp.nom} (${emp.profiles.full_name})`
+    }
+    return emp.nom
   }
 
   return (
@@ -296,24 +436,133 @@ export default function ScannerQRPage() {
 
               <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
                 <h3 className="font-semibold text-slate-800 mb-4">Type de mouvement</h3>
-                <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="grid grid-cols-3 gap-2 mb-4">
                   <Button
                     onClick={() => setMouvementType('entree')}
                     variant={mouvementType === 'entree' ? 'primary' : 'secondary'}
-                    icon={<TrendingUp className="w-5 h-5" />}
-                    className="h-16"
+                    icon={<TrendingUp className="w-4 h-4" />}
+                    className="h-16 text-xs"
                   >
                     ENTRÉE
                   </Button>
                   <Button
                     onClick={() => setMouvementType('sortie')}
                     variant={mouvementType === 'sortie' ? 'primary' : 'secondary'}
-                    icon={<TrendingDown className="w-5 h-5" />}
-                    className="h-16"
+                    icon={<TrendingDown className="w-4 h-4" />}
+                    className="h-16 text-xs"
                   >
                     SORTIE
                   </Button>
+                  <Button
+                    onClick={() => setMouvementType('transfert')}
+                    variant={mouvementType === 'transfert' ? 'primary' : 'secondary'}
+                    icon={<ArrowRightLeft className="w-4 h-4" />}
+                    className="h-16 text-xs"
+                  >
+                    TRANSFERT
+                  </Button>
                 </div>
+
+                {/* Affichage de la répartition du stock */}
+                {inventaire.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs font-medium text-slate-700 mb-2">Répartition actuelle :</p>
+                    <div className="space-y-1">
+                      {inventaire.map(inv => (
+                        <div key={inv.id} className={`px-3 py-2 rounded-lg border text-sm ${getEmplacementColor(inv.stock_emplacements?.type || '')}`}>
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">{getEmplacementLabel(inv.stock_emplacements!)}</span>
+                            <span className="font-bold">{inv.quantite} unités</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Sélecteurs d'emplacements pour transfert */}
+                {mouvementType === 'transfert' && (
+                  <div className="space-y-3 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                        Depuis (source) *
+                      </label>
+                      <select
+                        value={mouvementData.emplacement_source_id}
+                        onChange={(e) => setMouvementData({ ...mouvementData, emplacement_source_id: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Sélectionner...</option>
+                        {inventaire.map(inv => (
+                          <option key={inv.emplacement_id} value={inv.emplacement_id}>
+                            {getEmplacementLabel(inv.stock_emplacements!)} ({inv.quantite} disponibles)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                        Vers (destination) *
+                      </label>
+                      <select
+                        value={mouvementData.emplacement_destination_id}
+                        onChange={(e) => setMouvementData({ ...mouvementData, emplacement_destination_id: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Sélectionner...</option>
+                        {emplacements
+                          .filter(emp => emp.id !== mouvementData.emplacement_source_id)
+                          .map(emp => (
+                            <option key={emp.id} value={emp.id}>
+                              {getEmplacementLabel(emp)}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sélecteur d'emplacement pour entrée */}
+                {mouvementType === 'entree' && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Destination *
+                    </label>
+                    <select
+                      value={mouvementData.emplacement_destination_id}
+                      onChange={(e) => setMouvementData({ ...mouvementData, emplacement_destination_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Sélectionner un emplacement...</option>
+                      {emplacements.map(emp => (
+                        <option key={emp.id} value={emp.id}>
+                          {getEmplacementLabel(emp)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Sélecteur d'emplacement pour sortie */}
+                {mouvementType === 'sortie' && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Source *
+                    </label>
+                    <select
+                      value={mouvementData.emplacement_source_id}
+                      onChange={(e) => setMouvementData({ ...mouvementData, emplacement_source_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Sélectionner un emplacement...</option>
+                      {inventaire.map(inv => (
+                        <option key={inv.emplacement_id} value={inv.emplacement_id}>
+                          {getEmplacementLabel(inv.stock_emplacements!)} ({inv.quantite} disponibles)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   <div>
