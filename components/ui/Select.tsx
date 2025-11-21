@@ -1,27 +1,29 @@
-import { forwardRef, InputHTMLAttributes, useState } from 'react'
+import { forwardRef, SelectHTMLAttributes, useState } from 'react'
 import { motion } from 'framer-motion'
+import { ChevronDown } from 'lucide-react'
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string
   error?: string
   icon?: React.ReactNode
   variant?: 'default' | 'glass' | 'premium'
   helperText?: string
+  options?: Array<{ value: string; label: string }>
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({
     label,
     error,
     icon,
     variant = 'glass',
     helperText,
+    options,
     className = '',
-    type = 'text',
+    children,
     ...props
   }, ref) => {
     const [isFocused, setIsFocused] = useState(false)
-    const hasValue = props.value !== undefined && props.value !== ''
 
     const variantStyles = {
       default: `
@@ -81,23 +83,24 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <div className="relative flex items-center">
             {icon && (
               <motion.div
-                className={`absolute left-4 ${iconWrapperStyles[variant]} transition-colors duration-300`}
+                className={`absolute left-4 ${iconWrapperStyles[variant]} transition-colors duration-300 z-10`}
                 animate={isFocused ? { scale: 1.1 } : { scale: 1 }}
                 transition={{ duration: 0.2 }}
               >
                 {icon}
               </motion.div>
             )}
-            <input
+            <select
               ref={ref}
-              type={type}
               className={`
                 w-full px-4 py-3.5
                 ${icon ? 'pl-12' : ''}
+                pr-10
                 ${variantStyles[variant]}
                 rounded-xl
                 text-gray-900 dark:text-gray-100
-                placeholder:text-gray-400 dark:placeholder:text-gray-500
+                appearance-none
+                cursor-pointer
                 disabled:opacity-50 disabled:cursor-not-allowed
                 ${error ? 'border-red-400 dark:border-red-500 focus:border-red-500 focus:ring-red-500/30' : ''}
                 ${className}
@@ -105,7 +108,25 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               {...props}
-            />
+            >
+              {options ? (
+                options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))
+              ) : (
+                children
+              )}
+            </select>
+            {/* Chevron icon */}
+            <motion.div
+              className={`absolute right-4 ${iconWrapperStyles[variant]} transition-colors duration-300 pointer-events-none`}
+              animate={isFocused ? { rotate: 180 } : { rotate: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ChevronDown className="w-5 h-5" />
+            </motion.div>
             {/* Focus ring animation */}
             {isFocused && variant === 'premium' && (
               <motion.div
@@ -148,4 +169,4 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   }
 )
 
-Input.displayName = 'Input'
+Select.displayName = 'Select'

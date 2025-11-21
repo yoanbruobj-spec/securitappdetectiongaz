@@ -107,13 +107,16 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
 
   return (
     <>
-      {/* Bouton burger mobile */}
-      <button
+      {/* Bouton burger mobile - GLASSMORPHISM 3D */}
+      <motion.button
+        whileHover={{ scale: 1.1, rotate: 90 }}
+        whileTap={{ scale: 0.9 }}
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 glass-strong ring-2 ring-emerald-500/30 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-2xl relative overflow-hidden"
       >
-        <Menu className="w-6 h-6 text-white" />
-      </button>
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-cyan-500 blur-xl opacity-50 animate-pulse-glow" />
+        <Menu className="relative w-6 h-6 text-white drop-shadow-lg" />
+      </motion.button>
 
       {/* Backdrop mobile */}
       <AnimatePresence>
@@ -128,7 +131,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
+      {/* Sidebar - GLASSMORPHISM SPECTACULAIRE */}
       <motion.aside
         initial={false}
         animate={{
@@ -136,17 +139,55 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
           x: isMobile ? (mobileOpen ? 0 : -280) : 0
         }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="fixed lg:relative h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col shadow-xl z-50"
+        className="fixed lg:relative h-screen glass-strong border-r-2 border-emerald-500/20 dark:border-emerald-500/30 flex flex-col shadow-2xl z-50 overflow-hidden relative"
       >
-      {/* Header with Logo */}
-      <div className="h-20 border-b border-gray-300 bg-gray-800 flex items-center justify-center px-4 relative">
+        {/* Gradient mesh background animé */}
+        <div className="absolute inset-0 -z-10 opacity-30">
+          <motion.div
+            animate={{
+              x: [0, 50, 0],
+              y: [0, -30, 0],
+              scale: [1, 1.1, 1],
+              rotate: [0, 45, 0],
+            }}
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-0 left-0 w-[200px] h-[200px] bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-40"
+          />
+          <motion.div
+            animate={{
+              x: [0, -40, 0],
+              y: [0, 50, 0],
+              scale: [1, 1.2, 1],
+              rotate: [0, -45, 0],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1
+            }}
+            className="absolute bottom-0 right-0 w-[250px] h-[250px] bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-40"
+          />
+        </div>
+      {/* Header with Logo - GLASSMORPHISM */}
+      <div className="relative h-20 border-b-2 border-emerald-500/20 dark:border-emerald-500/30 glass flex items-center justify-center px-4 overflow-hidden">
+        {/* Glow effect animé */}
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-cyan-500/5 to-emerald-500/5 animate-gradient opacity-50" />
+
         {/* Bouton fermer mobile */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1, rotate: 90 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => setMobileOpen(false)}
-          className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-600 transition"
+          className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-red-500/10 transition shadow-lg relative overflow-hidden group"
         >
-          <X className="w-5 h-5 text-white" />
-        </button>
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-red-500/0 group-hover:from-red-500/20 group-hover:to-red-500/20 transition-all duration-300" />
+          <X className="relative w-5 h-5 text-gray-700 dark:text-gray-300 drop-shadow-sm" />
+        </motion.button>
 
         <AnimatePresence mode="wait">
           {!collapsed ? (
@@ -174,155 +215,201 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg"
+              className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-2xl overflow-hidden"
             >
-              <span className="text-white font-bold text-xl">S</span>
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-cyan-500 blur-md opacity-60 animate-pulse-glow" />
+              <span className="relative text-white font-black text-xl drop-shadow-lg">S</span>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Toggle Button - masqué sur mobile */}
-        <button
+        {/* Toggle Button - masqué sur mobile - 3D */}
+        <motion.button
+          whileHover={{ scale: 1.2, rotate: collapsed ? 180 : 0 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-gray-700 border border-gray-600 rounded-full items-center justify-center shadow-md hover:shadow-lg hover:scale-110 transition-all z-10"
+          className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 glass-strong bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full items-center justify-center shadow-xl hover:shadow-2xl transition-all z-10 relative overflow-hidden"
         >
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-cyan-500 blur-sm opacity-60 animate-pulse-glow" />
           {collapsed ? (
-            <ChevronRight className="w-3 h-3 text-white" />
+            <ChevronRight className="relative w-3 h-3 text-white drop-shadow-lg" />
           ) : (
-            <ChevronLeft className="w-3 h-3 text-white" />
+            <ChevronLeft className="relative w-3 h-3 text-white drop-shadow-lg" />
           )}
-        </button>
+        </motion.button>
       </div>
 
-      {/* New Report Button */}
-      <div className="p-4">
-        <button
+      {/* New Report Button - 3D GLASSMORPHISM */}
+      <div className="relative p-4">
+        <motion.button
+          whileHover={{ scale: 1.05, y: -2 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => router.push('/select-rapport-type')}
-          className={`w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-xl hover:from-emerald-600 hover:to-cyan-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02]`}
+          className={`relative w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-2xl shadow-2xl hover:shadow-emerald-500/50 transition-all overflow-hidden group`}
         >
-          <Plus className="w-5 h-5 flex-shrink-0" />
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500 blur-xl opacity-60 group-hover:opacity-100 transition-opacity animate-pulse-glow" />
+          {/* Shimmer effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-shimmer" />
+
+          <Plus className="relative w-5 h-5 flex-shrink-0 drop-shadow-lg" />
           <AnimatePresence>
             {!collapsed && (
               <motion.span
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: 'auto' }}
                 exit={{ opacity: 0, width: 0 }}
-                className="font-semibold whitespace-nowrap overflow-hidden"
+                className="relative font-black whitespace-nowrap overflow-hidden drop-shadow-lg"
               >
                 Nouveau rapport
               </motion.span>
             )}
           </AnimatePresence>
-        </button>
+        </motion.button>
       </div>
 
-      {/* Navigation Menu */}
-      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+      {/* Navigation Menu - GLASSMORPHISM 3D */}
+      <nav className="relative flex-1 px-3 py-2 space-y-2 overflow-y-auto">
         {menuItems.map((item, index) => {
           const active = isActive(item.href)
           const colors = getColorClasses(item.color || 'gray', active)
           const Icon = item.icon
 
           return (
-            <button
+            <motion.button
               key={index}
               onClick={() => router.push(item.href)}
-              className={`w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-3 rounded-xl transition-all group ${colors.bg}`}
+              whileHover={{ x: 4, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`relative w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-3 rounded-2xl transition-all group overflow-hidden ${
+                active
+                  ? 'glass ring-2 ring-emerald-500/30 shadow-xl'
+                  : 'hover:glass hover:ring-1 hover:ring-gray-300/30 dark:hover:ring-gray-600/30'
+              }`}
             >
-              <Icon className={`w-5 h-5 flex-shrink-0 ${colors.icon}`} />
+              {/* Glow effect pour item actif */}
+              {active && (
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-emerald-500/10 animate-gradient" />
+              )}
+
+              <div className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                active
+                  ? 'bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg'
+                  : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800'
+              }`}>
+                {active && <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 blur-md opacity-50 animate-pulse-glow" />}
+                <Icon className={`relative w-5 h-5 flex-shrink-0 ${active ? 'text-white drop-shadow-lg' : colors.icon}`} />
+              </div>
+
               <AnimatePresence>
                 {!collapsed && (
                   <motion.span
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: 'auto' }}
                     exit={{ opacity: 0, width: 0 }}
-                    className={`font-medium whitespace-nowrap overflow-hidden ${colors.text}`}
+                    className={`relative font-bold whitespace-nowrap overflow-hidden ${active ? 'text-gray-900 dark:text-gray-100' : colors.text}`}
                   >
                     {item.label}
                   </motion.span>
                 )}
               </AnimatePresence>
               {item.badge && !collapsed && (
-                <span className="ml-auto px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="ml-auto px-2 py-0.5 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg"
+                >
                   {item.badge}
-                </span>
+                </motion.span>
               )}
-            </button>
+            </motion.button>
           )
         })}
       </nav>
 
-      {/* User Profile & Logout */}
-      <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+      {/* User Profile & Logout - GLASSMORPHISM */}
+      <div className="relative border-t-2 border-emerald-500/20 dark:border-emerald-500/30 p-4 glass">
+        {/* Glow effect */}
+        <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/5 via-cyan-500/5 to-transparent opacity-50" />
+
         <AnimatePresence mode="wait">
           {!collapsed ? (
             <motion.div
               key="profile-full"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="mb-3"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="relative mb-3 p-3 glass rounded-2xl ring-1 ring-emerald-500/20"
             >
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Connecté en tant que</p>
-              <p className="text-sm text-gray-800 dark:text-gray-200 font-semibold truncate">{userName}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{userRole}</p>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">Connecté en tant que</p>
+              <p className="text-sm text-gray-900 dark:text-gray-100 font-black truncate">{userName}</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold capitalize">{userRole}</p>
             </motion.div>
           ) : (
             <motion.div
               key="profile-compact"
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="mb-3 flex justify-center"
+              exit={{ opacity: 0, scale: 0.5 }}
+              className="relative mb-3 flex justify-center"
             >
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-white font-bold shadow-md">
-                {userName?.charAt(0).toUpperCase()}
+              <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-white font-black shadow-2xl overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-cyan-500 blur-md opacity-60 animate-pulse-glow" />
+                <span className="relative drop-shadow-lg">{userName?.charAt(0).toUpperCase()}</span>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Theme Switcher */}
-        <div className={`mb-2 flex ${collapsed ? 'justify-center' : 'gap-1'} p-1 bg-gray-100 dark:bg-gray-800 rounded-xl`}>
+        {/* Theme Switcher - GLASSMORPHISM */}
+        <div className={`relative mb-2 flex ${collapsed ? 'justify-center' : 'gap-1'} p-1 glass rounded-2xl ring-1 ring-gray-300/20 dark:ring-gray-600/20`}>
           {!collapsed ? (
             <>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setTheme('light')}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                className={`relative flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all overflow-hidden ${
                   resolvedTheme === 'light'
-                    ? 'bg-white dark:bg-gray-700 text-emerald-600 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                    ? 'glass-strong ring-2 ring-emerald-500/30 text-emerald-600 dark:text-emerald-400 shadow-lg'
+                    : 'text-gray-600 dark:text-gray-400 hover:glass'
                 }`}
                 title="Mode clair"
               >
-                <Sun className="w-4 h-4" />
-                <span className="text-xs font-medium">Clair</span>
-              </button>
-              <button
+                {resolvedTheme === 'light' && <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 animate-gradient" />}
+                <Sun className="relative w-4 h-4" />
+                <span className="relative text-xs font-bold">Clair</span>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setTheme('dark')}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                className={`relative flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all overflow-hidden ${
                   resolvedTheme === 'dark'
-                    ? 'bg-white dark:bg-gray-700 text-emerald-600 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                    ? 'glass-strong ring-2 ring-emerald-500/30 text-emerald-600 dark:text-emerald-400 shadow-lg'
+                    : 'text-gray-600 dark:text-gray-400 hover:glass'
                 }`}
                 title="Mode sombre"
               >
-                <Moon className="w-4 h-4" />
-                <span className="text-xs font-medium">Sombre</span>
-              </button>
+                {resolvedTheme === 'dark' && <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 animate-gradient" />}
+                <Moon className="relative w-4 h-4" />
+                <span className="relative text-xs font-bold">Sombre</span>
+              </motion.button>
             </>
           ) : (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 180 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="relative p-2 glass rounded-xl transition-colors overflow-hidden"
               title={resolvedTheme === 'dark' ? 'Mode clair' : 'Mode sombre'}
             >
               {resolvedTheme === 'dark' ? (
-                <Sun className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <Sun className="relative w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               ) : (
-                <Moon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <Moon className="relative w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               )}
-            </button>
+            </motion.button>
           )}
         </div>
 
