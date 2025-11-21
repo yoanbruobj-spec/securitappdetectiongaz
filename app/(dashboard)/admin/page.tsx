@@ -136,13 +136,13 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="min-h-screen lg:flex bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <Sidebar
           userRole="admin"
           userName={profile?.full_name}
           onLogout={handleLogout}
         />
-        <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
+        <div className="min-h-screen lg:flex-1 flex flex-col overflow-hidden">
           <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6 sticky top-0 z-30">
             <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2" />
             <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
   }))
 
   return (
-    <div className="min-h-screen flex relative overflow-hidden">
+    <div className="min-h-screen lg:flex relative overflow-hidden">
       <AnimatedBackground />
       <Sidebar
         userRole="admin"
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
         onLogout={handleLogout}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
+      <div className="min-h-screen lg:flex-1 flex flex-col overflow-hidden">
         {/* Header GLASSMORPHISM */}
         <header className="glass-strong border-b border-white/20 px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6 sticky top-0 z-20 shadow-lg">
           <motion.div
