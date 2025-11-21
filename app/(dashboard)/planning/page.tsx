@@ -36,6 +36,11 @@ export default function PlanningPage() {
   const [viewMode, setViewMode] = useState<'global' | 'par_technicien'>('global')
   const [selectedTechnicienFilter, setSelectedTechnicienFilter] = useState<string>('')
   const [mobileView, setMobileView] = useState<'calendar' | 'list'>('calendar')
+
+  // États pour le drag and drop tactile (mobile)
+  const [touchStartPos, setTouchStartPos] = useState<{ x: number, y: number } | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [draggedElement, setDraggedElement] = useState<HTMLElement | null>(null)
   const [formData, setFormData] = useState({
     client_id: '',
     site_id: '',
@@ -369,6 +374,63 @@ export default function PlanningPage() {
     }
   }
 
+  // Fonctions pour le drag and drop tactile (mobile)
+  function handleTouchStart(e: React.TouchEvent, planning: any) {
+    const touch = e.touches[0]
+    setTouchStartPos({ x: touch.clientX, y: touch.clientY })
+    setDraggedPlanning(planning)
+
+    // Créer un élément visuel pour le drag
+    setTimeout(() => {
+      setIsDragging(true)
+      const target = e.currentTarget as HTMLElement
+      setDraggedElement(target)
+      target.style.opacity = '0.5'
+    }, 100)
+  }
+
+  function handleTouchMove(e: React.TouchEvent) {
+    if (!isDragging || !touchStartPos) return
+
+    const touch = e.touches[0]
+    const deltaX = touch.clientX - touchStartPos.x
+    const deltaY = touch.clientY - touchStartPos.y
+
+    // Vérifier si on se déplace assez pour considérer comme un drag
+    if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+      e.preventDefault()
+    }
+  }
+
+  function handleTouchEnd(e: React.TouchEvent, targetDate: Date | null) {
+    if (!isDragging || !draggedPlanning || !targetDate) {
+      setIsDragging(false)
+      setTouchStartPos(null)
+      setDraggedPlanning(null)
+      if (draggedElement) {
+        draggedElement.style.opacity = '1'
+        setDraggedElement(null)
+      }
+      return
+    }
+
+    const touch = e.changedTouches[0]
+    const element = document.elementFromPoint(touch.clientX, touch.clientY)
+
+    if (element && element.classList.contains('calendar-day')) {
+      const newDate = formatDateToLocal(targetDate)
+      handleDateChange(draggedPlanning.id, newDate)
+    }
+
+    if (draggedElement) {
+      draggedElement.style.opacity = '1'
+      setDraggedElement(null)
+    }
+    setIsDragging(false)
+    setTouchStartPos(null)
+    setDraggedPlanning(null)
+  }
+
   async function handleDeletePlanning() {
     if (!selectedPlanning) return
 
@@ -450,21 +512,21 @@ export default function PlanningPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header épuré */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="px-4 lg:px-6 py-3 lg:py-4">
-          <div className="flex items-center justify-between mb-3 lg:mb-4">
+        <div className="px-4 lg:px-6 py-2 lg:py-4">
+          <div className="flex items-center justify-between mb-2 lg:mb-4">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => router.push('/dashboard')}
                 className="p-2 hover:bg-gray-100 rounded-lg transition"
                 title="Retour au dashboard"
               >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
+                <ArrowLeft className="w-4 lg:w-5 h-4 lg:h-5 text-gray-600" />
               </button>
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md">
-                <CalendarIcon className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md">
+                <CalendarIcon className="w-4 lg:w-5 h-4 lg:h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg lg:text-xl font-bold text-gray-900">
+                <h1 className="text-base lg:text-xl font-bold text-gray-900">
                   Planning
                 </h1>
                 <p className="text-xs text-gray-500 hidden lg:block">
@@ -532,21 +594,21 @@ export default function PlanningPage() {
 
       <main className="flex-1 overflow-auto p-4 lg:p-6">
         {/* Navigation mois épurée */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3 lg:mb-4">
           <button
             onClick={previousMonth}
-            className="p-2 hover:bg-white rounded-lg transition"
+            className="p-1.5 lg:p-2 hover:bg-white rounded-lg transition"
           >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
+            <ChevronLeft className="w-5 lg:w-6 h-5 lg:h-6 text-gray-600" />
           </button>
-          <h2 className="text-base lg:text-lg font-bold text-gray-900">
+          <h2 className="text-sm lg:text-lg font-bold text-gray-900">
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h2>
           <button
             onClick={nextMonth}
-            className="p-2 hover:bg-white rounded-lg transition"
+            className="p-1.5 lg:p-2 hover:bg-white rounded-lg transition"
           >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
+            <ChevronRight className="w-5 lg:w-6 h-5 lg:h-6 text-gray-600" />
           </button>
         </div>
 
@@ -661,7 +723,7 @@ export default function PlanningPage() {
                         handleDateChange(draggedPlanning.id, newDate)
                       }
                     }}
-                    className={`min-h-[80px] lg:min-h-[120px] p-1 lg:p-2 ${
+                    className={`calendar-day min-h-[80px] lg:min-h-[120px] p-1 lg:p-2 ${
                       !date ? 'bg-gray-50' : isToday ? 'bg-emerald-50' : 'bg-white'
                     } transition-colors`}
                   >
@@ -679,7 +741,10 @@ export default function PlanningPage() {
                               draggable={true}
                               onDragStart={() => setDraggedPlanning(planning)}
                               onDragEnd={() => setDraggedPlanning(null)}
-                              className={`px-1.5 py-1 rounded text-[10px] lg:text-xs cursor-pointer hover:shadow-md transition ${getStatusColor(planning.statut)}`}
+                              onTouchStart={(e) => handleTouchStart(e, planning)}
+                              onTouchMove={handleTouchMove}
+                              onTouchEnd={(e) => handleTouchEnd(e, date)}
+                              className={`px-1.5 py-1 rounded text-[10px] lg:text-xs cursor-pointer hover:shadow-md transition touch-none ${getStatusColor(planning.statut)}`}
                               onClick={() => openEditModal(planning)}
                             >
                               <div className="font-semibold truncate">
@@ -878,32 +943,34 @@ export default function PlanningPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2 mt-4">
+              <div className="flex flex-col sm:flex-row gap-2 mt-4">
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                  className="flex-1 px-4 py-2 text-xs lg:text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition"
                 >
                   Annuler
                 </button>
-                <button
-                  onClick={handleDeletePlanning}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => handleCreateRapport(selectedPlanning)}
-                  className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
-                >
-                  <FileText className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={handleUpdatePlanning}
-                  className="flex-1 px-4 py-2 text-sm bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white rounded-lg transition flex items-center justify-center gap-2 shadow-md"
-                >
-                  <Save className="w-4 h-4" />
-                  Enregistrer
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDeletePlanning}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                  >
+                    <Trash2 className="w-4 lg:w-5 h-4 lg:h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleCreateRapport(selectedPlanning)}
+                    className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                  >
+                    <FileText className="w-4 lg:w-5 h-4 lg:h-5" />
+                  </button>
+                  <button
+                    onClick={handleUpdatePlanning}
+                    className="flex-1 px-4 py-2 text-xs lg:text-sm bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white rounded-lg transition flex items-center justify-center gap-2 shadow-md"
+                  >
+                    <Save className="w-4 h-4" />
+                    Enregistrer
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
