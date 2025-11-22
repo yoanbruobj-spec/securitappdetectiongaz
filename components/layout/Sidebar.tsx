@@ -18,7 +18,12 @@ import {
   Settings,
   Menu,
   X,
-  Search
+  Search,
+  AlertTriangle,
+  PackageCheck,
+  ChevronDown,
+  ChevronUp,
+  Flame
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -40,6 +45,7 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [detectionGazOpen, setDetectionGazOpen] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -59,18 +65,24 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
     setMobileOpen(false)
   }, [pathname])
 
-  const menuItems: MenuItem[] = userRole === 'admin' ? [
+  // Menu items hors "Détection Gaz"
+  const mainMenuItems: MenuItem[] = userRole === 'admin' ? [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/admin', color: 'emerald' },
-    { icon: FileText, label: 'Interventions', href: '/interventions', color: 'cyan' },
     { icon: Calendar, label: 'Planning', href: '/planning', color: 'blue' },
     { icon: Package, label: 'Stock', href: '/stock', color: 'purple' },
     { icon: Building2, label: 'Clients', href: '/clients', color: 'orange' },
     { icon: Users, label: 'Utilisateurs', href: '/utilisateurs', color: 'pink' },
   ] : [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/technicien', color: 'emerald' },
-    { icon: FileText, label: 'Interventions', href: '/interventions', color: 'cyan' },
     { icon: Calendar, label: 'Planning', href: '/planning', color: 'blue' },
     { icon: Building2, label: 'Clients', href: '/clients', color: 'orange' },
+  ]
+
+  // Items du groupe "Détection Gaz"
+  const detectionGazItems: MenuItem[] = [
+    { icon: FileText, label: 'Interventions', href: '/interventions', color: 'cyan' },
+    { icon: PackageCheck, label: 'Suivi Cellules', href: '/suivi-cellules', color: 'indigo' },
+    { icon: AlertTriangle, label: 'Anomalies', href: '/anomalies', color: 'red' },
   ]
 
   const isActive = (href: string) => pathname === href
@@ -91,6 +103,8 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
       purple: 'text-purple-600 group-hover:text-purple-700',
       orange: 'text-orange-600 group-hover:text-orange-700',
       pink: 'text-pink-600 group-hover:text-pink-700',
+      indigo: 'text-indigo-600 group-hover:text-indigo-700',
+      red: 'text-red-600 group-hover:text-red-700',
     }
 
     return {
@@ -237,38 +251,10 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
         </motion.button>
       </div>
 
-      {/* New Report Button - 3D GLASSMORPHISM */}
-      <div className="relative p-4">
-        <motion.button
-          whileHover={{ scale: 1.05, y: -2 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => router.push('/select-rapport-type')}
-          className={`relative w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-2xl shadow-2xl hover:shadow-emerald-500/50 transition-all overflow-hidden group`}
-        >
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500 blur-xl opacity-60 group-hover:opacity-100 transition-opacity animate-pulse-glow" />
-          {/* Shimmer effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-shimmer" />
-
-          <Plus className="relative w-5 h-5 flex-shrink-0 drop-shadow-lg" />
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.span
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                className="relative font-black whitespace-nowrap overflow-hidden drop-shadow-lg"
-              >
-                Nouveau rapport
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.button>
-      </div>
-
       {/* Navigation Menu - GLASSMORPHISM 3D */}
       <nav className="relative flex-1 px-3 py-2 space-y-2 overflow-y-auto">
-        {menuItems.map((item, index) => {
+        {/* Menu principal */}
+        {mainMenuItems.map((item, index) => {
           const active = isActive(item.href)
           const colors = getColorClasses(item.color || 'gray', active)
           const Icon = item.icon
@@ -285,7 +271,6 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
                   : 'hover:glass hover:ring-1 hover:ring-gray-300/30'
               }`}
             >
-              {/* Glow effect pour item actif */}
               {active && (
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-emerald-500/10 animate-gradient" />
               )}
@@ -311,18 +296,142 @@ export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps
                   </motion.span>
                 )}
               </AnimatePresence>
-              {item.badge && !collapsed && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="ml-auto px-2 py-0.5 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg"
-                >
-                  {item.badge}
-                </motion.span>
-              )}
             </motion.button>
           )
         })}
+
+        {/* Section Détection Gaz */}
+        <div className="relative mt-4 pt-4 border-t-2 border-gray-200/50">
+          {/* Header Détection Gaz */}
+          <motion.button
+            whileHover={{ x: 4, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setDetectionGazOpen(!detectionGazOpen)}
+            className="relative w-full flex items-center justify-between px-4 py-3 rounded-2xl glass ring-2 ring-orange-500/20 hover:ring-orange-500/40 transition-all group overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-red-500/5 to-orange-500/5 animate-gradient" />
+
+            <div className="relative flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 blur-md opacity-50 animate-pulse-glow" />
+                <Flame className="relative w-5 h-5 text-white drop-shadow-lg" />
+              </div>
+              <AnimatePresence>
+                {!collapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    className="relative font-black text-gray-900 whitespace-nowrap overflow-hidden"
+                  >
+                    Détection Gaz
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  {detectionGazOpen ? (
+                    <ChevronUp className="w-5 h-5 text-gray-600" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-600" />
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.button>
+
+          {/* Sous-menu Détection Gaz */}
+          <AnimatePresence>
+            {detectionGazOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="mt-2 space-y-2 overflow-hidden"
+              >
+                {/* Bouton Nouveau Rapport */}
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => router.push('/select-rapport-type')}
+                  className={`relative w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-2xl shadow-2xl hover:shadow-emerald-500/50 transition-all overflow-hidden group`}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500 blur-xl opacity-60 group-hover:opacity-100 transition-opacity animate-pulse-glow" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-shimmer" />
+
+                  <Plus className="relative w-5 h-5 flex-shrink-0 drop-shadow-lg" />
+                  <AnimatePresence>
+                    {!collapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: 'auto' }}
+                        exit={{ opacity: 0, width: 0 }}
+                        className="relative font-black whitespace-nowrap overflow-hidden drop-shadow-lg"
+                      >
+                        Nouveau rapport
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+
+                {/* Items Détection Gaz */}
+                {detectionGazItems.map((item, index) => {
+                  const active = isActive(item.href)
+                  const colors = getColorClasses(item.color || 'gray', active)
+                  const Icon = item.icon
+
+                  return (
+                    <motion.button
+                      key={index}
+                      onClick={() => router.push(item.href)}
+                      whileHover={{ x: 4, scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`relative w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-3 rounded-2xl transition-all group overflow-hidden ${
+                        active
+                          ? 'glass ring-2 ring-emerald-500/30 shadow-xl'
+                          : 'hover:glass hover:ring-1 hover:ring-gray-300/30'
+                      }`}
+                    >
+                      {active && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-emerald-500/10 animate-gradient" />
+                      )}
+
+                      <div className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                        active
+                          ? 'bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg'
+                          : 'group-hover:bg-gray-100'
+                      }`}>
+                        {active && <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 blur-md opacity-50 animate-pulse-glow" />}
+                        <Icon className={`relative w-5 h-5 flex-shrink-0 ${active ? 'text-white drop-shadow-lg' : colors.icon}`} />
+                      </div>
+
+                      <AnimatePresence>
+                        {!collapsed && (
+                          <motion.span
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: 'auto' }}
+                            exit={{ opacity: 0, width: 0 }}
+                            className={`relative font-bold whitespace-nowrap overflow-hidden ${active ? 'text-gray-900' : colors.text}`}
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </motion.button>
+                  )
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </nav>
 
       {/* User Profile & Logout - GLASSMORPHISM */}

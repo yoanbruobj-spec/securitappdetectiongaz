@@ -15,11 +15,13 @@ import {
   Tag,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
   Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
+import { SignalerAnomalieModal } from '@/components/rapport/SignalerAnomalieModal'
 
 export default function InterventionDetailPage() {
   const router = useRouter()
@@ -31,6 +33,8 @@ export default function InterventionDetailPage() {
   const [photos, setPhotos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [generatingPDF, setGeneratingPDF] = useState(false)
+  const [anomalieModalOpen, setAnomalieModalOpen] = useState(false)
+  const [selectedEquipement, setSelectedEquipement] = useState<any>(null)
 
   useEffect(() => {
     if (params.id) {
@@ -49,6 +53,7 @@ export default function InterventionDetailPage() {
           nom,
           adresse,
           ville,
+          client_id,
           clients (nom)
         )
       `)
@@ -250,6 +255,17 @@ export default function InterventionDetailPage() {
                 icon={generatingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
               >
                 {generatingPDF ? 'Génération...' : <><span className="hidden sm:inline">Générer</span> PDF</>}
+              </Button>
+              <Button
+                onClick={() => {
+                  setSelectedEquipement(null)
+                  setAnomalieModalOpen(true)
+                }}
+                variant="danger"
+                size="sm"
+                icon={<AlertTriangle className="w-4 h-4" />}
+              >
+                <span className="hidden sm:inline">Signaler anomalie</span>
               </Button>
             </div>
           </div>
@@ -502,6 +518,19 @@ export default function InterventionDetailPage() {
           </motion.div>
         </div>
       </main>
+
+      {/* Modal Signaler Anomalie */}
+      <SignalerAnomalieModal
+        isOpen={anomalieModalOpen}
+        onClose={() => setAnomalieModalOpen(false)}
+        interventionId={params.id as string}
+        clientId={intervention?.sites?.client_id}
+        siteId={intervention?.site_id}
+        centraleId={selectedEquipement?.centraleId}
+        detecteurGazId={selectedEquipement?.detecteurGazId}
+        detecteurFlammeId={selectedEquipement?.detecteurFlammeId}
+        typeEquipement={selectedEquipement?.type || 'autre'}
+      />
     </div>
   )
 }

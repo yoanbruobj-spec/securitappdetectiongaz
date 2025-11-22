@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { generateInterventionPortablePDF } from '@/lib/pdf/generateInterventionPortablePDF'
+import { SynthesePortables } from '@/components/rapport/SynthesePortables'
+import { SignalerAnomalieModal } from '@/components/rapport/SignalerAnomalieModal'
 
 export default function InterventionPortableDetailPage() {
   const router = useRouter()
@@ -14,6 +16,8 @@ export default function InterventionPortableDetailPage() {
   const [portables, setPortables] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [generatingPDF, setGeneratingPDF] = useState(false)
+  const [anomalieModalOpen, setAnomalieModalOpen] = useState(false)
+  const [selectedEquipement, setSelectedEquipement] = useState<any>(null)
 
   useEffect(() => {
     if (params.id) {
@@ -33,6 +37,7 @@ export default function InterventionPortableDetailPage() {
           adresse,
           ville,
           code_postal,
+          client_id,
           clients (nom)
         )
       `)
@@ -147,6 +152,15 @@ export default function InterventionPortableDetailPage() {
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50"
             >
               {generatingPDF ? 'Génération...' : 'Générer PDF'}
+            </button>
+            <button
+              onClick={() => {
+                setSelectedEquipement(null)
+                setAnomalieModalOpen(true)
+              }}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+            >
+              Signaler anomalie
             </button>
           </div>
         </div>
@@ -406,6 +420,17 @@ export default function InterventionPortableDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* Modal Signaler Anomalie */}
+      <SignalerAnomalieModal
+        isOpen={anomalieModalOpen}
+        onClose={() => setAnomalieModalOpen(false)}
+        interventionId={params.id as string}
+        clientId={intervention?.sites?.client_id}
+        siteId={intervention?.site_id}
+        portableId={selectedEquipement?.portableId}
+        typeEquipement={selectedEquipement?.type || 'portable'}
+      />
     </div>
   )
 }

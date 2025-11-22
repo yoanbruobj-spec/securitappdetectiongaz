@@ -76,7 +76,9 @@ interface DetecteurFlamme {
 
 interface Centrale {
   id: string
+  type_equipement: 'centrale' | 'automate'
   marque: string
+  marque_personnalisee: string
   modele: string
   numero_serie: string
   firmware: string
@@ -308,7 +310,9 @@ export default function InterventionEditPage() {
 
         centralesWithDetails.push({
           id: centrale.id.toString(),
+          type_equipement: centrale.type_equipement || 'centrale',
           marque: centrale.marque || '',
+          marque_personnalisee: centrale.marque_personnalisee || '',
           modele: centrale.modele || '',
           numero_serie: centrale.numero_serie || '',
           firmware: centrale.firmware || '',
@@ -331,7 +335,9 @@ export default function InterventionEditPage() {
 
       setCentrales(centralesWithDetails.length > 0 ? centralesWithDetails : [{
         id: '1',
+        type_equipement: 'centrale',
         marque: '',
+        marque_personnalisee: '',
         modele: '',
         numero_serie: '',
         firmware: '',
@@ -404,7 +410,9 @@ export default function InterventionEditPage() {
   function addCentrale() {
     const newCentrale: Centrale = {
       id: Date.now().toString(),
+      type_equipement: 'centrale',
       marque: '',
+      marque_personnalisee: '',
       modele: '',
       numero_serie: '',
       firmware: '',
@@ -424,6 +432,35 @@ export default function InterventionEditPage() {
       pieces_remplacees: '',
     }
     setCentrales([...centrales, newCentrale])
+    setCurrentCentraleIndex(centrales.length)
+    setCurrentSection('centrale')
+  }
+
+  function addAutomate() {
+    const newAutomate: Centrale = {
+      id: Date.now().toString(),
+      type_equipement: 'automate',
+      marque: '',
+      marque_personnalisee: '',
+      modele: '',
+      numero_serie: '',
+      firmware: '',
+      etat_general: 'Bon',
+      aes_presente: false,
+      aes_modele: '',
+      aes_statut: 'Bon',
+      aes_ondulee: false,
+      aes_date_remplacement: '',
+      aes_prochaine_echeance: '',
+      detecteurs_gaz: [],
+      detecteurs_flamme: [],
+      observations: '',
+      travaux_effectues: '',
+      anomalies: '',
+      recommandations: '',
+      pieces_remplacees: '',
+    }
+    setCentrales([...centrales, newAutomate])
     setCurrentCentraleIndex(centrales.length)
     setCurrentSection('centrale')
   }
@@ -749,7 +786,9 @@ export default function InterventionEditPage() {
           .from('centrales')
           .insert({
             intervention_id: interventionId,
+            type_equipement: centrale.type_equipement || 'centrale',
             marque: centrale.marque,
+            marque_personnalisee: centrale.marque_personnalisee || null,
             modele: centrale.modele,
             numero_serie: centrale.numero_serie,
             firmware: centrale.firmware,
@@ -927,7 +966,7 @@ export default function InterventionEditPage() {
               Client & Site
             </button>
             
-            {centrales.map((_, index) => (
+            {centrales.map((centrale, index) => (
               <button
                 key={index}
                 onClick={() => {
@@ -940,7 +979,7 @@ export default function InterventionEditPage() {
                     : 'text-slate-700 hover:bg-gray-100'
                 }`}
               >
-                Centrale {index + 1}
+                {centrale.type_equipement === 'automate' ? 'Automate' : 'Centrale'} {index + 1}
               </button>
             ))}
 
@@ -949,6 +988,13 @@ export default function InterventionEditPage() {
               className="w-full text-left px-4 py-3 rounded-lg bg-green-600 hover:bg-green-700 transition text-white"
             >
               + Ajouter centrale
+            </button>
+
+            <button
+              onClick={addAutomate}
+              className="w-full text-left px-4 py-3 rounded-lg bg-orange-600 hover:bg-orange-700 transition text-white"
+            >
+              + Ajouter automate
             </button>
 
             <button
@@ -1143,21 +1189,35 @@ export default function InterventionEditPage() {
           {currentSection === 'centrale' && currentCentrale && (
             <div className="max-w-7xl mx-auto">
               <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-slate-800">Centrale {currentCentraleIndex + 1}</h1>
+                <h1 className="text-3xl font-bold text-slate-800">
+                  {currentCentrale.type_equipement === 'automate' ? 'Automate' : 'Centrale'} {currentCentraleIndex + 1}
+                </h1>
                 {centrales.length > 1 && (
                   <button
                     onClick={() => removeCentrale(currentCentraleIndex)}
                     className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm text-white"
                   >
-                    Supprimer cette centrale
+                    Supprimer {currentCentrale.type_equipement === 'automate' ? 'cet automate' : 'cette centrale'}
                   </button>
                 )}
               </div>
 
               <div className="bg-white border border-gray-300 shadow-sm rounded-lg p-6 space-y-8">
                 <div>
-                  <h2 className="text-xl font-bold mb-4 text-slate-800">Informations centrale</h2>
+                  <h2 className="text-xl font-bold mb-4 text-slate-800">Informations {currentCentrale.type_equipement === 'automate' ? 'automate' : 'centrale'}</h2>
                   <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-slate-700">Type d'équipement</label>
+                      <select
+                        value={currentCentrale.type_equipement}
+                        onChange={e => updateCentrale(currentCentraleIndex, 'type_equipement', e.target.value)}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      >
+                        <option value="centrale">Centrale</option>
+                        <option value="automate">Automate</option>
+                      </select>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2 text-slate-700">Marque</label>
@@ -1170,6 +1230,7 @@ export default function InterventionEditPage() {
                           {Object.keys(CENTRALES_DATA).map(marque => (
                             <option key={marque} value={marque}>{marque}</option>
                           ))}
+                          <option value="Autre">Autre (saisie libre)</option>
                         </select>
                       </div>
                       <div>
@@ -1187,6 +1248,19 @@ export default function InterventionEditPage() {
                         </select>
                       </div>
                     </div>
+
+                    {currentCentrale.marque === 'Autre' && (
+                      <div>
+                        <label className="block text-sm font-medium mb-2 text-slate-700">Marque personnalisée</label>
+                        <input
+                          type="text"
+                          value={currentCentrale.marque_personnalisee}
+                          onChange={e => updateCentrale(currentCentraleIndex, 'marque_personnalisee', e.target.value)}
+                          placeholder="Saisir la marque..."
+                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                        />
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-3 gap-4">
                       <div>

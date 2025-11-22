@@ -279,11 +279,17 @@ export async function generateInterventionPDF(data: InterventionData) {
       needsNewPage = false
     }
 
-    addSectionTitle(doc, `CENTRALE ${i + 1} - ${centrale.marque} ${centrale.modele}`, yPos, primaryColor)
+    const equipementType = centrale.type_equipement === 'automate' ? 'AUTOMATE' : 'CENTRALE'
+    const marqueAffichee = centrale.marque === 'Autre' && centrale.marque_personnalisee
+      ? centrale.marque_personnalisee
+      : centrale.marque
+
+    addSectionTitle(doc, `${equipementType} ${i + 1} - ${marqueAffichee} ${centrale.modele}`, yPos, primaryColor)
     yPos += 12
 
     const centraleData = []
-    if (centrale.marque) centraleData.push(['Marque', centrale.marque])
+    if (centrale.type_equipement) centraleData.push(["Type d'équipement", centrale.type_equipement === 'automate' ? 'Automate' : 'Centrale'])
+    if (centrale.marque) centraleData.push(['Marque', marqueAffichee])
     if (centrale.modele) centraleData.push(['Modèle', centrale.modele])
     if (centrale.numero_serie) centraleData.push(['N° série', centrale.numero_serie])
     if (centrale.firmware) centraleData.push(['Firmware', centrale.firmware])

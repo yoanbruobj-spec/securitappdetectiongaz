@@ -80,7 +80,9 @@ interface DetecteurFlamme {
 
 interface Centrale {
   id: string
+  type_equipement: 'centrale' | 'automate'
   marque: string
+  marque_personnalisee: string
   modele: string
   numero_serie: string
   firmware: string
@@ -263,7 +265,9 @@ export default function InterventionPage() {
   function addCentrale() {
     const newCentrale: Centrale = {
       id: Date.now().toString(),
+      type_equipement: 'centrale',
       marque: '',
+      marque_personnalisee: '',
       modele: '',
       numero_serie: '',
       firmware: '',
@@ -534,7 +538,9 @@ export default function InterventionPage() {
           .from('centrales')
           .insert({
             intervention_id: intervention.id,
+            type_equipement: centrale.type_equipement,
             marque: centrale.marque,
+            marque_personnalisee: centrale.marque_personnalisee || null,
             modele: centrale.modele,
             numero_serie: centrale.numero_serie,
             firmware: centrale.firmware,
@@ -776,7 +782,7 @@ export default function InterventionPage() {
                 }
                 className="max-w-4xl mx-auto"
               >
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <FormField label="Date d'intervention" required error={!dateIntervention ? 'Date requise' : ''}>
                     <input
                       type="date"
@@ -1036,9 +1042,21 @@ export default function InterventionPage() {
 
               <div className="bg-white border border-gray-300 rounded-lg p-6 space-y-8 shadow-sm">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-800 mb-4">Informations centrale</h2>
+                  <h2 className="text-xl font-bold text-slate-800 mb-4">Informations {currentCentrale.type_equipement === 'automate' ? 'automate' : 'centrale'}</h2>
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Type d'équipement</label>
+                      <select
+                        value={currentCentrale.type_equipement}
+                        onChange={e => updateCentrale(currentCentraleIndex, 'type_equipement', e.target.value)}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      >
+                        <option value="centrale">Centrale</option>
+                        <option value="automate">Automate</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Marque</label>
                         <select
@@ -1050,7 +1068,7 @@ export default function InterventionPage() {
                           {Object.keys(CENTRALES_DATA).map(marque => (
                             <option key={marque} value={marque}>{marque}</option>
                           ))}
-                          <option value="Autre">Autre</option>
+                          <option value="Autre">Autre (saisie libre)</option>
                         </select>
                       </div>
                       <div>
@@ -1079,7 +1097,20 @@ export default function InterventionPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
+                    {currentCentrale.marque === 'Autre' && (
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Marque personnalisée</label>
+                        <input
+                          type="text"
+                          value={currentCentrale.marque_personnalisee || ''}
+                          onChange={e => updateCentrale(currentCentraleIndex, 'marque_personnalisee', e.target.value)}
+                          placeholder="Saisir la marque..."
+                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                        />
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">N° de série</label>
                         <input
@@ -1126,7 +1157,7 @@ export default function InterventionPage() {
 
                       {currentCentrale.aes_presente && (
                         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-medium text-slate-700 mb-2">Modèle</label>
                               <select
@@ -1166,7 +1197,7 @@ export default function InterventionPage() {
                             <span className="text-sm text-slate-800">Ondulée</span>
                           </label>
 
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-medium text-slate-700 mb-2">Date remplacement</label>
                               <input
@@ -1222,7 +1253,7 @@ export default function InterventionPage() {
                         </div>
 
                         <div className="space-y-4">
-                          <div className="grid grid-cols-4 gap-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                             <div>
                               <label className="block text-xs text-slate-700 mb-1">Ligne</label>
                               <input
@@ -1281,7 +1312,7 @@ export default function InterventionPage() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <label className="block text-xs text-slate-700 mb-1">Type de gaz</label>
                               <select
@@ -1321,7 +1352,7 @@ export default function InterventionPage() {
                             </div>
                           )}
 
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <label className="block text-xs text-slate-700 mb-1">Gamme de mesure</label>
                               <input
@@ -1344,7 +1375,7 @@ export default function InterventionPage() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <label className="block text-xs text-slate-700 mb-1">Date de remplacement</label>
                               <input
@@ -1367,7 +1398,7 @@ export default function InterventionPage() {
 
                           <div className="border-t border-gray-300 pt-3">
                             <h4 className="text-sm font-semibold text-slate-800 mb-2">Test zéro</h4>
-                            <div className="grid grid-cols-4 gap-2">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                               <div>
                                 <label className="block text-xs text-slate-700 mb-1">Gaz zéro</label>
                                 <select
@@ -1659,7 +1690,7 @@ export default function InterventionPage() {
                         </div>
 
                         <div className="space-y-4">
-                          <div className="grid grid-cols-4 gap-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                             <div>
                               <label className="block text-xs text-slate-700 mb-1">Ligne</label>
                               <input
@@ -1718,7 +1749,7 @@ export default function InterventionPage() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <label className="block text-xs text-slate-700 mb-1">Type connexion</label>
                               <select
@@ -1748,7 +1779,7 @@ export default function InterventionPage() {
 
                           <div className="border-t border-gray-300 pt-3">
                             <h4 className="text-sm font-semibold text-slate-800 mb-2">Test flamme</h4>
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                               <div>
                                 <label className="block text-xs text-slate-700 mb-1">Distance test</label>
                                 <input
@@ -1786,7 +1817,7 @@ export default function InterventionPage() {
 
                           <div className="border-t border-gray-300 pt-3">
                             <h4 className="text-sm font-semibold text-slate-800 mb-2">Asservissements</h4>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div>
                                 <label className="block text-xs text-slate-700 mb-1">Asservissements</label>
                                 <input
@@ -1939,7 +1970,7 @@ export default function InterventionPage() {
                       />
                     </label>
                     {photos.length > 0 && (
-                      <div className="grid grid-cols-4 gap-3 mt-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-4">
                         {photos.map((photo, index) => (
                           <div key={index} className="relative group">
                             <img

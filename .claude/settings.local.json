@@ -38,7 +38,13 @@
       "Bash(powershell -Command \"Stop-Process -Id 3260 -Force\")",
       "Bash(git reset:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(timeout:*)",
+      "Bash(powershell -Command \"Get-Process node | Select-Object Id, StartTime, CPU | Format-Table\")",
+      "Bash(powershell -Command \"Get-Content ''C:\\Users\\yoanb\\Desktop\\securit-app\\app\\(dashboard)\\intervention\\[id]\\page.tsx'' | Measure-Object -Line\")",
+      "Bash(git checkout:*)",
+      "Bash(powershell -Command \"Get-Content ''C:\\Users\\yoanb\\Desktop\\securit-app\\lib\\pdf\\generateInterventionPDF.ts'' | Measure-Object -Line\")",
+      "Bash(powershell -Command \"Get-Content ''C:\\Users\\yoanb\\Desktop\\securit-app\\app\\(dashboard)\\anomalies\\page.tsx'' | Measure-Object -Line\")"
     ],
     "deny": [],
     "ask": []
