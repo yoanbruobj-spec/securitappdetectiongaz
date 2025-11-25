@@ -3,12 +3,25 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { motion } from 'framer-motion'
-import { ArrowLeft, Plus, FileText, Trash2, Download, Eye } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import {
+  ArrowLeft,
+  Plus,
+  FileText,
+  Trash2,
+  Eye,
+  Search,
+  Filter,
+  MapPin,
+  Calendar,
+  Clock,
+  User,
+  ChevronRight,
+  X
+} from 'lucide-react'
+import { Sidebar } from '@/components/layout/Sidebar'
+import { BottomNav } from '@/components/layout/BottomNav'
 import { Badge } from '@/components/ui/Badge'
-import { Skeleton } from '@/components/ui/Skeleton'
+import { cn } from '@/lib/utils'
 
 export default function InterventionsPage() {
   const router = useRouter()
@@ -17,12 +30,20 @@ export default function InterventionsPage() {
   const [interventions, setInterventions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const [userRole, setUserRole] = useState<string | null>(null)
+  const [showFilters, setShowFilters] = useState(false)
+  const [profile, setProfile] = useState<any>(null)
 
   useEffect(() => {
     checkAuth()
-    loadInterventions()
-  }, [filter])
+  }, [])
+
+  useEffect(() => {
+    if (profile) {
+      loadInterventions()
+    }
+  }, [filter, profile])
 
   async function checkAuth() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -31,20 +52,20 @@ export default function InterventionsPage() {
       return
     }
 
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from('profiles')
-      .select('role')
+      .select('*')
       .eq('id', user.id)
       .single()
 
-    if (profile) {
-      setUserRole(profile.role)
+    if (profileData) {
+      setUserRole(profileData.role)
+      setProfile(profileData)
     }
+    setLoading(false)
   }
 
   async function loadInterventions() {
-    setLoading(true)
-    
     let query = supabase
       .from('interventions')
       .select(`
@@ -61,33 +82,16 @@ export default function InterventionsPage() {
     }
 
     const { data } = await query
-    
+
     if (data) {
       setInterventions(data)
-    }
-    setLoading(false)
-  }
-
-  async function updateStatut(interventionId: string, newStatut: string, event: React.MouseEvent) {
-    event.stopPropagation()
-
-    const { error } = await supabase
-      .from('interventions')
-      .update({ statut: newStatut })
-      .eq('id', interventionId)
-
-    if (error) {
-      console.error('Erreur mise à jour statut:', error)
-      alert('Erreur lors de la mise à jour du statut')
-    } else {
-      loadInterventions()
     }
   }
 
   async function handleDelete(interventionId: string, event: React.MouseEvent) {
     event.stopPropagation()
 
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette intervention ? Cette action est irréversible.')) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette intervention ?')) {
       return
     }
 
@@ -99,241 +103,268 @@ export default function InterventionsPage() {
 
       if (error) throw error
 
-      alert('Intervention supprimée avec succès')
       loadInterventions()
     } catch (error: any) {
       console.error('Erreur suppression:', error)
-      alert('Erreur lors de la suppression : ' + error.message)
+      alert('Erreur lors de la suppression')
     }
   }
 
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+  // Filter interventions by search query
+  const filteredInterventions = interventions.filter(intervention => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      intervention.sites?.clients?.nom?.toLowerCase().includes(query) ||
+      intervention.sites?.nom?.toLowerCase().includes(query) ||
+      intervention.technicien?.toLowerCase().includes(query)
+    )
+  })
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Chargement...</p>
-        </div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex flex-col">
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ml-16 lg:ml-0">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => router.push('/admin')}
-              variant="ghost"
-              size="sm"
-              icon={<ArrowLeft className="w-4 h-4" />}
-            >
-              Retour
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/20 flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
-                  Mes rapports
-                </h1>
-                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Gérez toutes vos interventions</p>
-              </div>
-            </div>
-          </div>
-          <Button
-            onClick={() => router.push('/select-rapport-type')}
-            variant="primary"
-            icon={<Plus className="w-4 h-4 sm:w-5 sm:h-5" />}
-            className="w-full sm:w-auto"
-          >
-            <span className="hidden sm:inline">Nouvelle intervention</span>
-            <span className="sm:hidden">Nouveau</span>
-          </Button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50 lg:flex">
+      <Sidebar userRole={userRole as any} userName={profile?.full_name} onLogout={handleLogout} />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-          <div className="mb-4 sm:mb-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <h2 className="text-xl font-bold text-gray-900">
-                {filter === 'all' ? 'Toutes les interventions' :
-                 filter === 'en_cours' ? 'Interventions en cours' :
-                 'Interventions terminées'}
-              </h2>
-              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                <Button
-                  onClick={() => setFilter('all')}
-                  variant={filter === 'all' ? 'primary' : 'secondary'}
-                  size="sm"
-                  className="flex-1 sm:flex-none"
+      <main className="flex-1 pb-24 lg:pb-0">
+        {/* Header */}
+        <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+          <div className="px-4 py-4 lg:px-8">
+            {/* Title row */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => router.push(userRole === 'admin' ? '/admin' : '/technicien')}
+                  className="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100"
                 >
-                  Toutes
-                </Button>
-                <Button
-                  onClick={() => setFilter('en_cours')}
-                  variant={filter === 'en_cours' ? 'primary' : 'secondary'}
-                  size="sm"
-                  className="flex-1 sm:flex-none"
-                >
-                  En cours
-                </Button>
-                <Button
-                  onClick={() => setFilter('terminee')}
-                  variant={filter === 'terminee' ? 'primary' : 'secondary'}
-                  size="sm"
-                  className="flex-1 sm:flex-none"
-                >
-                  Terminées
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {interventions.length === 0 ? (
-            <div className="flex items-center justify-center min-h-[500px]">
-              <Card variant="glass" padding="lg" className="bg-white shadow-xl ring-1 ring-gray-200 max-w-3xl w-full">
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg">
-                    <FileText className="w-10 h-10 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Aucune intervention trouvée</h3>
-                  <p className="text-gray-600 mb-8">
-                    {filter !== 'all'
-                      ? `Aucune intervention ${filter === 'en_cours' ? 'en cours' : 'terminée'} pour le moment.`
-                      : 'Commencez par créer votre première intervention.'
-                    }
-                  </p>
-                  <Button
-                    onClick={() => router.push('/select-rapport-type')}
-                    variant="primary"
-                    icon={<Plus className="w-5 h-5" />}
-                    className="shadow-lg"
-                  >
-                    Nouvelle intervention
-                  </Button>
+                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                <div>
+                  <h1 className="text-xl lg:text-2xl font-bold text-slate-900">Interventions</h1>
+                  <p className="text-sm text-slate-500 hidden lg:block">{filteredInterventions.length} intervention(s)</p>
                 </div>
-              </Card>
+              </div>
+              <button
+                onClick={() => router.push('/select-rapport-type')}
+                className="hidden lg:flex items-center gap-2 h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                Nouvelle intervention
+              </button>
+            </div>
+
+            {/* Search bar */}
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Rechercher un client, site..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-11 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn(
+                  'h-11 px-4 border rounded-lg font-medium flex items-center gap-2 transition-colors',
+                  showFilters || filter !== 'all'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                )}
+              >
+                <Filter className="w-5 h-5" />
+                <span className="hidden sm:inline">Filtrer</span>
+              </button>
+            </div>
+
+            {/* Filter pills */}
+            {showFilters && (
+              <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+                {[
+                  { key: 'all', label: 'Toutes' },
+                  { key: 'planifiee', label: 'Planifiées' },
+                  { key: 'en_cours', label: 'En cours' },
+                  { key: 'terminee', label: 'Terminées' }
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => setFilter(item.key)}
+                    className={cn(
+                      'h-9 px-4 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
+                      filter === item.key
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    )}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </header>
+
+        <div className="px-4 py-4 lg:px-8 lg:py-6">
+          {/* Active filter indicator */}
+          {filter !== 'all' && (
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-sm text-slate-500">Filtre actif :</span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-sm font-medium">
+                {filter === 'planifiee' ? 'Planifiées' : filter === 'en_cours' ? 'En cours' : 'Terminées'}
+                <button onClick={() => setFilter('all')} className="hover:bg-emerald-100 rounded-full p-0.5">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            </div>
+          )}
+
+          {filteredInterventions.length === 0 ? (
+            <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-8 h-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Aucune intervention</h3>
+              <p className="text-slate-500 mb-6">
+                {searchQuery
+                  ? 'Aucun résultat pour votre recherche'
+                  : filter !== 'all'
+                    ? `Aucune intervention ${filter === 'en_cours' ? 'en cours' : filter === 'terminee' ? 'terminée' : 'planifiée'}`
+                    : 'Créez votre première intervention'
+                }
+              </p>
+              <button
+                onClick={() => router.push('/select-rapport-type')}
+                className="inline-flex items-center gap-2 h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                Nouvelle intervention
+              </button>
             </div>
           ) : (
-            <div className="space-y-3">
-              {interventions.map((intervention, index) => (
-                <motion.div
-                  key={intervention.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
+            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+              <div className="divide-y divide-slate-100">
+                {filteredInterventions.map((intervention) => (
                   <div
-                    className="cursor-pointer group bg-gradient-to-br from-gray-50 to-white hover:from-white hover:to-gray-50 border border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-emerald-200 transition-all duration-200"
+                    key={intervention.id}
                     onClick={() => {
-                      if (intervention.type_rapport === 'portable') {
-                        router.push(`/intervention-portable/${intervention.id}`)
-                      } else {
-                        router.push(`/intervention/${intervention.id}`)
-                      }
+                      const path = intervention.type_rapport === 'portable'
+                        ? `/intervention-portable/${intervention.id}`
+                        : `/intervention/${intervention.id}`
+                      router.push(path)
                     }}
+                    className="w-full flex items-start gap-3 px-4 py-4 hover:bg-slate-50 transition-colors text-left cursor-pointer"
                   >
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold text-gray-900 group-hover:text-emerald-600 transition">
-                            {intervention.sites?.clients?.nom}
+                    <div className="w-11 h-11 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5 text-emerald-500" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-slate-900 truncate">
+                              {intervention.sites?.clients?.nom || 'Client'}
+                            </p>
+                            {intervention.type_rapport === 'portable' && (
+                              <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-medium flex-shrink-0">
+                                Portable
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-slate-500 flex items-center gap-1 mt-0.5">
+                            <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span className="truncate">{intervention.sites?.nom || 'Site'}</span>
                           </p>
-                          <Badge
-                            variant={intervention.type_rapport === 'portable' ? 'info' : 'default'}
-                            size="sm"
-                          >
-                            {intervention.type_rapport === 'portable' ? 'Portable' : 'Fixe'}
-                          </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          {intervention.sites?.nom}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <Badge
                           variant={
                             intervention.statut === 'terminee' ? 'success' :
-                            intervention.statut === 'en_cours' ? 'info' :
-                            'warning'
+                            intervention.statut === 'en_cours' ? 'info' : 'warning'
                           }
                           size="sm"
                         >
                           {intervention.statut === 'terminee' ? 'Terminée' :
-                           intervention.statut === 'en_cours' ? 'En cours' :
-                           intervention.statut}
+                           intervention.statut === 'en_cours' ? 'En cours' : 'Planifiée'}
                         </Badge>
-                        <Button
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
+                        </span>
+                        {intervention.heure_debut && intervention.heure_fin && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            {intervention.heure_debut} - {intervention.heure_fin}
+                          </span>
+                        )}
+                        {intervention.technicien && (
+                          <span className="flex items-center gap-1">
+                            <User className="w-3.5 h-3.5" />
+                            {intervention.technicien}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Actions - Desktop */}
+                      <div className="hidden lg:flex items-center gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+                        <button
                           onClick={() => {
-                            if (intervention.type_rapport === 'portable') {
-                              router.push(`/intervention-portable/${intervention.id}`)
-                            } else {
-                              router.push(`/intervention/${intervention.id}`)
-                            }
+                            const path = intervention.type_rapport === 'portable'
+                              ? `/intervention-portable/${intervention.id}`
+                              : `/intervention/${intervention.id}`
+                            router.push(path)
                           }}
-                          variant="secondary"
-                          size="sm"
-                          icon={<Eye className="w-4 h-4" />}
+                          className="h-8 px-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg flex items-center gap-1.5 transition-colors"
                         >
+                          <Eye className="w-4 h-4" />
                           Voir
-                        </Button>
+                        </button>
                         {userRole === 'admin' && (
-                          <Button
+                          <button
                             onClick={(e) => handleDelete(intervention.id, e)}
-                            variant="danger"
-                            size="sm"
-                            icon={<Trash2 className="w-4 h-4" />}
+                            className="h-8 px-3 text-sm font-medium text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-1.5 transition-colors"
                           >
+                            <Trash2 className="w-4 h-4" />
                             Supprimer
-                          </Button>
+                          </button>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6 text-sm text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                        </svg>
-                        {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
-                      </span>
-                      {intervention.type && (
-                        <span className="capitalize">
-                          {intervention.type?.replace(/_/g, ' ')}
-                        </span>
-                      )}
-                      {intervention.heure_debut && intervention.heure_fin && (
-                        <span className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                          </svg>
-                          {intervention.heure_debut} - {intervention.heure_fin}
-                        </span>
-                      )}
-                      {intervention.technicien && (
-                        <span className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                          </svg>
-                          {intervention.technicien}
-                        </span>
-                      )}
-                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-300 flex-shrink-0 lg:hidden" />
                   </div>
-                </motion.div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </div>
+
+        {/* FAB Mobile */}
+        <button
+          onClick={() => router.push('/select-rapport-type')}
+          className="lg:hidden fixed bottom-24 right-4 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg shadow-emerald-500/30 flex items-center justify-center active:scale-95 transition-transform z-40"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
       </main>
+
+      <BottomNav userRole={userRole as any} />
     </div>
   )
 }

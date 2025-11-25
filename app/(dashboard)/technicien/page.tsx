@@ -3,17 +3,59 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { motion } from 'framer-motion'
-import { FileText, ClipboardList, Clock, CheckCircle2, Calendar } from 'lucide-react'
+import {
+  FileText,
+  ClipboardList,
+  Clock,
+  CheckCircle2,
+  Calendar,
+  MapPin,
+  ChevronRight,
+  Filter
+} from 'lucide-react'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { StatsCardWithChart } from '@/components/stats/StatsCardWithChart'
-import { ActivityTimeline } from '@/components/stats/ActivityTimeline'
+import { BottomNav } from '@/components/layout/BottomNav'
 import { Badge } from '@/components/ui/Badge'
+import { cn } from '@/lib/utils'
+
+interface StatCardProps {
+  title: string
+  value: number
+  icon: React.ElementType
+  color: 'emerald' | 'blue' | 'amber' | 'purple'
+  active?: boolean
+  onClick?: () => void
+}
+
+function StatCard({ title, value, icon: Icon, color, active, onClick }: StatCardProps) {
+  const colors = {
+    emerald: { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200' },
+    blue: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
+    amber: { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200' },
+    purple: { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-200' }
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'bg-white rounded-xl border p-4 text-left w-full transition-all active:scale-[0.98]',
+        active ? `${colors[color].border} border-2 shadow-sm` : 'border-slate-200 hover:border-slate-300'
+      )}
+    >
+      <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center mb-3', colors[color].bg)}>
+        <Icon className={cn('w-5 h-5', colors[color].text)} />
+      </div>
+      <p className="text-2xl font-bold text-slate-900">{value}</p>
+      <p className="text-sm text-slate-500 mt-0.5">{title}</p>
+    </button>
+  )
+}
 
 export default function TechnicienDashboard() {
   const router = useRouter()
   const supabase = createClient()
-  
+
   const [profile, setProfile] = useState<any>(null)
   const [interventions, setInterventions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,17 +66,20 @@ export default function TechnicienDashboard() {
     terminees: 0,
     planifiees: 0
   })
-  const [monthlyData, setMonthlyData] = useState<number[]>([])
 
   useEffect(() => {
     checkAuth()
-    loadInterventions()
-    loadMonthlyData()
-  }, [filter])
+  }, [])
+
+  useEffect(() => {
+    if (profile) {
+      loadInterventions()
+    }
+  }, [filter, profile])
 
   async function checkAuth() {
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (!user) {
       router.push('/login')
       return
@@ -56,8 +101,6 @@ export default function TechnicienDashboard() {
   }
 
   async function loadInterventions() {
-    setLoading(true)
-
     let query = supabase
       .from('interventions')
       .select(`
@@ -79,7 +122,6 @@ export default function TechnicienDashboard() {
 
     if (data) {
       setInterventions(data)
-
       setStats({
         total: data.length,
         enCours: data.filter(i => i.statut === 'en_cours').length,
@@ -87,12 +129,6 @@ export default function TechnicienDashboard() {
         planifiees: data.filter(i => i.statut === 'planifiee').length
       })
     }
-    setLoading(false)
-  }
-
-  async function loadMonthlyData() {
-    // Simuler des données mensuelles pour le sparkline
-    setMonthlyData([8, 12, 10, 15, 13, 17, 16])
   }
 
   async function handleLogout() {
@@ -102,204 +138,190 @@ export default function TechnicienDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Chargement...</p>
-        </div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
-  // Activités récentes pour la timeline
-  const activities = interventions.slice(0, 4).map((intervention) => ({
-    id: intervention.id,
-    icon: intervention.statut === 'terminee' ? CheckCircle2 : Clock,
-    title: intervention.sites?.clients?.nom || 'Client',
-    description: `${intervention.sites?.nom || 'Site'} - ${intervention.type?.replace(/_/g, ' ')}`,
-    time: new Date(intervention.created_at || intervention.date_intervention).toLocaleDateString('fr-FR'),
-    color: intervention.statut === 'terminee' ? 'emerald' as const : 'cyan' as const
-  }))
-
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <Sidebar
-        userRole="technicien"
-        userName={profile?.full_name}
-        onLogout={handleLogout}
-      />
+    <div className="min-h-screen bg-slate-50 lg:flex">
+      <Sidebar userRole="technicien" userName={profile?.full_name} onLogout={handleLogout} />
 
-      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
+      <main className="flex-1 pb-24 lg:pb-0">
         {/* Header */}
-        <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 sticky top-0 z-30">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between ml-16 lg:ml-0"
-          >
+        <header className="bg-white border-b border-slate-200 px-4 py-4 lg:px-8 lg:py-6 sticky top-0 z-10">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
-                Mes interventions
+              <h1 className="text-xl lg:text-2xl font-bold text-slate-900">
+                Bonjour, {profile?.full_name?.split(' ')[0]} 👋
               </h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1 hidden sm:block">
-                Bienvenue {profile?.full_name} 👋
+              <p className="text-sm text-slate-500 mt-0.5">
+                {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </p>
             </div>
-            <div className="hidden sm:flex items-center gap-3 text-sm text-gray-600 bg-white px-4 py-2 rounded-xl shadow-sm ring-1 ring-gray-200">
-              <svg className="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-              </svg>
-              {new Date().toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
+            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center lg:hidden">
+              <span className="text-emerald-600 font-semibold">
+                {profile?.full_name?.charAt(0).toUpperCase()}
+              </span>
             </div>
-          </motion.div>
+          </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            <StatsCardWithChart
+        <div className="px-4 py-6 lg:px-8 space-y-6">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+            <StatCard
               title="Total"
               value={stats.total}
               icon={ClipboardList}
               color="emerald"
-              trend={{ value: 8, isPositive: true }}
-              sparklineData={monthlyData}
+              active={filter === 'all'}
               onClick={() => setFilter('all')}
             />
-            <StatsCardWithChart
+            <StatCard
               title="En cours"
               value={stats.enCours}
               icon={Clock}
-              color="cyan"
-              trend={{ value: 5, isPositive: true }}
-              sparklineData={monthlyData.map(v => v * 0.6)}
+              color="blue"
+              active={filter === 'en_cours'}
               onClick={() => setFilter('en_cours')}
             />
-            <StatsCardWithChart
+            <StatCard
               title="Terminées"
               value={stats.terminees}
               icon={CheckCircle2}
-              color="blue"
-              trend={{ value: 12, isPositive: true }}
-              sparklineData={monthlyData.map(v => v * 0.5)}
+              color="emerald"
+              active={filter === 'terminee'}
               onClick={() => setFilter('terminee')}
             />
-            <StatsCardWithChart
+            <StatCard
               title="Planifiées"
               value={stats.planifiees}
               icon={Calendar}
               color="purple"
-              trend={{ value: 3, isPositive: true }}
-              sparklineData={monthlyData.map(v => v * 0.3)}
+              active={filter === 'planifiee'}
               onClick={() => setFilter('planifiee')}
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            {/* Interventions List */}
-            <div className="lg:col-span-2 order-2 lg:order-1">
-              <div className="bg-white rounded-2xl p-6 shadow-lg ring-1 ring-gray-200">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md">
-                      <FileText className="w-5 h-5 text-white" />
-                    </div>
-                    {filter === 'all' ? 'Toutes les interventions' :
-                     filter === 'en_cours' ? 'Interventions en cours' :
-                     filter === 'terminee' ? 'Interventions terminées' :
-                     'Interventions planifiées'}
-                  </h3>
+          {/* Filter indicator */}
+          {filter !== 'all' && (
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-slate-400" />
+              <span className="text-sm text-slate-600">
+                Filtré par : <span className="font-medium text-slate-900">
+                  {filter === 'en_cours' ? 'En cours' : filter === 'terminee' ? 'Terminées' : 'Planifiées'}
+                </span>
+              </span>
+              <button
+                onClick={() => setFilter('all')}
+                className="text-sm text-emerald-600 font-medium ml-2"
+              >
+                Réinitialiser
+              </button>
+            </div>
+          )}
+
+          {/* Interventions List */}
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-emerald-500" />
                 </div>
-
-                {interventions.length === 0 ? (
-                  <div className="text-center py-16 text-gray-500">
-                    <ClipboardList className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                    <p className="font-medium">Aucune intervention assignée</p>
-                    <p className="text-sm mt-1">Les interventions qui vous sont attribuées apparaîtront ici</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {interventions.map((intervention, index) => (
-                      <motion.div
-                        key={intervention.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        onClick={() => {
-                          if (intervention.type_rapport === 'portable') {
-                            router.push(`/intervention-portable/${intervention.id}`)
-                          } else {
-                            router.push(`/intervention/${intervention.id}`)
-                          }
-                        }}
-                        className="cursor-pointer group bg-gradient-to-br from-gray-50 to-white hover:from-white hover:to-gray-50 border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-emerald-200 transition-all duration-200"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-semibold text-gray-900 group-hover:text-emerald-600 transition">
-                                {intervention.sites?.clients?.nom}
-                              </p>
-                              <Badge
-                                variant={intervention.type_rapport === 'portable' ? 'info' : 'default'}
-                                size="sm"
-                              >
-                                {intervention.type_rapport === 'portable' ? 'Portable' : 'Fixe'}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-gray-600 flex items-center gap-2">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
-                              {intervention.sites?.nom}
-                            </p>
-                          </div>
-                          <Badge
-                            variant={
-                              intervention.statut === 'terminee' ? 'success' :
-                              intervention.statut === 'en_cours' ? 'info' :
-                              'warning'
-                            }
-                            size="sm"
-                          >
-                            {intervention.statut === 'terminee' ? 'Terminée' :
-                             intervention.statut === 'en_cours' ? 'En cours' :
-                             'Planifiée'}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                            </svg>
-                            {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
-                          </span>
-                          {intervention.type && (
-                            <span className="capitalize">
-                              {intervention.type?.replace(/_/g, ' ')}
-                            </span>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
+                <h3 className="font-semibold text-slate-900">Mes interventions</h3>
               </div>
+              <span className="text-sm text-slate-500">{interventions.length} résultat(s)</span>
             </div>
 
-            {/* Activity Timeline */}
-            <div className="lg:col-span-1 order-1 lg:order-2">
-              <ActivityTimeline activities={activities} />
-            </div>
+            {interventions.length === 0 ? (
+              <div className="px-4 py-12 text-center">
+                <ClipboardList className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-500 font-medium">Aucune intervention</p>
+                <p className="text-sm text-slate-400 mt-1">Les interventions qui vous sont attribuées apparaîtront ici</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {interventions.map((intervention) => (
+                  <button
+                    key={intervention.id}
+                    onClick={() => {
+                      const path = intervention.type_rapport === 'portable'
+                        ? `/intervention-portable/${intervention.id}`
+                        : `/intervention/${intervention.id}`
+                      router.push(path)
+                    }}
+                    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
+                  >
+                    <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <ClipboardList className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-slate-900 truncate">
+                              {intervention.sites?.clients?.nom || 'Client'}
+                            </p>
+                            {intervention.type_rapport === 'portable' && (
+                              <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-medium">
+                                Portable
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-slate-500 flex items-center gap-1 mt-0.5">
+                            <MapPin className="w-3.5 h-3.5" />
+                            <span className="truncate">{intervention.sites?.nom || 'Site'}</span>
+                          </p>
+                        </div>
+                        <Badge
+                          variant={
+                            intervention.statut === 'terminee' ? 'success' :
+                            intervention.statut === 'en_cours' ? 'info' : 'warning'
+                          }
+                          size="sm"
+                        >
+                          {intervention.statut === 'terminee' ? 'Terminée' :
+                           intervention.statut === 'en_cours' ? 'En cours' : 'Planifiée'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
+                        </span>
+                        {intervention.type && (
+                          <span className="capitalize">
+                            {intervention.type?.replace(/_/g, ' ')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-300 flex-shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        </main>
-      </div>
+
+          {/* Quick Action - Mobile */}
+          <div className="lg:hidden">
+            <button
+              onClick={() => router.push('/select-rapport-type')}
+              className="w-full bg-emerald-500 text-white rounded-xl p-4 text-left hover:bg-emerald-600 transition-colors active:scale-[0.98] flex items-center justify-between"
+            >
+              <div>
+                <p className="font-semibold">Nouveau rapport</p>
+                <p className="text-sm text-emerald-100 mt-0.5">Créer une intervention</p>
+              </div>
+              <ClipboardList className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <BottomNav userRole="technicien" />
     </div>
   )
 }

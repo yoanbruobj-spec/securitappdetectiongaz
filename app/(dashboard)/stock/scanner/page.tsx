@@ -4,10 +4,8 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Html5Qrcode } from 'html5-qrcode'
-import { ArrowLeft, Camera, TrendingUp, TrendingDown, AlertCircle, ArrowRightLeft } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
+import { ArrowLeft, Camera, TrendingUp, TrendingDown, AlertCircle, ArrowRightLeft, Package, MapPin } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { StockArticle, StockEmplacement, StockInventaire } from '@/types/stock'
 
 export default function ScannerQRPage() {
@@ -47,19 +45,17 @@ export default function ScannerQRPage() {
   async function startScanner() {
     try {
       setError(null)
-      setScanning(true) // Mettre scanning à true AVANT pour rendre l'élément
+      setScanning(true)
     } catch (err: any) {
       console.error('Erreur démarrage scanner:', err)
       setError('Impossible d\'accéder à la caméra. Vérifiez les permissions.')
     }
   }
 
-  // useEffect pour initialiser le scanner après le rendu de l'élément
   useEffect(() => {
     if (!scanning || scannerRef.current) return
 
     async function initScanner() {
-      // Attendre que l'élément soit dans le DOM
       await new Promise(resolve => setTimeout(resolve, 100))
 
       const element = document.getElementById('qr-reader')
@@ -84,9 +80,9 @@ export default function ScannerQRPage() {
           onScanError
         )
 
-        console.log('✅ Scanner démarré avec succès')
+        console.log('Scanner démarré avec succès')
       } catch (err: any) {
-        console.error('❌ Erreur démarrage scanner:', err)
+        console.error('Erreur démarrage scanner:', err)
         setError('Impossible d\'accéder à la caméra. Vérifiez les permissions.')
         setScanning(false)
         scannerRef.current = null
@@ -110,11 +106,8 @@ export default function ScannerQRPage() {
 
   async function onScanSuccess(decodedText: string) {
     console.log('QR scanné:', decodedText)
-
-    // Arrêter le scanner
     await stopScanner()
 
-    // Rechercher l'article
     const { data: article, error } = await supabase
       .from('stock_articles')
       .select(`
@@ -129,7 +122,6 @@ export default function ScannerQRPage() {
       return
     }
 
-    // Charger l'inventaire par emplacement
     const { data: inv } = await supabase
       .from('stock_inventaire')
       .select(`
@@ -144,7 +136,6 @@ export default function ScannerQRPage() {
 
     if (inv) setInventaire(inv)
 
-    // Charger tous les emplacements actifs
     const { data: emps } = await supabase
       .from('stock_emplacements')
       .select('*, profiles (id, full_name, email, role)')
@@ -159,7 +150,7 @@ export default function ScannerQRPage() {
   }
 
   function onScanError(errorMessage: string) {
-    // Ignorer les erreurs de scan continues (normal quand pas de QR visible)
+    // Ignorer les erreurs de scan continues
   }
 
   async function handleMouvement() {
@@ -175,7 +166,6 @@ export default function ScannerQRPage() {
       if (!user) throw new Error('Non authentifié')
 
       if (mouvementType === 'transfert') {
-        // Mode transfert
         if (!mouvementData.emplacement_source_id || !mouvementData.emplacement_destination_id) {
           alert('Veuillez sélectionner les emplacements source et destination')
           setProcessing(false)
@@ -197,7 +187,6 @@ export default function ScannerQRPage() {
         const nouvelleQteSource = qteSource - quantite
         const nouvelleQteDest = qteDest + quantite
 
-        // Créer le mouvement de transfert
         await supabase.from('stock_mouvements').insert([{
           article_id: scannedArticle.id,
           type: 'transfert',
@@ -211,7 +200,6 @@ export default function ScannerQRPage() {
           date_mouvement: new Date().toISOString()
         }])
 
-        // Mettre à jour l'inventaire source
         if (nouvelleQteSource === 0) {
           await supabase.from('stock_inventaire').delete()
             .eq('article_id', scannedArticle.id)
@@ -222,7 +210,6 @@ export default function ScannerQRPage() {
             .eq('emplacement_id', mouvementData.emplacement_source_id)
         }
 
-        // Mettre à jour l'inventaire destination
         await supabase.from('stock_inventaire').upsert({
           article_id: scannedArticle.id,
           emplacement_id: mouvementData.emplacement_destination_id,
@@ -231,7 +218,6 @@ export default function ScannerQRPage() {
 
         alert('Transfert effectué avec succès !')
       } else {
-        // Mode entrée/sortie classique
         if (!mouvementData.emplacement_destination_id && mouvementType === 'entree') {
           alert('Veuillez sélectionner un emplacement de destination')
           setProcessing(false)
@@ -254,7 +240,6 @@ export default function ScannerQRPage() {
           return
         }
 
-        // Créer mouvement
         await supabase.from('stock_mouvements').insert([{
           article_id: scannedArticle.id,
           type: mouvementType,
@@ -268,7 +253,6 @@ export default function ScannerQRPage() {
           date_mouvement: new Date().toISOString()
         }])
 
-        // Mettre à jour l'inventaire
         if (mouvementType === 'entree') {
           const empId = mouvementData.emplacement_destination_id
           const invCurrent = inventaire.find(i => i.emplacement_id === empId)
@@ -298,7 +282,6 @@ export default function ScannerQRPage() {
         alert('Mouvement enregistré ! Nouvelle quantité totale : ' + quantiteApres)
       }
 
-      // Réinitialiser après un court délai
       setTimeout(() => {
         setScannedArticle(null)
         setShowMouvementForm(false)
@@ -326,10 +309,10 @@ export default function ScannerQRPage() {
 
   function getEmplacementColor(type: string) {
     switch (type) {
-      case 'principal': return 'bg-green-100 text-green-700 border-green-300'
-      case 'chantier': return 'bg-orange-100 text-orange-700 border-orange-300'
-      case 'vehicule': return 'bg-blue-100 text-blue-700 border-blue-300'
-      default: return 'bg-gray-100 text-gray-700 border-gray-300'
+      case 'principal': return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      case 'chantier': return 'bg-amber-50 text-amber-700 border-amber-200'
+      case 'vehicule': return 'bg-blue-50 text-blue-700 border-blue-200'
+      default: return 'bg-slate-50 text-slate-700 border-slate-200'
     }
   }
 
@@ -341,134 +324,169 @@ export default function ScannerQRPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-300 shadow-sm sticky top-0 z-50">
-        <div className="px-4 lg:px-8 py-3 lg:py-4 flex items-center gap-3">
-          <Button
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="px-4 py-4 lg:px-8 flex items-center gap-3">
+          <button
             onClick={() => router.push('/stock')}
-            variant="ghost"
-            size="sm"
-            icon={<ArrowLeft className="w-4 h-4" />}
+            className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100"
           >
-            <span className="hidden sm:inline">Retour</span>
-          </Button>
-          <div className="flex items-center gap-2 lg:gap-3">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 shadow-lg shadow-blue-500/20 flex items-center justify-center">
-              <Camera className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+            <ArrowLeft className="w-5 h-5 text-slate-600" />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+              <Camera className="w-5 h-5 text-blue-500" />
             </div>
-            <h1 className="text-base lg:text-xl font-bold text-slate-800">Scanner QR</h1>
+            <h1 className="text-lg lg:text-xl font-bold text-slate-900">Scanner QR</h1>
           </div>
         </div>
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 lg:px-8 py-4 lg:py-6">
         <div className="max-w-2xl mx-auto">
+          {/* Initial state - no scan yet */}
           {!scanning && !scannedArticle && !error && (
-            <Card variant="glass" padding="lg" className="bg-white border border-gray-300 text-center">
-              <Camera className="w-12 lg:w-16 h-12 lg:h-16 mx-auto mb-3 lg:mb-4 text-slate-400" />
-              <h2 className="text-lg lg:text-xl font-semibold text-slate-800 mb-2">Scanner un QR code</h2>
-              <p className="text-sm lg:text-base text-slate-600 mb-4 lg:mb-6 px-2">
+            <div className="bg-white rounded-xl border border-slate-200 p-6 lg:p-8 text-center">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Camera className="w-8 h-8 text-slate-400" />
+              </div>
+              <h2 className="text-lg lg:text-xl font-semibold text-slate-900 mb-2">Scanner un QR code</h2>
+              <p className="text-slate-500 mb-6">
                 Scannez le QR code collé sur l'étagère pour effectuer une entrée, sortie ou transfert de stock
               </p>
-              <Button
+              <button
                 onClick={startScanner}
-                variant="primary"
-                icon={<Camera className="w-4 lg:w-5 h-4 lg:h-5" />}
-                className="text-sm lg:text-base"
+                className="h-11 px-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium flex items-center gap-2 mx-auto transition-colors"
               >
+                <Camera className="w-5 h-5" />
                 Démarrer le scanner
-              </Button>
-            </Card>
-          )}
-
-          {error && (
-            <Card variant="glass" padding="lg" className="bg-red-50 border border-red-300">
-              <div className="flex items-start gap-3 mb-4">
-                <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <h3 className="font-semibold text-red-800 mb-1">Erreur</h3>
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
-              </div>
-              <div className="flex justify-center gap-3">
-                <Button onClick={resetScanner} variant="secondary">
-                  Annuler
-                </Button>
-                <Button onClick={startScanner} variant="primary">
-                  Réessayer
-                </Button>
-              </div>
-            </Card>
-          )}
-
-          {scanning && (
-            <div>
-              <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
-                <div id="qr-reader" className="w-full"></div>
-                <p className="text-center text-slate-600 mt-4">
-                  Positionnez le QR code devant la caméra
-                </p>
-                <div className="flex justify-center mt-4">
-                  <Button onClick={stopScanner} variant="secondary">
-                    Arrêter
-                  </Button>
-                </div>
-              </Card>
+              </button>
             </div>
           )}
 
+          {/* Error state */}
+          {error && (
+            <div className="bg-red-50 rounded-xl border border-red-200 p-6">
+              <div className="flex items-start gap-3 mb-4">
+                <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-red-800 mb-1">Erreur</h3>
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              </div>
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={resetScanner}
+                  className="h-10 px-4 bg-white border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={startScanner}
+                  className="h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors"
+                >
+                  Réessayer
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Scanning state */}
+          {scanning && (
+            <div className="bg-white rounded-xl border border-slate-200 p-4 lg:p-6">
+              <div id="qr-reader" className="w-full rounded-lg overflow-hidden"></div>
+              <p className="text-center text-slate-500 mt-4">
+                Positionnez le QR code devant la caméra
+              </p>
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={stopScanner}
+                  className="h-10 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-medium transition-colors"
+                >
+                  Arrêter
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Scanned article - movement form */}
           {scannedArticle && showMouvementForm && (
-            <div className="space-y-4 lg:space-y-6">
-              <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
-                <h2 className="text-lg lg:text-xl font-bold text-slate-800 mb-3 lg:mb-4">Article scanné</h2>
-                <div className="space-y-2">
-                  <p className="text-base lg:text-lg font-semibold text-slate-800">{scannedArticle.nom}</p>
-                  <p className="text-xs lg:text-sm text-slate-600">Réf: {scannedArticle.reference}</p>
-                  {scannedArticle.emplacement && (
-                    <p className="text-xs lg:text-sm text-slate-600">📍 {scannedArticle.emplacement}</p>
-                  )}
-                  <p className="text-base lg:text-lg font-bold text-slate-800 mt-2 lg:mt-3">
-                    Stock actuel: {scannedArticle.quantite} unités
-                  </p>
+            <div className="space-y-4">
+              {/* Article info */}
+              <div className="bg-white rounded-xl border border-slate-200 p-4 lg:p-6">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Package className="w-6 h-6 text-emerald-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="font-semibold text-slate-900">{scannedArticle.nom}</h2>
+                    <p className="text-sm text-slate-500">Réf: {scannedArticle.reference}</p>
+                    {scannedArticle.emplacement && (
+                      <p className="text-sm text-slate-500 flex items-center gap-1 mt-1">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {scannedArticle.emplacement}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-slate-900">{scannedArticle.quantite}</p>
+                    <p className="text-xs text-slate-400">unités</p>
+                  </div>
                 </div>
-              </Card>
+              </div>
 
-              <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
-                <h3 className="text-base lg:text-lg font-semibold text-slate-800 mb-3 lg:mb-4">Type de mouvement</h3>
-                <div className="grid grid-cols-3 gap-2 mb-3 lg:mb-4">
-                  <Button
+              {/* Movement form */}
+              <div className="bg-white rounded-xl border border-slate-200 p-4 lg:p-6">
+                <h3 className="font-semibold text-slate-900 mb-4">Type de mouvement</h3>
+
+                {/* Movement type buttons */}
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  <button
                     onClick={() => setMouvementType('entree')}
-                    variant={mouvementType === 'entree' ? 'primary' : 'secondary'}
-                    icon={<TrendingUp className="w-3 lg:w-4 h-3 lg:h-4" />}
-                    className="h-12 lg:h-16 text-[10px] lg:text-xs px-1 lg:px-3"
+                    className={cn(
+                      'h-14 rounded-lg border-2 font-medium flex flex-col items-center justify-center gap-1 transition-all',
+                      mouvementType === 'entree'
+                        ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                    )}
                   >
-                    ENTRÉE
-                  </Button>
-                  <Button
+                    <TrendingUp className="w-5 h-5" />
+                    <span className="text-xs">ENTRÉE</span>
+                  </button>
+                  <button
                     onClick={() => setMouvementType('sortie')}
-                    variant={mouvementType === 'sortie' ? 'primary' : 'secondary'}
-                    icon={<TrendingDown className="w-3 lg:w-4 h-3 lg:h-4" />}
-                    className="h-12 lg:h-16 text-[10px] lg:text-xs px-1 lg:px-3"
+                    className={cn(
+                      'h-14 rounded-lg border-2 font-medium flex flex-col items-center justify-center gap-1 transition-all',
+                      mouvementType === 'sortie'
+                        ? 'bg-red-50 border-red-500 text-red-700'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                    )}
                   >
-                    SORTIE
-                  </Button>
-                  <Button
+                    <TrendingDown className="w-5 h-5" />
+                    <span className="text-xs">SORTIE</span>
+                  </button>
+                  <button
                     onClick={() => setMouvementType('transfert')}
-                    variant={mouvementType === 'transfert' ? 'primary' : 'secondary'}
-                    icon={<ArrowRightLeft className="w-3 lg:w-4 h-3 lg:h-4" />}
-                    className="h-12 lg:h-16 text-[10px] lg:text-xs px-1 lg:px-3"
+                    className={cn(
+                      'h-14 rounded-lg border-2 font-medium flex flex-col items-center justify-center gap-1 transition-all',
+                      mouvementType === 'transfert'
+                        ? 'bg-blue-50 border-blue-500 text-blue-700'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                    )}
                   >
-                    TRANSF.
-                  </Button>
+                    <ArrowRightLeft className="w-5 h-5" />
+                    <span className="text-xs">TRANSF.</span>
+                  </button>
                 </div>
 
-                {/* Affichage de la répartition du stock */}
+                {/* Current distribution */}
                 {inventaire.length > 0 && (
-                  <div className="mb-3 lg:mb-4">
-                    <p className="text-xs lg:text-sm font-medium text-slate-700 mb-2">Répartition actuelle :</p>
-                    <div className="space-y-1">
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-slate-700 mb-2">Répartition actuelle :</p>
+                    <div className="space-y-1.5">
                       {inventaire.map(inv => (
-                        <div key={inv.id} className={`px-3 py-2 rounded-lg border text-sm ${getEmplacementColor(inv.stock_emplacements?.type || '')}`}>
+                        <div key={inv.id} className={cn('px-3 py-2 rounded-lg border text-sm', getEmplacementColor(inv.stock_emplacements?.type || ''))}>
                           <div className="flex justify-between items-center">
                             <span className="font-medium">{getEmplacementLabel(inv.stock_emplacements!)}</span>
                             <span className="font-bold">{inv.quantite} unités</span>
@@ -479,17 +497,17 @@ export default function ScannerQRPage() {
                   </div>
                 )}
 
-                {/* Sélecteurs d'emplacements pour transfert */}
+                {/* Location selectors for transfer */}
                 {mouvementType === 'transfert' && (
                   <div className="space-y-3 mb-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">
                         Depuis (source) *
                       </label>
                       <select
                         value={mouvementData.emplacement_source_id}
                         onChange={(e) => setMouvementData({ ...mouvementData, emplacement_source_id: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                       >
                         <option value="">Sélectionner...</option>
                         {inventaire.map(inv => (
@@ -500,13 +518,13 @@ export default function ScannerQRPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">
                         Vers (destination) *
                       </label>
                       <select
                         value={mouvementData.emplacement_destination_id}
                         onChange={(e) => setMouvementData({ ...mouvementData, emplacement_destination_id: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                       >
                         <option value="">Sélectionner...</option>
                         {emplacements
@@ -521,16 +539,16 @@ export default function ScannerQRPage() {
                   </div>
                 )}
 
-                {/* Sélecteur d'emplacement pour entrée */}
+                {/* Location selector for entry */}
                 {mouvementType === 'entree' && (
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
                       Destination *
                     </label>
                     <select
                       value={mouvementData.emplacement_destination_id}
                       onChange={(e) => setMouvementData({ ...mouvementData, emplacement_destination_id: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     >
                       <option value="">Sélectionner un emplacement...</option>
                       {emplacements.map(emp => (
@@ -542,16 +560,16 @@ export default function ScannerQRPage() {
                   </div>
                 )}
 
-                {/* Sélecteur d'emplacement pour sortie */}
+                {/* Location selector for exit */}
                 {mouvementType === 'sortie' && (
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
                       Source *
                     </label>
                     <select
                       value={mouvementData.emplacement_source_id}
                       onChange={(e) => setMouvementData({ ...mouvementData, emplacement_source_id: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     >
                       <option value="">Sélectionner un emplacement...</option>
                       {inventaire.map(inv => (
@@ -563,54 +581,53 @@ export default function ScannerQRPage() {
                   </div>
                 )}
 
-                <div className="space-y-3 lg:space-y-4">
-                  <div>
-                    <label className="block text-xs lg:text-sm font-medium text-slate-700 mb-1">
-                      Quantité *
-                    </label>
-                    <Input
-                      type="number"
-                      min="1"
-                      placeholder="Ex: 2"
-                      value={mouvementData.quantite}
-                      onChange={(e) => setMouvementData({ ...mouvementData, quantite: e.target.value })}
-                      className="text-base lg:text-lg text-center"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs lg:text-sm font-medium text-slate-700 mb-1">
-                      Notes (optionnel)
-                    </label>
-                    <textarea
-                      value={mouvementData.notes}
-                      onChange={(e) => setMouvementData({ ...mouvementData, notes: e.target.value })}
-                      placeholder="Ex: Intervention site ABC, N° série: 12345..."
-                      className="w-full px-3 py-2 text-sm lg:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="flex gap-2 lg:gap-3 pt-3 lg:pt-4">
-                    <Button
-                      onClick={resetScanner}
-                      variant="secondary"
-                      className="flex-1 text-sm lg:text-base"
-                      disabled={processing}
-                    >
-                      Annuler
-                    </Button>
-                    <Button
-                      onClick={handleMouvement}
-                      variant="primary"
-                      className="flex-1 text-sm lg:text-base"
-                      disabled={processing}
-                    >
-                      {processing ? 'Traitement...' : 'Valider'}
-                    </Button>
-                  </div>
+                {/* Quantity input */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Quantité *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Ex: 2"
+                    value={mouvementData.quantite}
+                    onChange={(e) => setMouvementData({ ...mouvementData, quantite: e.target.value })}
+                    className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 text-center text-lg font-semibold focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
                 </div>
-              </Card>
+
+                {/* Notes */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Notes (optionnel)
+                  </label>
+                  <textarea
+                    value={mouvementData.notes}
+                    onChange={(e) => setMouvementData({ ...mouvementData, notes: e.target.value })}
+                    placeholder="Ex: Intervention site ABC, N° série: 12345..."
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                    rows={3}
+                  />
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={resetScanner}
+                    disabled={processing}
+                    className="flex-1 h-11 px-4 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-600 rounded-lg font-medium transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleMouvement}
+                    disabled={processing}
+                    className="flex-1 h-11 px-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+                  >
+                    {processing ? 'Traitement...' : 'Valider'}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>

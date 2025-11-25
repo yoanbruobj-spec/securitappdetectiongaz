@@ -3,14 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { motion } from 'framer-motion'
 import {
   ArrowLeft, MapPin, Truck, Warehouse, Plus, Edit2, Trash2,
-  Users, Calendar, X, Save
+  User, X, Save
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
+import { cn } from '@/lib/utils'
 import type { StockEmplacement, EmplacementType } from '@/types/stock'
 
 export default function EmplacementsPage() {
@@ -22,18 +19,17 @@ export default function EmplacementsPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [users, setUsers] = useState<any[]>([])
+  const [processing, setProcessing] = useState(false)
 
   const [formData, setFormData] = useState({
     type: 'chantier' as EmplacementType,
     nom: '',
     description: '',
-    // Pour chantiers
     chantier_client: '',
     chantier_adresse: '',
     chantier_contact: '',
     chantier_date_debut: '',
     chantier_date_fin: '',
-    // Pour véhicules
     utilisateur_id: ''
   })
 
@@ -64,7 +60,6 @@ export default function EmplacementsPage() {
   async function loadData() {
     setLoading(true)
 
-    // Charger emplacements
     const { data: emps } = await supabase
       .from('stock_emplacements')
       .select(`
@@ -75,7 +70,6 @@ export default function EmplacementsPage() {
 
     if (emps) setEmplacements(emps)
 
-    // Charger utilisateurs pour les véhicules
     const { data: usrs } = await supabase
       .from('profiles')
       .select('id, full_name, email, role')
@@ -120,6 +114,7 @@ export default function EmplacementsPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setProcessing(true)
 
     try {
       const empData: any = {
@@ -142,7 +137,6 @@ export default function EmplacementsPage() {
       }
 
       if (editingId) {
-        // Modification
         const { error } = await supabase
           .from('stock_emplacements')
           .update(empData)
@@ -151,7 +145,6 @@ export default function EmplacementsPage() {
         if (error) throw error
         alert('Emplacement modifié !')
       } else {
-        // Création
         const { error } = await supabase
           .from('stock_emplacements')
           .insert([empData])
@@ -165,6 +158,8 @@ export default function EmplacementsPage() {
     } catch (error: any) {
       console.error('Erreur:', error)
       alert('Erreur : ' + error.message)
+    } finally {
+      setProcessing(false)
     }
   }
 
@@ -194,234 +189,212 @@ export default function EmplacementsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-12 h-12 border-3 border-gray-200 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-gray-500 text-sm">Chargement...</p>
-        </div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-300 shadow-sm sticky top-0 z-50">
-        <div className="px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => router.push('/stock')}
-              variant="ghost"
-              size="sm"
-              icon={<ArrowLeft className="w-4 h-4" />}
-            >
-              Retour
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-purple-500 shadow-lg shadow-purple-500/20 flex items-center justify-center">
-                <Warehouse className="w-5 h-5 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-slate-800">Gestion des emplacements</h1>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="px-4 py-4 lg:px-8 flex items-center gap-3">
+          <button
+            onClick={() => router.push('/stock')}
+            className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100"
+          >
+            <ArrowLeft className="w-5 h-5 text-slate-600" />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
+              <Warehouse className="w-5 h-5 text-indigo-500" />
             </div>
+            <h1 className="text-lg lg:text-xl font-bold text-slate-900">Emplacements</h1>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-8 py-6">
-        <div className="max-w-6xl mx-auto space-y-6">
-          {/* Stock Principal */}
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              Stock Principal
-            </h2>
-            <div className="grid grid-cols-1 gap-3">
-              {emplacementsPrincipal.map((emp) => (
-                <Card key={emp.id} variant="glass" padding="md" className="bg-white border border-gray-300">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{emp.nom}</h3>
-                      {emp.description && <p className="text-sm text-gray-600">{emp.description}</p>}
+      <div className="px-4 py-4 lg:px-8 lg:py-6 space-y-6">
+        {/* Stock Principal */}
+        <div>
+          <h2 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+            Stock Principal
+          </h2>
+          <div className="space-y-2">
+            {emplacementsPrincipal.map((emp) => (
+              <div key={emp.id} className="bg-white rounded-xl border border-slate-200 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
+                      <Warehouse className="w-5 h-5 text-emerald-500" />
                     </div>
-                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                      <Warehouse className="w-5 h-5 text-green-600" />
+                    <div>
+                      <h3 className="font-medium text-slate-900">{emp.nom}</h3>
+                      {emp.description && <p className="text-xs text-slate-500">{emp.description}</p>}
                     </div>
                   </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Chantiers */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                Stocks Départ Chantier
-              </h2>
-              <Button
-                onClick={() => openCreateModal('chantier')}
-                variant="primary"
-                size="sm"
-                icon={<Plus className="w-4 h-4" />}
-              >
-                Nouveau chantier
-              </Button>
-            </div>
-
-            {emplacementsChantier.length === 0 ? (
-              <Card variant="glass" padding="lg" className="bg-white border border-gray-300 text-center">
-                <MapPin className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                <p className="text-gray-600">Aucun chantier configuré</p>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {emplacementsChantier.map((emp, index) => (
-                  <motion.div
-                    key={emp.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <Card variant="glass" padding="md" className="bg-white border border-gray-300">
-                      <div className="flex justify-between items-start gap-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
-                              <MapPin className="w-4 h-4 text-orange-600" />
-                            </div>
-                            <h3 className="font-semibold text-gray-900">{emp.nom}</h3>
-                          </div>
-                          {emp.chantier_info?.client && (
-                            <p className="text-sm text-gray-600 mb-1">
-                              Client: {emp.chantier_info.client}
-                            </p>
-                          )}
-                          {emp.chantier_info?.adresse && (
-                            <p className="text-sm text-gray-600 mb-1">
-                              📍 {emp.chantier_info.adresse}
-                            </p>
-                          )}
-                          {emp.chantier_info?.date_debut && (
-                            <p className="text-xs text-gray-500">
-                              Du {new Date(emp.chantier_info.date_debut).toLocaleDateString('fr-FR')}
-                              {emp.chantier_info.date_fin && ` au ${new Date(emp.chantier_info.date_fin).toLocaleDateString('fr-FR')}`}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => openEditModal(emp)}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition"
-                          >
-                            <Edit2 className="w-4 h-4 text-gray-600" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(emp.id)}
-                            className="p-2 hover:bg-red-50 rounded-lg transition"
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </button>
-                        </div>
-                      </div>
-                    </Card>
-                  </motion.div>
-                ))}
+                </div>
               </div>
-            )}
-          </div>
-
-          {/* Véhicules */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                Stocks Véhicules
-              </h2>
-              <Button
-                onClick={() => openCreateModal('vehicule')}
-                variant="primary"
-                size="sm"
-                icon={<Plus className="w-4 h-4" />}
-              >
-                Nouveau véhicule
-              </Button>
-            </div>
-
-            {emplacementsVehicule.length === 0 ? (
-              <Card variant="glass" padding="lg" className="bg-white border border-gray-300 text-center">
-                <Truck className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                <p className="text-gray-600">Aucun véhicule configuré</p>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {emplacementsVehicule.map((emp, index) => (
-                  <motion.div
-                    key={emp.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <Card variant="glass" padding="md" className="bg-white border border-gray-300">
-                      <div className="flex justify-between items-start gap-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                              <Truck className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <h3 className="font-semibold text-gray-900">{emp.nom}</h3>
-                          </div>
-                          {emp.profiles && (
-                            <p className="text-sm text-gray-600 flex items-center gap-1">
-                              <Users className="w-4 h-4" />
-                              {emp.profiles.full_name}
-                            </p>
-                          )}
-                          {emp.description && (
-                            <p className="text-sm text-gray-500 mt-1">{emp.description}</p>
-                          )}
-                        </div>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => openEditModal(emp)}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition"
-                          >
-                            <Edit2 className="w-4 h-4 text-gray-600" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(emp.id)}
-                            className="p-2 hover:bg-red-50 rounded-lg transition"
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </button>
-                        </div>
-                      </div>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            )}
+            ))}
           </div>
         </div>
-      </main>
 
-      {/* Modal Création/Édition */}
+        {/* Chantiers */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+              Stocks Départ Chantier
+            </h2>
+            <button
+              onClick={() => openCreateModal('chantier')}
+              className="h-9 px-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Nouveau
+            </button>
+          </div>
+
+          {emplacementsChantier.length === 0 ? (
+            <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
+              <MapPin className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+              <p className="text-slate-500 text-sm">Aucun chantier configuré</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+              {emplacementsChantier.map((emp) => (
+                <div key={emp.id} className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-4 h-4 text-amber-500" />
+                        </div>
+                        <h3 className="font-medium text-slate-900 truncate">{emp.nom}</h3>
+                      </div>
+                      {emp.chantier_info?.client && (
+                        <p className="text-sm text-slate-600 mb-1">
+                          Client: {emp.chantier_info.client}
+                        </p>
+                      )}
+                      {emp.chantier_info?.adresse && (
+                        <p className="text-xs text-slate-500 mb-1 truncate">
+                          {emp.chantier_info.adresse}
+                        </p>
+                      )}
+                      {emp.chantier_info?.date_debut && (
+                        <p className="text-xs text-slate-400">
+                          Du {new Date(emp.chantier_info.date_debut).toLocaleDateString('fr-FR')}
+                          {emp.chantier_info.date_fin && ` au ${new Date(emp.chantier_info.date_fin).toLocaleDateString('fr-FR')}`}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => openEditModal(emp)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(emp.id)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Véhicules */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+              Stocks Véhicules
+            </h2>
+            <button
+              onClick={() => openCreateModal('vehicule')}
+              className="h-9 px-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Nouveau
+            </button>
+          </div>
+
+          {emplacementsVehicule.length === 0 ? (
+            <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
+              <Truck className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+              <p className="text-slate-500 text-sm">Aucun véhicule configuré</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+              {emplacementsVehicule.map((emp) => (
+                <div key={emp.id} className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Truck className="w-4 h-4 text-blue-500" />
+                        </div>
+                        <h3 className="font-medium text-slate-900 truncate">{emp.nom}</h3>
+                      </div>
+                      {emp.profiles && (
+                        <p className="text-sm text-slate-600 flex items-center gap-1">
+                          <User className="w-3.5 h-3.5" />
+                          {emp.profiles.full_name}
+                        </p>
+                      )}
+                      {emp.description && (
+                        <p className="text-xs text-slate-500 mt-1">{emp.description}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => openEditModal(emp)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(emp.id)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <Card variant="glass" padding="lg" className="bg-white max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-slate-800">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+              <h2 className="font-semibold text-slate-900">
                 {editingId ? 'Modifier' : 'Créer'} un emplacement
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition"
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 text-slate-500" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Type (uniquement en création) */}
+            <form onSubmit={handleSubmit} className="p-4 space-y-4">
+              {/* Type selection */}
               {!editingId && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -431,130 +404,138 @@ export default function EmplacementsPage() {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, type: 'chantier' })}
-                      className={`p-4 rounded-lg border-2 transition ${
+                      className={cn(
+                        'p-4 rounded-xl border-2 transition-all',
                         formData.type === 'chantier'
-                          ? 'border-orange-500 bg-orange-50'
-                          : 'border-gray-300 hover:border-gray-400'
-                      }`}
+                          ? 'border-amber-500 bg-amber-50'
+                          : 'border-slate-200 hover:border-slate-300'
+                      )}
                     >
-                      <MapPin className="w-6 h-6 mx-auto mb-2 text-orange-600" />
-                      <p className="font-medium text-sm">Chantier</p>
+                      <MapPin className={cn('w-6 h-6 mx-auto mb-2', formData.type === 'chantier' ? 'text-amber-600' : 'text-slate-400')} />
+                      <p className="text-sm font-medium text-slate-900">Chantier</p>
                     </button>
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, type: 'vehicule' })}
-                      className={`p-4 rounded-lg border-2 transition ${
+                      className={cn(
+                        'p-4 rounded-xl border-2 transition-all',
                         formData.type === 'vehicule'
                           ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-300 hover:border-gray-400'
-                      }`}
+                          : 'border-slate-200 hover:border-slate-300'
+                      )}
                     >
-                      <Truck className="w-6 h-6 mx-auto mb-2 text-blue-600" />
-                      <p className="font-medium text-sm">Véhicule</p>
+                      <Truck className={cn('w-6 h-6 mx-auto mb-2', formData.type === 'vehicule' ? 'text-blue-600' : 'text-slate-400')} />
+                      <p className="text-sm font-medium text-slate-900">Véhicule</p>
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* Nom */}
+              {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Nom *
                 </label>
-                <Input
+                <input
                   type="text"
                   value={formData.nom}
                   onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
                   required
                   placeholder={formData.type === 'chantier' ? 'Ex: Chantier ABC Corp' : 'Ex: Véhicule Jean Dupont'}
+                  className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Description
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Informations complémentaires..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   rows={2}
                 />
               </div>
 
-              {/* Champs spécifiques chantier */}
+              {/* Chantier fields */}
               {formData.type === 'chantier' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
                       Client
                     </label>
-                    <Input
+                    <input
                       type="text"
                       value={formData.chantier_client}
                       onChange={(e) => setFormData({ ...formData, chantier_client: e.target.value })}
                       placeholder="Nom du client"
+                      className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
                       Adresse
                     </label>
-                    <Input
+                    <input
                       type="text"
                       value={formData.chantier_adresse}
                       onChange={(e) => setFormData({ ...formData, chantier_adresse: e.target.value })}
                       placeholder="Adresse du chantier"
+                      className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
                       Contact sur site
                     </label>
-                    <Input
+                    <input
                       type="text"
                       value={formData.chantier_contact}
                       onChange={(e) => setFormData({ ...formData, chantier_contact: e.target.value })}
                       placeholder="Nom et téléphone"
+                      className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">
                         Date début
                       </label>
-                      <Input
+                      <input
                         type="date"
                         value={formData.chantier_date_debut}
                         onChange={(e) => setFormData({ ...formData, chantier_date_debut: e.target.value })}
+                        className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
-                        Date fin (prévue)
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                        Date fin
                       </label>
-                      <Input
+                      <input
                         type="date"
                         value={formData.chantier_date_fin}
                         onChange={(e) => setFormData({ ...formData, chantier_date_fin: e.target.value })}
+                        className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                       />
                     </div>
                   </div>
                 </>
               )}
 
-              {/* Champs spécifiques véhicule */}
+              {/* Vehicule fields */}
               {formData.type === 'vehicule' && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
                     Technicien attribué
                   </label>
                   <select
                     value={formData.utilisateur_id}
                     onChange={(e) => setFormData({ ...formData, utilisateur_id: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   >
                     <option value="">Non attribué</option>
                     {users.map(user => (
@@ -566,24 +547,27 @@ export default function EmplacementsPage() {
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 pt-4">
-                <Button
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  variant="secondary"
+                  disabled={processing}
+                  className="flex-1 h-11 px-4 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-600 rounded-lg font-medium transition-colors"
                 >
                   Annuler
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
-                  variant="primary"
-                  icon={<Save className="w-5 h-5" />}
+                  disabled={processing}
+                  className="flex-1 h-11 px-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
                 >
-                  {editingId ? 'Enregistrer' : 'Créer'}
-                </Button>
+                  <Save className="w-5 h-5" />
+                  {processing ? 'Enregistrement...' : editingId ? 'Enregistrer' : 'Créer'}
+                </button>
               </div>
             </form>
-          </Card>
+          </div>
         </div>
       )}
     </div>

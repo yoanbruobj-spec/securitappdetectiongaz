@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { motion } from 'framer-motion'
 import {
   AlertTriangle,
   Package,
@@ -11,21 +10,17 @@ import {
   Clock,
   ShoppingCart,
   Filter,
-  Download,
   Search,
   Building2,
   MapPin,
-  Cpu
+  Cpu,
+  ArrowLeft,
+  X
 } from 'lucide-react'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { BottomNav } from '@/components/layout/BottomNav'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
-import { Table } from '@/components/ui/Table'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { useToast } from '@/components/ui/Toast'
-import { AnimatedBackground } from '@/components/backgrounds/AnimatedBackground'
+import { cn } from '@/lib/utils'
 
 interface CommandeCellule {
   id: string
@@ -51,7 +46,6 @@ interface CommandeCellule {
   notes?: string
   created_at: string
   updated_at: string
-  // Relations
   clients?: { nom: string }
   sites?: { nom: string }
   centrales?: { modele: string; numero: number; type_equipement?: string }
@@ -81,15 +75,13 @@ export default function SuiviCellulesPage() {
     alertes_1_mois: 0
   })
 
-  // Filtres
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatut, setFilterStatut] = useState<string>('all')
-  const [filterClient, setFilterClient] = useState<string>('all')
   const [filterUrgence, setFilterUrgence] = useState<string>('all')
+  const [showFilters, setShowFilters] = useState(false)
 
   const router = useRouter()
   const supabase = createClient()
-  const { showToast } = useToast()
 
   useEffect(() => {
     checkAuth()
@@ -128,7 +120,6 @@ export default function SuiviCellulesPage() {
 
     if (error) {
       console.error('Erreur chargement commandes:', error)
-      showToast('Erreur lors du chargement', 'error')
       return
     }
 
@@ -164,7 +155,6 @@ export default function SuiviCellulesPage() {
   async function updateStatut(id: string, newStatut: CommandeCellule['statut']) {
     const updates: any = { statut: newStatut }
 
-    // Mettre à jour les dates selon le statut
     if (newStatut === 'commandé' && !commandes.find(c => c.id === id)?.date_commande) {
       updates.date_commande = new Date().toISOString().split('T')[0]
     }
@@ -181,11 +171,10 @@ export default function SuiviCellulesPage() {
       .eq('id', id)
 
     if (error) {
-      showToast('Erreur lors de la mise à jour', 'error')
+      alert('Erreur lors de la mise à jour')
       return
     }
 
-    showToast('Statut mis à jour', 'success')
     loadCommandes()
   }
 
@@ -204,56 +193,46 @@ export default function SuiviCellulesPage() {
   function getUrgenceBadge(urgence: ReturnType<typeof getUrgenceLevel>) {
     switch (urgence) {
       case 'critique':
-        return <Badge variant="danger" size="sm">🔴 Dépassé</Badge>
+        return <Badge variant="danger" size="sm">Dépassé</Badge>
       case 'urgent':
-        return <Badge variant="danger" size="sm">⚠️ &lt; 1 mois</Badge>
+        return <Badge variant="danger" size="sm">&lt; 1 mois</Badge>
       case 'attention':
-        return <Badge variant="warning" size="sm">⏰ &lt; 2 mois</Badge>
+        return <Badge variant="warning" size="sm">&lt; 2 mois</Badge>
       default:
-        return <Badge variant="default" size="sm">✓ OK</Badge>
+        return <Badge variant="success" size="sm">OK</Badge>
     }
   }
 
   function getStatutBadge(statut: CommandeCellule['statut']) {
     switch (statut) {
       case 'attente_commande':
-        return <Badge variant="warning">En attente</Badge>
+        return <Badge variant="warning" size="sm">En attente</Badge>
       case 'commandé':
-        return <Badge variant="info">Commandé</Badge>
+        return <Badge variant="info" size="sm">Commandé</Badge>
       case 'reçu':
-        return <Badge variant="success">Reçu</Badge>
+        return <Badge variant="success" size="sm">Reçu</Badge>
       case 'remplacé':
-        return <Badge variant="default">Remplacé</Badge>
+        return <Badge variant="default" size="sm">Remplacé</Badge>
     }
   }
 
-  // Filtrage
   const commandesFiltrees = commandes.filter(commande => {
-    // Filtre par recherche
     const matchSearch = searchTerm === '' ||
-      commande.clients?.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      commande.sites?.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      commande.gaz.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      commande.clients?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      commande.sites?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      commande.gaz?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       commande.modele_detecteur?.toLowerCase().includes(searchTerm.toLowerCase())
 
-    // Filtre par statut
     const matchStatut = filterStatut === 'all' || commande.statut === filterStatut
 
-    // Filtre par client
-    const matchClient = filterClient === 'all' || commande.clients?.nom === filterClient
-
-    // Filtre par urgence
     let matchUrgence = true
     if (filterUrgence !== 'all') {
       const urgence = getUrgenceLevel(commande.date_remplacement_theorique)
       matchUrgence = urgence === filterUrgence
     }
 
-    return matchSearch && matchStatut && matchClient && matchUrgence
+    return matchSearch && matchStatut && matchUrgence
   })
-
-  // Liste unique des clients pour le filtre
-  const clients = Array.from(new Set(commandes.map(c => c.clients?.nom).filter(Boolean)))
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -262,305 +241,276 @@ export default function SuiviCellulesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen lg:flex relative overflow-hidden">
-      <AnimatedBackground />
+    <div className="min-h-screen bg-slate-50 lg:flex">
       <Sidebar
         userRole={profile?.role || 'technicien'}
         userName={profile?.full_name}
         onLogout={handleLogout}
       />
 
-      <div className="min-h-screen lg:flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 pb-24 lg:pb-0">
         {/* Header */}
-        <header className="glass-strong border-b border-white/20 px-3 sm:px-4 lg:px-8 py-2 sm:py-3 lg:py-6 sticky top-0 z-20 shadow-lg mt-16 lg:mt-0">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0"
-          >
-            <div>
-              <h1 className="text-base sm:text-2xl lg:text-4xl font-black text-gradient drop-shadow-lg flex items-center gap-3">
-                <Package className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10" />
-                Suivi des Cellules
-              </h1>
-              <p className="text-xs sm:text-sm lg:text-base text-gray-700 mt-0.5 sm:mt-2 font-medium">
-                Gestion des commandes et remplacements de cellules
-              </p>
+        <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+          <div className="px-4 py-4 lg:px-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => router.push(profile?.role === 'admin' ? '/admin' : '/technicien')}
+                  className="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100"
+                >
+                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                <div>
+                  <h1 className="text-xl lg:text-2xl font-bold text-slate-900">Suivi Cellules</h1>
+                  <p className="text-sm text-slate-500 hidden lg:block">{commandesFiltrees.length} commande(s)</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn(
+                  'h-10 px-4 border rounded-lg font-medium flex items-center gap-2 transition-colors',
+                  showFilters || filterStatut !== 'all' || filterUrgence !== 'all'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                )}
+              >
+                <Filter className="w-5 h-5" />
+                <span className="hidden sm:inline">Filtrer</span>
+              </button>
             </div>
-          </motion.div>
-        </header>
 
-        <main className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-10">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="glass-strong rounded-2xl p-4 sm:p-6 shadow-xl ring-2 ring-gray-300/30"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                  <Package className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 mb-1">Total</p>
-              <p className="text-2xl font-black text-gray-900">{stats.total}</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="glass-strong rounded-2xl p-4 sm:p-6 shadow-xl ring-2 ring-orange-300/30"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 mb-1">En attente</p>
-              <p className="text-2xl font-black text-gray-900">{stats.attente_commande}</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="glass-strong rounded-2xl p-4 sm:p-6 shadow-xl ring-2 ring-cyan-300/30"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
-                  <ShoppingCart className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 mb-1">Commandé</p>
-              <p className="text-2xl font-black text-gray-900">{stats.commandé}</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="glass-strong rounded-2xl p-4 sm:p-6 shadow-xl ring-2 ring-red-300/30"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 mb-1">Alertes &lt; 2 mois</p>
-              <p className="text-2xl font-black text-gray-900">{stats.alertes_2_mois}</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="glass-strong rounded-2xl p-4 sm:p-6 shadow-xl ring-2 ring-red-500/50"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center animate-pulse">
-                  <AlertTriangle className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 mb-1">Critique &lt; 1 mois</p>
-              <p className="text-2xl font-black text-red-600">{stats.alertes_1_mois}</p>
-            </motion.div>
-          </div>
-
-          {/* Filtres et recherche */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-strong rounded-2xl p-4 sm:p-6 shadow-xl mb-6"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="lg:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="Rechercher (client, site, gaz...)"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              <Select
-                value={filterStatut}
-                onChange={(e) => setFilterStatut(e.target.value)}
-              >
-                <option value="all">Tous les statuts</option>
-                <option value="attente_commande">En attente</option>
-                <option value="commandé">Commandé</option>
-                <option value="reçu">Reçu</option>
-                <option value="remplacé">Remplacé</option>
-              </Select>
-
-              <Select
-                value={filterClient}
-                onChange={(e) => setFilterClient(e.target.value)}
-              >
-                <option value="all">Tous les clients</option>
-                {clients.map(client => (
-                  <option key={client} value={client}>{client}</option>
-                ))}
-              </Select>
-
-              <Select
-                value={filterUrgence}
-                onChange={(e) => setFilterUrgence(e.target.value)}
-              >
-                <option value="all">Toutes urgences</option>
-                <option value="critique">🔴 Dépassé</option>
-                <option value="urgent">⚠️ &lt; 1 mois</option>
-                <option value="attention">⏰ &lt; 2 mois</option>
-                <option value="normal">✓ OK</option>
-              </Select>
-            </div>
-          </motion.div>
-
-          {/* Tableau des commandes */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-strong rounded-2xl p-4 sm:p-6 shadow-xl overflow-hidden"
-          >
-            {commandesFiltrees.length === 0 ? (
-              <EmptyState
-                icon={Package}
-                title="Aucune commande"
-                description="Les commandes de cellules apparaîtront ici"
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Rechercher..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-11 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               />
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 uppercase">Urgence</th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 uppercase">Client</th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 uppercase">Site</th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 uppercase">Centrale</th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 uppercase">Détecteur</th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 uppercase">Gaz</th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 uppercase">Gamme</th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 uppercase">Date théorique</th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 uppercase">Statut</th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-gray-700 uppercase">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {commandesFiltrees.map((commande, index) => {
-                      const urgence = getUrgenceLevel(commande.date_remplacement_theorique)
-                      return (
-                        <motion.tr
-                          key={commande.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.02 }}
-                          className="border-b border-gray-100 hover:bg-gray-50/50 transition"
-                        >
-                          <td className="py-3 px-4">
-                            {getUrgenceBadge(urgence)}
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-2">
-                              <Building2 className="w-4 h-4 text-gray-400" />
-                              <span className="font-medium text-sm">{commande.clients?.nom}</span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm">{commande.sites?.nom}</span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            {commande.centrales && (
-                              <div className="flex items-center gap-2">
-                                <Cpu className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm">
-                                  {commande.centrales.type_equipement === 'automate' ? 'Auto.' : 'Cent.'} {commande.centrales.numero} - {commande.centrales.modele}
-                                </span>
-                              </div>
-                            )}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="text-sm font-medium">{commande.modele_detecteur}</span>
-                            {commande.detecteurs_gaz && (
-                              <span className="text-xs text-gray-500 block">
-                                Dét. {commande.detecteurs_gaz.numero} {commande.detecteurs_gaz.ligne && `- ${commande.detecteurs_gaz.ligne}`}
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4">
-                            <Badge variant="info" size="sm">{commande.gaz}</Badge>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="text-sm">{commande.gamme_mesure || '-'}</span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`text-sm font-medium ${
-                              urgence === 'critique' ? 'text-red-600' :
-                              urgence === 'urgent' ? 'text-orange-600' :
-                              urgence === 'attention' ? 'text-yellow-600' :
-                              'text-gray-600'
-                            }`}>
-                              {new Date(commande.date_remplacement_theorique).toLocaleDateString('fr-FR')}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            {getStatutBadge(commande.statut)}
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex gap-2">
-                              {commande.statut === 'attente_commande' && (
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateStatut(commande.id, 'commandé')}
-                                >
-                                  Commander
-                                </Button>
-                              )}
-                              {commande.statut === 'commandé' && (
-                                <Button
-                                  size="sm"
-                                  variant="secondary"
-                                  onClick={() => updateStatut(commande.id, 'reçu')}
-                                >
-                                  Réceptionner
-                                </Button>
-                              )}
-                              {commande.statut === 'reçu' && (
-                                <Button
-                                  size="sm"
-                                  variant="primary"
-                                  onClick={() => updateStatut(commande.id, 'remplacé')}
-                                >
-                                  Marquer remplacé
-                                </Button>
-                              )}
-                            </div>
-                          </td>
-                        </motion.tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
+            </div>
+
+            {/* Filters */}
+            {showFilters && (
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                <select
+                  value={filterStatut}
+                  onChange={(e) => setFilterStatut(e.target.value)}
+                  className="h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="all">Tous les statuts</option>
+                  <option value="attente_commande">En attente</option>
+                  <option value="commandé">Commandé</option>
+                  <option value="reçu">Reçu</option>
+                  <option value="remplacé">Remplacé</option>
+                </select>
+
+                <select
+                  value={filterUrgence}
+                  onChange={(e) => setFilterUrgence(e.target.value)}
+                  className="h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="all">Toutes urgences</option>
+                  <option value="critique">Dépassé</option>
+                  <option value="urgent">&lt; 1 mois</option>
+                  <option value="attention">&lt; 2 mois</option>
+                  <option value="normal">OK</option>
+                </select>
               </div>
             )}
-          </motion.div>
-        </main>
-      </div>
+          </div>
+        </header>
+
+        <div className="px-4 py-4 lg:px-8 lg:py-6 space-y-6">
+          {/* Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-3">
+                <Package className="w-5 h-5 text-blue-500" />
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
+              <p className="text-sm text-slate-500">Total</p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center mb-3">
+                <Clock className="w-5 h-5 text-amber-500" />
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{stats.attente_commande}</p>
+              <p className="text-sm text-slate-500">En attente</p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <div className="w-10 h-10 bg-cyan-50 rounded-lg flex items-center justify-center mb-3">
+                <ShoppingCart className="w-5 h-5 text-cyan-500" />
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{stats.commandé}</p>
+              <p className="text-sm text-slate-500">Commandé</p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center mb-3">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{stats.alertes_2_mois}</p>
+              <p className="text-sm text-slate-500">&lt; 2 mois</p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-red-200 p-4">
+              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mb-3">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <p className="text-2xl font-bold text-red-600">{stats.alertes_1_mois}</p>
+              <p className="text-sm text-slate-500">Critique</p>
+            </div>
+          </div>
+
+          {/* Active filters */}
+          {(filterStatut !== 'all' || filterUrgence !== 'all') && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-slate-500">Filtres actifs :</span>
+              {filterStatut !== 'all' && (
+                <button
+                  onClick={() => setFilterStatut('all')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-sm font-medium"
+                >
+                  {filterStatut}
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {filterUrgence !== 'all' && (
+                <button
+                  onClick={() => setFilterUrgence('all')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-sm font-medium"
+                >
+                  Urgence: {filterUrgence}
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* List */}
+          {commandesFiltrees.length === 0 ? (
+            <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Package className="w-8 h-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Aucune commande</h3>
+              <p className="text-slate-500">Les commandes de cellules apparaîtront ici</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {commandesFiltrees.map((commande) => {
+                const urgence = getUrgenceLevel(commande.date_remplacement_theorique)
+                return (
+                  <div
+                    key={commande.id}
+                    className={cn(
+                      "bg-white rounded-xl border p-4",
+                      urgence === 'critique' ? 'border-red-200' :
+                      urgence === 'urgent' ? 'border-orange-200' :
+                      'border-slate-200'
+                    )}
+                  >
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                          <span className="font-semibold text-slate-900 truncate">{commande.clients?.nom}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-500">
+                          <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span className="truncate">{commande.sites?.nom}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {getUrgenceBadge(urgence)}
+                        {getStatutBadge(commande.statut)}
+                      </div>
+                    </div>
+
+                    {/* Details */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 text-sm">
+                      {commande.centrales && (
+                        <div>
+                          <p className="text-slate-400 text-xs">Centrale</p>
+                          <p className="text-slate-700">
+                            {commande.centrales.type_equipement === 'automate' ? 'Auto.' : 'Cent.'} {commande.centrales.numero}
+                          </p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-slate-400 text-xs">Gaz</p>
+                        <p className="text-slate-700 font-medium">{commande.gaz}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400 text-xs">Modèle</p>
+                        <p className="text-slate-700">{commande.modele_detecteur || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400 text-xs">Date théorique</p>
+                        <p className={cn(
+                          "font-medium",
+                          urgence === 'critique' ? 'text-red-600' :
+                          urgence === 'urgent' ? 'text-orange-600' :
+                          'text-slate-700'
+                        )}>
+                          {new Date(commande.date_remplacement_theorique).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 pt-3 border-t border-slate-100">
+                      {commande.statut === 'attente_commande' && (
+                        <button
+                          onClick={() => updateStatut(commande.id, 'commandé')}
+                          className="h-9 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
+                        >
+                          Commander
+                        </button>
+                      )}
+                      {commande.statut === 'commandé' && (
+                        <button
+                          onClick={() => updateStatut(commande.id, 'reçu')}
+                          className="h-9 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+                        >
+                          Réceptionner
+                        </button>
+                      )}
+                      {commande.statut === 'reçu' && (
+                        <button
+                          onClick={() => updateStatut(commande.id, 'remplacé')}
+                          className="h-9 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
+                        >
+                          Marquer remplacé
+                        </button>
+                      )}
+                      {commande.statut === 'remplacé' && (
+                        <span className="h-9 px-4 bg-slate-100 text-slate-500 rounded-lg text-sm font-medium flex items-center">
+                          Terminé
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <BottomNav userRole={profile?.role || 'technicien'} />
     </div>
   )
 }

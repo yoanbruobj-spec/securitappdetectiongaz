@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { Cpu, Zap, Calendar, AlertCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 
@@ -55,12 +54,7 @@ export function SyntheseEquipements({ centrales, detecteurs_gaz }: SyntheseEquip
   })
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="mt-8"
-    >
+    <div className="mt-8">
       <div className="bg-gradient-to-br from-white/80 to-gray-50/80 backdrop-blur-sm rounded-2xl border-2 border-emerald-500/20 p-6 shadow-xl">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/50">
@@ -265,6 +259,6 @@ export function SyntheseEquipements({ centrales, detecteurs_gaz }: SyntheseEquip
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   )
 }

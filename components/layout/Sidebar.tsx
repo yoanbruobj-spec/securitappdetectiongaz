@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard,
   FileText,
@@ -12,20 +11,14 @@ import {
   Building2,
   Package,
   ChevronLeft,
-  ChevronRight,
   LogOut,
   Plus,
-  Settings,
-  Menu,
-  X,
-  Search,
   AlertTriangle,
-  PackageCheck,
+  Flame,
   ChevronDown,
-  ChevronUp,
-  Flame
+  Settings
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { cn } from '@/lib/utils'
 
 interface SidebarProps {
   userRole?: 'admin' | 'technicien'
@@ -34,460 +27,221 @@ interface SidebarProps {
 }
 
 interface MenuItem {
-  icon: any
+  icon: React.ElementType
   label: string
   href: string
-  badge?: string
-  color?: string
+}
+
+interface MenuGroup {
+  title: string
+  icon: React.ElementType
+  items: MenuItem[]
 }
 
 export function Sidebar({ userRole = 'admin', userName, onLogout }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [detectionGazOpen, setDetectionGazOpen] = useState(true)
+  const [openGroups, setOpenGroups] = useState<string[]>(['detection'])
   const router = useRouter()
   const pathname = usePathname()
 
-  // Détecter si on est sur mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024) // lg breakpoint
-    }
-
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  // Fermer le menu mobile lors du changement de route
-  useEffect(() => {
-    setMobileOpen(false)
-  }, [pathname])
-
-  // Menu items hors "Détection Gaz"
   const mainMenuItems: MenuItem[] = userRole === 'admin' ? [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/admin', color: 'emerald' },
-    { icon: Calendar, label: 'Planning', href: '/planning', color: 'blue' },
-    { icon: Package, label: 'Stock', href: '/stock', color: 'purple' },
-    { icon: Building2, label: 'Clients', href: '/clients', color: 'orange' },
-    { icon: Users, label: 'Utilisateurs', href: '/utilisateurs', color: 'pink' },
+    { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
+    { icon: Calendar, label: 'Planning', href: '/planning' },
+    { icon: Package, label: 'Stock', href: '/stock' },
+    { icon: Building2, label: 'Clients', href: '/clients' },
+    { icon: Users, label: 'Utilisateurs', href: '/utilisateurs' },
   ] : [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/technicien', color: 'emerald' },
-    { icon: Calendar, label: 'Planning', href: '/planning', color: 'blue' },
-    { icon: Building2, label: 'Clients', href: '/clients', color: 'orange' },
+    { icon: LayoutDashboard, label: 'Dashboard', href: '/technicien' },
+    { icon: Calendar, label: 'Planning', href: '/planning' },
+    { icon: Building2, label: 'Clients', href: '/clients' },
   ]
 
-  // Items du groupe "Détection Gaz"
-  const detectionGazItems: MenuItem[] = [
-    { icon: FileText, label: 'Interventions', href: '/interventions', color: 'cyan' },
-    { icon: PackageCheck, label: 'Suivi Cellules', href: '/suivi-cellules', color: 'indigo' },
-    { icon: AlertTriangle, label: 'Anomalies', href: '/anomalies', color: 'red' },
+  const menuGroups: MenuGroup[] = [
+    {
+      title: 'Détection Gaz',
+      icon: Flame,
+      items: [
+        { icon: FileText, label: 'Interventions', href: '/interventions' },
+        { icon: AlertTriangle, label: 'Anomalies', href: '/anomalies' },
+        { icon: Settings, label: 'Suivi Cellules', href: '/suivi-cellules' },
+      ]
+    }
   ]
 
-  const isActive = (href: string) => pathname === href
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
 
-  const getColorClasses = (color: string, active: boolean) => {
-    if (active) {
-      return {
-        bg: 'bg-gradient-to-r from-emerald-500 to-cyan-500',
-        text: 'text-white',
-        icon: 'text-white'
-      }
-    }
-
-    const colors: any = {
-      emerald: 'text-emerald-600 group-hover:text-emerald-700',
-      cyan: 'text-cyan-600 group-hover:text-cyan-700',
-      blue: 'text-blue-600 group-hover:text-blue-700',
-      purple: 'text-purple-600 group-hover:text-purple-700',
-      orange: 'text-orange-600 group-hover:text-orange-700',
-      pink: 'text-pink-600 group-hover:text-pink-700',
-      indigo: 'text-indigo-600 group-hover:text-indigo-700',
-      red: 'text-red-600 group-hover:text-red-700',
-    }
-
-    return {
-      bg: 'bg-gray-50 group-hover:bg-gray-100',
-      text: 'text-gray-700 group-hover:text-gray-900',
-      icon: colors[color] || 'text-gray-600'
-    }
+  const toggleGroup = (title: string) => {
+    setOpenGroups(prev =>
+      prev.includes(title)
+        ? prev.filter(g => g !== title)
+        : [...prev, title]
+    )
   }
 
   return (
-    <>
-      {/* Bouton burger mobile - GLASSMORPHISM 3D */}
-      <motion.button
-        whileHover={{ scale: 1.1, rotate: 90 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 glass-strong ring-2 ring-emerald-500/30 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-2xl relative overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-cyan-500 blur-xl opacity-50 animate-pulse-glow" />
-        <Menu className="relative w-6 h-6 text-white drop-shadow-lg" />
-      </motion.button>
-
-      {/* Backdrop mobile */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setMobileOpen(false)}
-            className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-          />
+    <aside
+      className={cn(
+        'hidden lg:flex flex-col h-screen bg-white border-r border-slate-200 transition-all duration-200',
+        collapsed ? 'w-[72px]' : 'w-[260px]'
+      )}
+    >
+      {/* Header */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100">
+        {!collapsed ? (
+          <div className="bg-slate-700 rounded-lg px-3 py-1.5">
+            <Image
+              src="/logo-securit.png"
+              alt="SÉCUR'IT"
+              width={120}
+              height={32}
+              priority
+              className="object-contain"
+            />
+          </div>
+        ) : (
+          <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-lg">S</span>
+          </div>
         )}
-      </AnimatePresence>
 
-      {/* Sidebar - GLASSMORPHISM SPECTACULAIRE */}
-      <motion.aside
-        initial={false}
-        animate={{
-          width: collapsed ? 80 : 280,
-          x: isMobile ? (mobileOpen ? 0 : -280) : 0
-        }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="fixed lg:relative h-screen bg-white/95 backdrop-blur-2xl border-r-2 border-emerald-500/20 flex flex-col shadow-2xl z-50 overflow-hidden relative"
-      >
-        {/* Gradient mesh background animé */}
-        <div className="absolute inset-0 -z-10 opacity-30">
-          <motion.div
-            animate={{
-              x: [0, 50, 0],
-              y: [0, -30, 0],
-              scale: [1, 1.1, 1],
-              rotate: [0, 45, 0],
-            }}
-            transition={{
-              duration: 15,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="absolute top-0 left-0 w-[200px] h-[200px] bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
-          />
-          <motion.div
-            animate={{
-              x: [0, -40, 0],
-              y: [0, 50, 0],
-              scale: [1, 1.2, 1],
-              rotate: [0, -45, 0],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1
-            }}
-            className="absolute bottom-0 right-0 w-[250px] h-[250px] bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
-          />
-        </div>
-      {/* Header with Logo - GLASSMORPHISM */}
-      <div className="relative h-20 border-b-2 border-emerald-500/20 glass flex items-center justify-center px-4 overflow-hidden">
-        {/* Glow effect animé */}
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-cyan-500/5 to-emerald-500/5 animate-gradient opacity-50" />
-
-        {/* Bouton fermer mobile */}
-        <motion.button
-          whileHover={{ scale: 1.1, rotate: 90 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setMobileOpen(false)}
-          className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-red-500/10 transition shadow-lg relative overflow-hidden group"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-red-500/0 group-hover:from-red-500/20 group-hover:to-red-500/20 transition-all duration-300" />
-          <X className="relative w-5 h-5 text-gray-700 drop-shadow-sm" />
-        </motion.button>
-
-        <AnimatePresence mode="wait">
-          {!collapsed ? (
-            <motion.div
-              key="logo-full"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center justify-center"
-            >
-              {/* Logo avec fond adaptatif */}
-              <div className="relative px-4 py-3 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 shadow-xl">
-                <Image
-                  src="/logo-securit-blanc.png"
-                  alt="SÉCUR'IT"
-                  width={140}
-                  height={35}
-                  priority
-                  className="object-contain"
-                />
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="logo-small"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.2 }}
-              className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-2xl overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-cyan-500 blur-md opacity-60 animate-pulse-glow" />
-              <span className="relative text-white font-black text-xl drop-shadow-lg">S</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Toggle Button - masqué sur mobile - 3D */}
-        <motion.button
-          whileHover={{ scale: 1.2, rotate: collapsed ? 180 : 0 }}
-          whileTap={{ scale: 0.9 }}
+        <button
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 glass-strong bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full items-center justify-center shadow-xl hover:shadow-2xl transition-all z-10 relative overflow-hidden"
+          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-cyan-500 blur-sm opacity-60 animate-pulse-glow" />
-          {collapsed ? (
-            <ChevronRight className="relative w-3 h-3 text-white drop-shadow-lg" />
-          ) : (
-            <ChevronLeft className="relative w-3 h-3 text-white drop-shadow-lg" />
-          )}
-        </motion.button>
+          <ChevronLeft className={cn('w-5 h-5 transition-transform', collapsed && 'rotate-180')} />
+        </button>
       </div>
 
-      {/* Navigation Menu - GLASSMORPHISM 3D */}
-      <nav className="relative flex-1 px-3 py-2 space-y-2 overflow-y-auto">
-        {/* Menu principal */}
-        {mainMenuItems.map((item, index) => {
-          const active = isActive(item.href)
-          const colors = getColorClasses(item.color || 'gray', active)
-          const Icon = item.icon
+      {/* New Report Button */}
+      <div className="p-3">
+        <button
+          onClick={() => router.push('/select-rapport-type')}
+          className={cn(
+            'w-full h-10 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors',
+            collapsed && 'px-0'
+          )}
+        >
+          <Plus className="w-5 h-5" />
+          {!collapsed && <span>Nouveau rapport</span>}
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3 py-2">
+        {/* Main Menu */}
+        <div className="space-y-1">
+          {mainMenuItems.map((item) => {
+            const active = isActive(item.href)
+            const Icon = item.icon
+
+            return (
+              <button
+                key={item.href}
+                onClick={() => router.push(item.href)}
+                className={cn(
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                  active
+                    ? 'bg-emerald-50 text-emerald-600'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                  collapsed && 'justify-center px-2'
+                )}
+              >
+                <Icon className={cn('w-5 h-5 flex-shrink-0', active && 'text-emerald-500')} />
+                {!collapsed && <span>{item.label}</span>}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Menu Groups */}
+        {menuGroups.map((group) => {
+          const isOpen = openGroups.includes(group.title.toLowerCase())
+          const GroupIcon = group.icon
 
           return (
-            <motion.button
-              key={index}
-              onClick={() => router.push(item.href)}
-              whileHover={{ x: 4, scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className={`relative w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-3 rounded-2xl transition-all group overflow-hidden ${
-                active
-                  ? 'glass ring-2 ring-emerald-500/30 shadow-xl'
-                  : 'hover:glass hover:ring-1 hover:ring-gray-300/30'
-              }`}
-            >
-              {active && (
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-emerald-500/10 animate-gradient" />
-              )}
-
-              <div className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                active
-                  ? 'bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg'
-                  : 'group-hover:bg-gray-100'
-              }`}>
-                {active && <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 blur-md opacity-50 animate-pulse-glow" />}
-                <Icon className={`relative w-5 h-5 flex-shrink-0 ${active ? 'text-white drop-shadow-lg' : colors.icon}`} />
-              </div>
-
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className={`relative font-bold whitespace-nowrap overflow-hidden ${active ? 'text-gray-900' : colors.text}`}
-                  >
-                    {item.label}
-                  </motion.span>
+            <div key={group.title} className="mt-4">
+              <button
+                onClick={() => toggleGroup(group.title.toLowerCase())}
+                className={cn(
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors',
+                  collapsed && 'justify-center px-2'
                 )}
-              </AnimatePresence>
-            </motion.button>
+              >
+                <div className="w-5 h-5 bg-orange-100 rounded flex items-center justify-center flex-shrink-0">
+                  <GroupIcon className="w-3.5 h-3.5 text-orange-500" />
+                </div>
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 text-left">{group.title}</span>
+                    <ChevronDown className={cn('w-4 h-4 text-slate-400 transition-transform', isOpen && 'rotate-180')} />
+                  </>
+                )}
+              </button>
+
+              {isOpen && !collapsed && (
+                <div className="mt-1 ml-3 pl-5 border-l border-slate-200 space-y-1">
+                  {group.items.map((item) => {
+                    const active = isActive(item.href)
+                    const Icon = item.icon
+
+                    return (
+                      <button
+                        key={item.href}
+                        onClick={() => router.push(item.href)}
+                        className={cn(
+                          'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                          active
+                            ? 'bg-emerald-50 text-emerald-600 font-medium'
+                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                        )}
+                      >
+                        <Icon className={cn('w-4 h-4', active && 'text-emerald-500')} />
+                        <span>{item.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           )
         })}
-
-        {/* Section Détection Gaz */}
-        <div className="relative mt-4 pt-4 border-t-2 border-gray-200/50">
-          {/* Header Détection Gaz */}
-          <motion.button
-            whileHover={{ x: 4, scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setDetectionGazOpen(!detectionGazOpen)}
-            className="relative w-full flex items-center justify-between px-4 py-3 rounded-2xl glass ring-2 ring-orange-500/20 hover:ring-orange-500/40 transition-all group overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-red-500/5 to-orange-500/5 animate-gradient" />
-
-            <div className="relative flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 blur-md opacity-50 animate-pulse-glow" />
-                <Flame className="relative w-5 h-5 text-white drop-shadow-lg" />
-              </div>
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className="relative font-black text-gray-900 whitespace-nowrap overflow-hidden"
-                  >
-                    Détection Gaz
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <AnimatePresence>
-              {!collapsed && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  {detectionGazOpen ? (
-                    <ChevronUp className="w-5 h-5 text-gray-600" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-600" />
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.button>
-
-          {/* Sous-menu Détection Gaz */}
-          <AnimatePresence>
-            {detectionGazOpen && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="mt-2 space-y-2 overflow-hidden"
-              >
-                {/* Bouton Nouveau Rapport */}
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => router.push('/select-rapport-type')}
-                  className={`relative w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-2xl shadow-2xl hover:shadow-emerald-500/50 transition-all overflow-hidden group`}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500 blur-xl opacity-60 group-hover:opacity-100 transition-opacity animate-pulse-glow" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-shimmer" />
-
-                  <Plus className="relative w-5 h-5 flex-shrink-0 drop-shadow-lg" />
-                  <AnimatePresence>
-                    {!collapsed && (
-                      <motion.span
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: 'auto' }}
-                        exit={{ opacity: 0, width: 0 }}
-                        className="relative font-black whitespace-nowrap overflow-hidden drop-shadow-lg"
-                      >
-                        Nouveau rapport
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </motion.button>
-
-                {/* Items Détection Gaz */}
-                {detectionGazItems.map((item, index) => {
-                  const active = isActive(item.href)
-                  const colors = getColorClasses(item.color || 'gray', active)
-                  const Icon = item.icon
-
-                  return (
-                    <motion.button
-                      key={index}
-                      onClick={() => router.push(item.href)}
-                      whileHover={{ x: 4, scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`relative w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-3 rounded-2xl transition-all group overflow-hidden ${
-                        active
-                          ? 'glass ring-2 ring-emerald-500/30 shadow-xl'
-                          : 'hover:glass hover:ring-1 hover:ring-gray-300/30'
-                      }`}
-                    >
-                      {active && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-emerald-500/10 animate-gradient" />
-                      )}
-
-                      <div className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                        active
-                          ? 'bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg'
-                          : 'group-hover:bg-gray-100'
-                      }`}>
-                        {active && <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 blur-md opacity-50 animate-pulse-glow" />}
-                        <Icon className={`relative w-5 h-5 flex-shrink-0 ${active ? 'text-white drop-shadow-lg' : colors.icon}`} />
-                      </div>
-
-                      <AnimatePresence>
-                        {!collapsed && (
-                          <motion.span
-                            initial={{ opacity: 0, width: 0 }}
-                            animate={{ opacity: 1, width: 'auto' }}
-                            exit={{ opacity: 0, width: 0 }}
-                            className={`relative font-bold whitespace-nowrap overflow-hidden ${active ? 'text-gray-900' : colors.text}`}
-                          >
-                            {item.label}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </motion.button>
-                  )
-                })}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
       </nav>
 
-      {/* User Profile & Logout - GLASSMORPHISM */}
-      <div className="relative border-t-2 border-emerald-500/20 p-4 glass">
-        {/* Glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/5 via-cyan-500/5 to-transparent opacity-50 pointer-events-none" />
-
-        <AnimatePresence mode="wait">
-          {!collapsed ? (
-            <motion.div
-              key="profile-full"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="relative mb-3 p-3 glass rounded-2xl ring-1 ring-emerald-500/20"
-            >
-              <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Connecté en tant que</p>
-              <p className="text-sm text-gray-900 font-black truncate">{userName}</p>
-              <p className="text-xs text-emerald-600 font-bold capitalize">{userRole}</p>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="profile-compact"
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.5 }}
-              className="relative mb-3 flex justify-center"
-            >
-              <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-white font-black shadow-2xl overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-cyan-500 blur-md opacity-60 animate-pulse-glow" />
-                <span className="relative drop-shadow-lg">{userName?.charAt(0).toUpperCase()}</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* User Profile */}
+      <div className="border-t border-slate-100 p-3">
+        {!collapsed ? (
+          <div className="flex items-center gap-3 px-3 py-2 mb-2">
+            <div className="w-9 h-9 bg-emerald-100 rounded-full flex items-center justify-center">
+              <span className="text-emerald-600 font-semibold text-sm">
+                {userName?.charAt(0).toUpperCase() || 'U'}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-900 truncate">{userName}</p>
+              <p className="text-xs text-slate-500 capitalize">{userRole}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-center mb-2">
+            <div className="w-9 h-9 bg-emerald-100 rounded-full flex items-center justify-center">
+              <span className="text-emerald-600 font-semibold text-sm">
+                {userName?.charAt(0).toUpperCase() || 'U'}
+              </span>
+            </div>
+          </div>
+        )}
 
         <button
           onClick={onLogout}
-          className={`relative z-10 w-full flex items-center ${collapsed ? 'justify-center' : 'justify-start gap-3'} px-4 py-2.5 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all group cursor-pointer`}
+          className={cn(
+            'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors',
+            collapsed && 'justify-center px-2'
+          )}
         >
-          <LogOut className="w-4 h-4 flex-shrink-0" />
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.span
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                className="text-sm font-medium whitespace-nowrap overflow-hidden"
-              >
-                Déconnexion
-              </motion.span>
-            )}
-          </AnimatePresence>
+          <LogOut className="w-5 h-5" />
+          {!collapsed && <span>Déconnexion</span>}
         </button>
       </div>
-    </motion.aside>
-    </>
+    </aside>
   )
 }

@@ -44,7 +44,8 @@
       "Bash(powershell -Command \"Get-Content ''C:\\Users\\yoanb\\Desktop\\securit-app\\app\\(dashboard)\\intervention\\[id]\\page.tsx'' | Measure-Object -Line\")",
       "Bash(git checkout:*)",
       "Bash(powershell -Command \"Get-Content ''C:\\Users\\yoanb\\Desktop\\securit-app\\lib\\pdf\\generateInterventionPDF.ts'' | Measure-Object -Line\")",
-      "Bash(powershell -Command \"Get-Content ''C:\\Users\\yoanb\\Desktop\\securit-app\\app\\(dashboard)\\anomalies\\page.tsx'' | Measure-Object -Line\")"
+      "Bash(powershell -Command \"Get-Content ''C:\\Users\\yoanb\\Desktop\\securit-app\\app\\(dashboard)\\anomalies\\page.tsx'' | Measure-Object -Line\")",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

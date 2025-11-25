@@ -1,12 +1,15 @@
+'use client'
+
 import { forwardRef, ButtonHTMLAttributes } from 'react'
-import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'success'
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'icon'
   loading?: boolean
   icon?: React.ReactNode
+  fullWidth?: boolean
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -16,33 +19,40 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     size = 'md',
     loading = false,
     icon,
+    fullWidth = false,
     className = '',
     disabled,
     ...props
   }, ref) => {
-    const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0A0E1A] disabled:opacity-50 disabled:cursor-not-allowed'
+    const baseClasses = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]'
 
     const variants = {
-      primary: 'bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-500 hover:to-blue-400 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:ring-blue-500',
-      secondary: 'bg-[#1E2A3F] text-slate-200 border border-[#2D3B52] hover:bg-[#253347] hover:border-blue-500/50 focus:ring-blue-500',
-      ghost: 'text-slate-300 hover:bg-[#1E2A3F] hover:text-white focus:ring-slate-500',
-      danger: 'bg-gradient-to-r from-red-600 to-red-500 text-white hover:from-red-500 hover:to-red-400 shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/30 focus:ring-red-500',
-      success: 'bg-gradient-to-r from-green-600 to-green-500 text-white hover:from-green-500 hover:to-green-400 shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/30 focus:ring-green-500'
+      primary: 'bg-emerald-500 text-white hover:bg-emerald-600 focus-visible:ring-emerald-500',
+      secondary: 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-slate-500',
+      ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-slate-500',
+      danger: 'bg-red-500 text-white hover:bg-red-600 focus-visible:ring-red-500',
+      success: 'bg-emerald-500 text-white hover:bg-emerald-600 focus-visible:ring-emerald-500'
     }
 
     const sizes = {
-      sm: 'px-3 py-1.5 text-sm',
-      md: 'px-4 py-2 text-base',
-      lg: 'px-6 py-3 text-lg'
+      sm: 'h-8 px-3 text-sm',
+      md: 'h-10 px-4 text-sm',
+      lg: 'h-12 px-6 text-base',
+      xl: 'h-14 px-8 text-base',
+      icon: 'h-10 w-10'
     }
 
     return (
-      <motion.button
+      <button
         ref={ref}
-        className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
+        className={cn(
+          baseClasses,
+          variants[variant],
+          sizes[size],
+          fullWidth && 'w-full',
+          className
+        )}
         disabled={disabled || loading}
-        whileHover={{ scale: disabled || loading ? 1 : 1.02 }}
-        whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
         {...props}
       >
         {loading ? (
@@ -51,7 +61,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           icon
         ) : null}
         {children}
-      </motion.button>
+      </button>
     )
   }
 )

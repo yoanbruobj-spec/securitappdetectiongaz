@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { Package, Zap, Calendar, AlertCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 
@@ -47,12 +46,7 @@ export function SynthesePortables({ portables, portables_gaz }: SynthesePortable
   })
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="mt-8"
-    >
+    <div className="mt-8">
       <div className="bg-gradient-to-br from-white/80 to-gray-50/80 backdrop-blur-sm rounded-2xl border-2 border-purple-500/20 p-6 shadow-xl">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/50">
@@ -248,6 +242,6 @@ export function SynthesePortables({ portables, portables_gaz }: SynthesePortable
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   )
 }

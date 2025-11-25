@@ -3,12 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { motion } from 'framer-motion'
 import { ArrowLeft, Settings, Plus, Edit, Trash2, Save, X } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
-import { Skeleton } from '@/components/ui/Skeleton'
+import { cn } from '@/lib/utils'
 import type { StockCategorie } from '@/types/stock'
 
 export default function CategoriesStockPage() {
@@ -63,7 +59,6 @@ export default function CategoriesStockPage() {
 
     try {
       if (editingId) {
-        // Modifier
         const { error } = await supabase
           .from('stock_categories')
           .update({
@@ -76,7 +71,6 @@ export default function CategoriesStockPage() {
         if (error) throw error
         alert('Catégorie modifiée !')
       } else {
-        // Créer
         const { error } = await supabase
           .from('stock_categories')
           .insert([{
@@ -139,171 +133,172 @@ export default function CategoriesStockPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Skeleton height="400px" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-300 shadow-sm sticky top-0 z-50">
-        <div className="px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="px-4 py-4 lg:px-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
               onClick={() => router.push('/stock')}
-              variant="ghost"
-              size="sm"
-              icon={<ArrowLeft className="w-4 h-4" />}
+              className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100"
             >
-              Retour
-            </Button>
+              <ArrowLeft className="w-5 h-5 text-slate-600" />
+            </button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-500 shadow-lg shadow-indigo-500/20 flex items-center justify-center">
-                <Settings className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">
+                <Settings className="w-5 h-5 text-purple-500" />
               </div>
-              <h1 className="text-xl font-bold text-slate-800">Gestion des catégories</h1>
+              <h1 className="text-lg lg:text-xl font-bold text-slate-900">Catégories</h1>
             </div>
           </div>
           {!showForm && (
-            <Button
+            <button
               onClick={() => setShowForm(true)}
-              variant="primary"
-              icon={<Plus className="w-5 h-5" />}
+              className="h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium flex items-center gap-2 transition-colors"
             >
-              Nouvelle catégorie
-            </Button>
+              <Plus className="w-5 h-5" />
+              <span className="hidden sm:inline">Nouvelle</span>
+            </button>
           )}
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-8 py-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="px-4 py-4 lg:px-8 lg:py-6">
+        <div className="max-w-2xl mx-auto">
+          {/* Form */}
           {showForm && (
-            <Card variant="glass" padding="lg" className="mb-6 bg-white border border-gray-300">
-              <h2 className="text-lg font-semibold text-slate-800 mb-4">
+            <div className="bg-white rounded-xl border border-slate-200 p-4 lg:p-6 mb-4">
+              <h2 className="font-semibold text-slate-900 mb-4">
                 {editingId ? 'Modifier la catégorie' : 'Nouvelle catégorie'}
               </h2>
               <form onSubmit={handleSubmit}>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
                       Nom *
                     </label>
-                    <Input
+                    <input
                       type="text"
                       value={formData.nom}
                       onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
                       required
                       placeholder="Ex: Cellules détecteurs"
+                      className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">
                         Icône (emoji)
                       </label>
-                      <Input
+                      <input
                         type="text"
                         value={formData.icone}
                         onChange={(e) => setFormData({ ...formData, icone: e.target.value })}
                         placeholder="Ex: 🔋"
                         maxLength={2}
+                        className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 text-center text-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
-                        Ordre d'affichage
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                        Ordre
                       </label>
-                      <Input
+                      <input
                         type="number"
                         value={formData.ordre}
                         onChange={(e) => setFormData({ ...formData, ordre: parseInt(e.target.value) || 0 })}
+                        className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                       />
                     </div>
                   </div>
-                  <div className="flex justify-end gap-3 pt-4">
-                    <Button
+                  <div className="flex gap-3 pt-2">
+                    <button
                       type="button"
                       onClick={cancelForm}
-                      variant="secondary"
-                      icon={<X className="w-5 h-5" />}
                       disabled={processing}
+                      className="flex-1 h-11 px-4 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-600 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
                     >
+                      <X className="w-5 h-5" />
                       Annuler
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       type="submit"
-                      variant="primary"
-                      icon={<Save className="w-5 h-5" />}
                       disabled={processing}
+                      className="flex-1 h-11 px-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
                     >
+                      <Save className="w-5 h-5" />
                       {processing ? 'Enregistrement...' : 'Enregistrer'}
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </form>
-            </Card>
+            </div>
           )}
 
+          {/* Categories list */}
           {categories.length === 0 ? (
-            <div className="text-center py-16">
-              <Settings className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-              <p className="text-slate-600 text-lg mb-4">Aucune catégorie</p>
-              <Button
+            <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Settings className="w-8 h-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Aucune catégorie</h3>
+              <p className="text-slate-500 mb-6">Créez votre première catégorie pour organiser vos articles</p>
+              <button
                 onClick={() => setShowForm(true)}
-                variant="primary"
-                icon={<Plus className="w-5 h-5" />}
+                className="h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium flex items-center gap-2 mx-auto transition-colors"
               >
-                Créer la première catégorie
-              </Button>
+                <Plus className="w-5 h-5" />
+                Créer une catégorie
+              </button>
             </div>
           ) : (
-            <div className="space-y-3">
-              {categories.map((cat, index) => (
-                <motion.div
+            <div className="space-y-2">
+              {categories.map((cat) => (
+                <div
                   key={cat.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  className="bg-white rounded-xl border border-slate-200 p-4 hover:border-slate-300 transition-colors"
                 >
-                  <Card variant="glass" padding="lg" className="bg-white border border-gray-300">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {cat.icone && (
-                          <div className="text-2xl">{cat.icone}</div>
-                        )}
-                        <div>
-                          <h3 className="font-semibold text-slate-800">{cat.nom}</h3>
-                          <p className="text-sm text-slate-500">Ordre: {cat.ordre}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {cat.icone && (
+                        <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-xl">
+                          {cat.icone}
                         </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => startEdit(cat)}
-                          variant="secondary"
-                          size="sm"
-                          icon={<Edit className="w-4 h-4" />}
-                        >
-                          Modifier
-                        </Button>
-                        <Button
-                          onClick={() => handleDelete(cat.id, cat.nom)}
-                          variant="danger"
-                          size="sm"
-                          icon={<Trash2 className="w-4 h-4" />}
-                        >
-                          Supprimer
-                        </Button>
+                      )}
+                      <div>
+                        <h3 className="font-medium text-slate-900">{cat.nom}</h3>
+                        <p className="text-xs text-slate-500">Ordre: {cat.ordre}</p>
                       </div>
                     </div>
-                  </Card>
-                </motion.div>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => startEdit(cat)}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(cat.id, cat.nom)}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-500 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   )
 }

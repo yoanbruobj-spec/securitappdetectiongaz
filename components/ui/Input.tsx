@@ -1,11 +1,13 @@
-import { forwardRef, InputHTMLAttributes, useState } from 'react'
-import { motion } from 'framer-motion'
+'use client'
+
+import { forwardRef, InputHTMLAttributes } from 'react'
+import { cn } from '@/lib/utils'
+import { AlertCircle } from 'lucide-react'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
   icon?: React.ReactNode
-  variant?: 'default' | 'glass' | 'premium'
   helperText?: string
 }
 
@@ -14,133 +16,56 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     label,
     error,
     icon,
-    variant = 'glass',
     helperText,
     className = '',
     type = 'text',
     ...props
   }, ref) => {
-    const [isFocused, setIsFocused] = useState(false)
-    const hasValue = props.value !== undefined && props.value !== ''
-
-    const variantStyles = {
-      default: `
-        bg-white
-        border border-gray-200
-        focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
-      `,
-      glass: `
-        bg-white/60
-        backdrop-blur-xl
-        border border-gray-200/50
-        shadow-lg shadow-black/5
-        focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/30
-        focus:shadow-emerald-500/20 focus:shadow-xl
-        hover:border-gray-300
-        transition-all duration-300
-      `,
-      premium: `
-        bg-gradient-to-br from-white/80 to-gray-50/80
-        backdrop-blur-2xl
-        border-2 border-gray-200/80
-        shadow-2xl shadow-black/10
-        focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/30
-        focus:shadow-emerald-500/30 focus:shadow-2xl
-        hover:border-gray-300
-        hover:shadow-xl
-        transition-all duration-500
-      `
-    }
-
-    const iconWrapperStyles = {
-      default: 'text-gray-400',
-      glass: 'text-gray-500',
-      premium: 'text-emerald-600'
-    }
-
     return (
       <div className="w-full">
         {label && (
-          <motion.label
-            className="block text-sm font-semibold text-gray-700 mb-2"
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
-          </motion.label>
+          </label>
         )}
-        <motion.div
-          className="relative"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className="relative flex items-center">
-            {icon && (
-              <motion.div
-                className={`absolute left-4 ${iconWrapperStyles[variant]} transition-colors duration-300`}
-                animate={isFocused ? { scale: 1.1 } : { scale: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                {icon}
-              </motion.div>
-            )}
-            <input
-              ref={ref}
-              type={type}
-              className={`
-                w-full px-4 py-3.5
-                ${icon ? 'pl-12' : ''}
-                ${variantStyles[variant]}
-                rounded-xl
-                text-gray-900
-                placeholder:text-gray-400
-                disabled:opacity-50 disabled:cursor-not-allowed
-                ${error ? 'border-red-400 focus:border-red-500 focus:ring-red-500/30' : ''}
-                ${className}
-              `}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              {...props}
-            />
-            {/* Focus ring animation */}
-            {isFocused && variant === 'premium' && (
-              <motion.div
-                className="absolute inset-0 rounded-xl border-2 border-emerald-400 pointer-events-none"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-              />
-            )}
-          </div>
-        </motion.div>
 
-        {/* Helper text */}
+        <div className="relative">
+          {icon && (
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              {icon}
+            </div>
+          )}
+
+          <input
+            ref={ref}
+            type={type}
+            className={cn(
+              'w-full h-11 px-3 bg-white border border-slate-200 rounded-lg',
+              'text-slate-900 text-[15px] placeholder:text-slate-400',
+              'transition-all duration-150',
+              'hover:border-slate-300',
+              'focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20',
+              'disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed',
+              icon && 'pl-10',
+              error && 'border-red-300 focus:border-red-500 focus:ring-red-500/20',
+              className
+            )}
+            {...props}
+          />
+        </div>
+
         {helperText && !error && (
-          <motion.p
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-2 text-xs text-gray-500"
-          >
+          <p className="mt-1.5 text-sm text-slate-500">
             {helperText}
-          </motion.p>
+          </p>
         )}
 
-        {/* Error message */}
         {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-2 text-sm text-red-500 flex items-center gap-1"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
+          <p className="mt-1.5 text-sm text-red-500 flex items-center gap-1.5">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
             {error}
-          </motion.p>
+          </p>
         )}
       </div>
     )

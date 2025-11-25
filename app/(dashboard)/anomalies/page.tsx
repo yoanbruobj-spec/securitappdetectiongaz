@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
   AlertTriangle,
   FileText,
@@ -15,22 +14,17 @@ import {
   MapPin,
   Cpu,
   Filter,
-  Plus,
   Eye,
   Edit,
   X,
-  Search
+  Search,
+  ArrowLeft,
+  ChevronRight
 } from 'lucide-react'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { BottomNav } from '@/components/layout/BottomNav'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
-import { TextArea } from '@/components/ui/TextArea'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { useToast } from '@/components/ui/Toast'
-import { AnimatedBackground } from '@/components/backgrounds/AnimatedBackground'
-import { EditAnomalieModal } from '@/components/anomalies/EditAnomalieModal'
+import { cn } from '@/lib/utils'
 
 interface Anomalie {
   id: string
@@ -57,7 +51,6 @@ interface Anomalie {
   notes?: string
   created_at: string
   updated_at: string
-  // Relations
   clients?: { nom: string }
   sites?: { nom: string }
   centrales?: { modele: string; numero: number; type_equipement?: string }
@@ -90,9 +83,9 @@ export default function AnomaliesPage() {
     travaux_effectues: 0
   })
 
-  const [showModal, setShowModal] = useState(false)
+  const [showDetailModal, setShowDetailModal] = useState(false)
   const [selectedAnomalie, setSelectedAnomalie] = useState<Anomalie | null>(null)
-  const [showHistory, setShowHistory] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
 
   // Filtres
   const [searchTerm, setSearchTerm] = useState('')
@@ -102,7 +95,6 @@ export default function AnomaliesPage() {
 
   const router = useRouter()
   const supabase = createClient()
-  const { success, error: showError } = useToast()
 
   useEffect(() => {
     checkAuth()
@@ -140,7 +132,6 @@ export default function AnomaliesPage() {
 
     if (error) {
       console.error('Erreur chargement anomalies:', error)
-      showError('Erreur lors du chargement')
       return
     }
 
@@ -170,35 +161,36 @@ export default function AnomaliesPage() {
       .eq('id', id)
 
     if (error) {
-      showError('Erreur lors de la mise à jour')
+      alert('Erreur lors de la mise à jour')
       return
     }
 
-    success('Statut mis à jour')
     loadAnomalies()
   }
 
   function getStatutBadge(statut: Anomalie['statut']) {
-    const badges = {
-      devis_attente: <Badge variant="warning">En attente de devis</Badge>,
-      devis_etabli: <Badge variant="info">Devis établi</Badge>,
-      devis_soumis: <Badge variant="info">Devis soumis</Badge>,
-      attente_commande: <Badge variant="warning">Attente commande</Badge>,
-      commandé: <Badge variant="primary">Commandé</Badge>,
-      travaux_planifies: <Badge variant="success">Travaux planifiés</Badge>,
-      travaux_effectues: <Badge variant="default">Travaux effectués</Badge>
+    const config: Record<string, { variant: 'warning' | 'info' | 'success' | 'default' | 'danger'; label: string }> = {
+      devis_attente: { variant: 'warning', label: 'Devis en attente' },
+      devis_etabli: { variant: 'info', label: 'Devis établi' },
+      devis_soumis: { variant: 'info', label: 'Devis soumis' },
+      attente_commande: { variant: 'warning', label: 'Attente commande' },
+      commandé: { variant: 'info', label: 'Commandé' },
+      travaux_planifies: { variant: 'success', label: 'Travaux planifiés' },
+      travaux_effectues: { variant: 'default', label: 'Travaux effectués' }
     }
-    return badges[statut]
+    const { variant, label } = config[statut] || { variant: 'default', label: statut }
+    return <Badge variant={variant} size="sm">{label}</Badge>
   }
 
   function getPrioriteBadge(priorite: Anomalie['priorite']) {
-    const badges = {
-      basse: <Badge variant="default" size="sm">Basse</Badge>,
-      moyenne: <Badge variant="info" size="sm">Moyenne</Badge>,
-      haute: <Badge variant="warning" size="sm">Haute</Badge>,
-      critique: <Badge variant="danger" size="sm">🔴 Critique</Badge>
+    const config: Record<string, { variant: 'default' | 'info' | 'warning' | 'danger'; label: string }> = {
+      basse: { variant: 'default', label: 'Basse' },
+      moyenne: { variant: 'info', label: 'Moyenne' },
+      haute: { variant: 'warning', label: 'Haute' },
+      critique: { variant: 'danger', label: 'Critique' }
     }
-    return badges[priorite]
+    const { variant, label } = config[priorite] || { variant: 'default', label: priorite }
+    return <Badge variant={variant} size="sm">{label}</Badge>
   }
 
   function getAllStatuts() {
@@ -216,9 +208,9 @@ export default function AnomaliesPage() {
   // Filtrage
   const anomaliesFiltrees = anomalies.filter(anomalie => {
     const matchSearch = searchTerm === '' ||
-      anomalie.clients?.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      anomalie.sites?.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      anomalie.description_anomalie.toLowerCase().includes(searchTerm.toLowerCase())
+      anomalie.clients?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      anomalie.sites?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      anomalie.description_anomalie?.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchStatut = filterStatut === 'all' || anomalie.statut === filterStatut
     const matchClient = filterClient === 'all' || anomalie.clients?.nom === filterClient
@@ -237,361 +229,432 @@ export default function AnomaliesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen lg:flex relative overflow-hidden">
-      <AnimatedBackground />
+    <div className="min-h-screen bg-slate-50 lg:flex">
       <Sidebar
         userRole={profile?.role || 'technicien'}
         userName={profile?.full_name}
         onLogout={handleLogout}
       />
 
-      <div className="min-h-screen lg:flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 pb-24 lg:pb-0">
         {/* Header */}
-        <header className="glass-strong border-b border-white/20 px-3 sm:px-4 lg:px-8 py-2 sm:py-3 lg:py-6 sticky top-0 z-20 shadow-lg mt-16 lg:mt-0">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0"
-          >
-            <div>
-              <h1 className="text-base sm:text-2xl lg:text-4xl font-black text-gradient drop-shadow-lg flex items-center gap-3">
-                <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10" />
-                Suivi des Anomalies
-              </h1>
-              <p className="text-xs sm:text-sm lg:text-base text-gray-700 mt-0.5 sm:mt-2 font-medium">
-                Gestion complète du workflow des anomalies
-              </p>
+        <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+          <div className="px-4 py-4 lg:px-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => router.push(profile?.role === 'admin' ? '/admin' : '/technicien')}
+                  className="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100"
+                >
+                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                <div>
+                  <h1 className="text-xl lg:text-2xl font-bold text-slate-900">Suivi des Anomalies</h1>
+                  <p className="text-sm text-slate-500 hidden lg:block">{anomaliesFiltrees.length} anomalie(s)</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn(
+                  'h-10 px-4 border rounded-lg font-medium flex items-center gap-2 transition-colors',
+                  showFilters || filterStatut !== 'all' || filterPriorite !== 'all'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                )}
+              >
+                <Filter className="w-5 h-5" />
+                <span className="hidden sm:inline">Filtrer</span>
+              </button>
             </div>
-          </motion.div>
-        </header>
 
-        <main className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-10">
-          {/* Stats Cards - Workflow complet */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="glass-strong rounded-2xl p-4 shadow-xl ring-2 ring-orange-300/30 cursor-pointer"
-              onClick={() => setFilterStatut('devis_attente')}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 mb-1">Devis en attente</p>
-              <p className="text-2xl font-black text-gray-900">{stats.devis_attente}</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="glass-strong rounded-2xl p-4 shadow-xl ring-2 ring-blue-300/30 cursor-pointer"
-              onClick={() => setFilterStatut('devis_etabli')}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 mb-1">Devis établi</p>
-              <p className="text-2xl font-black text-gray-900">{stats.devis_etabli}</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="glass-strong rounded-2xl p-4 shadow-xl ring-2 ring-cyan-300/30 cursor-pointer"
-              onClick={() => setFilterStatut('commandé')}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
-                  <ShoppingCart className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 mb-1">Commandé</p>
-              <p className="text-2xl font-black text-gray-900">{stats.commandé}</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="glass-strong rounded-2xl p-4 shadow-xl ring-2 ring-emerald-300/30 cursor-pointer"
-              onClick={() => setFilterStatut('travaux_effectues')}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 mb-1">Travaux effectués</p>
-              <p className="text-2xl font-black text-gray-900">{stats.travaux_effectues}</p>
-            </motion.div>
-          </div>
-
-          {/* Filtres */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-strong rounded-2xl p-4 sm:p-6 shadow-xl mb-6"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="lg:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="Rechercher..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              <Select
-                value={filterStatut}
-                onChange={(e) => setFilterStatut(e.target.value)}
-              >
-                <option value="all">Tous les statuts</option>
-                <option value="devis_attente">Devis en attente</option>
-                <option value="devis_etabli">Devis établi</option>
-                <option value="devis_soumis">Devis soumis</option>
-                <option value="attente_commande">Attente commande</option>
-                <option value="commandé">Commandé</option>
-                <option value="travaux_planifies">Travaux planifiés</option>
-                <option value="travaux_effectues">Travaux effectués</option>
-              </Select>
-
-              <Select
-                value={filterClient}
-                onChange={(e) => setFilterClient(e.target.value)}
-              >
-                <option value="all">Tous les clients</option>
-                {clients.map(client => (
-                  <option key={client} value={client}>{client}</option>
-                ))}
-              </Select>
-
-              <Select
-                value={filterPriorite}
-                onChange={(e) => setFilterPriorite(e.target.value)}
-              >
-                <option value="all">Toutes priorités</option>
-                <option value="critique">🔴 Critique</option>
-                <option value="haute">Haute</option>
-                <option value="moyenne">Moyenne</option>
-                <option value="basse">Basse</option>
-              </Select>
-            </div>
-          </motion.div>
-
-          {/* Liste des anomalies */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-strong rounded-2xl p-4 sm:p-6 shadow-xl"
-          >
-            {anomaliesFiltrees.length === 0 ? (
-              <EmptyState
-                icon={AlertTriangle}
-                title="Aucune anomalie"
-                description="Les anomalies signalées apparaîtront ici"
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Rechercher..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-11 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               />
-            ) : (
-              <div className="space-y-4">
-                {anomaliesFiltrees.map((anomalie, index) => (
-                  <motion.div
-                    key={anomalie.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.02 }}
-                    className="glass rounded-xl p-4 sm:p-6 ring-1 ring-gray-300/30 hover:ring-emerald-400/50 hover:shadow-xl transition-all"
-                  >
-                    {/* En-tête */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Building2 className="w-4 h-4 text-gray-400" />
-                          <span className="font-bold text-lg">{anomalie.clients?.nom}</span>
-                          <MapPin className="w-4 h-4 text-gray-400 ml-2" />
-                          <span className="text-gray-600">{anomalie.sites?.nom}</span>
-                        </div>
-                        {anomalie.centrales && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Cpu className="w-4 h-4" />
-                            <span>
-                              {anomalie.centrales.type_equipement === 'automate' ? 'Automate' : 'Centrale'} {anomalie.centrales.numero} - {anomalie.centrales.modele}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {getPrioriteBadge(anomalie.priorite)}
-                        {getStatutBadge(anomalie.statut)}
-                      </div>
-                    </div>
+            </div>
 
-                    {/* Description */}
-                    <p className="text-gray-700 mb-4 line-clamp-2">
-                      {anomalie.description_anomalie}
-                    </p>
+            {/* Filters */}
+            {showFilters && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                <select
+                  value={filterStatut}
+                  onChange={(e) => setFilterStatut(e.target.value)}
+                  className="h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="all">Tous les statuts</option>
+                  {getAllStatuts().map(s => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
 
-                    {/* Infos et actions */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                        <span className="flex items-center gap-1">
-                          📅 {new Date(anomalie.date_constat).toLocaleDateString('fr-FR')}
-                        </span>
-                        {anomalie.montant_devis && (
-                          <span className="flex items-center gap-1 font-semibold text-emerald-600">
-                            <DollarSign className="w-4 h-4" />
-                            {anomalie.montant_devis.toLocaleString('fr-FR')} €
-                          </span>
-                        )}
-                        {anomalie.reference_devis && (
-                          <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                            Réf: {anomalie.reference_devis}
-                          </span>
-                        )}
-                      </div>
+                <select
+                  value={filterClient}
+                  onChange={(e) => setFilterClient(e.target.value)}
+                  className="h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="all">Tous les clients</option>
+                  {clients.map(client => (
+                    <option key={client} value={client}>{client}</option>
+                  ))}
+                </select>
 
-                      <div className="flex gap-2 items-center">
-                        <div className="flex-1">
-                          <select
-                            value={anomalie.statut}
-                            onChange={(e) => updateStatut(anomalie.id, e.target.value as Anomalie['statut'])}
-                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800"
-                          >
-                            {getAllStatuts().map(statut => (
-                              <option key={statut.value} value={statut.value}>
-                                {statut.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="primary"
-                          onClick={() => {
-                            setSelectedAnomalie(anomalie)
-                            setShowModal(true)
-                          }}
-                          title="Modifier l'anomalie"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => {
-                            setSelectedAnomalie(anomalie)
-                            setShowHistory(true)
-                          }}
-                          title="Voir l'historique"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                <select
+                  value={filterPriorite}
+                  onChange={(e) => setFilterPriorite(e.target.value)}
+                  className="h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="all">Toutes priorités</option>
+                  <option value="critique">Critique</option>
+                  <option value="haute">Haute</option>
+                  <option value="moyenne">Moyenne</option>
+                  <option value="basse">Basse</option>
+                </select>
               </div>
             )}
-          </motion.div>
-        </main>
-      </div>
+          </div>
+        </header>
 
-      {/* Modal Historique */}
-      <AnimatePresence>
-        {showHistory && selectedAnomalie && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowHistory(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="glass-strong rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+        <div className="px-4 py-4 lg:px-8 lg:py-6 space-y-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <button
+              onClick={() => setFilterStatut('devis_attente')}
+              className={cn(
+                "bg-white rounded-xl border p-4 text-left transition-all",
+                filterStatut === 'devis_attente'
+                  ? 'border-amber-300 ring-2 ring-amber-100'
+                  : 'border-slate-200 hover:border-slate-300'
+              )}
             >
-              <div className="flex justify-between items-start mb-6">
-                <h2 className="text-2xl font-black text-gradient">Détail de l'anomalie</h2>
-                <button
-                  onClick={() => setShowHistory(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+              <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center mb-3">
+                <Clock className="w-5 h-5 text-amber-500" />
               </div>
+              <p className="text-2xl font-bold text-slate-900">{stats.devis_attente}</p>
+              <p className="text-sm text-slate-500">Devis en attente</p>
+            </button>
 
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-1">Client / Site</p>
-                  <p className="text-lg font-bold">{selectedAnomalie.clients?.nom} - {selectedAnomalie.sites?.nom}</p>
-                </div>
+            <button
+              onClick={() => setFilterStatut('devis_etabli')}
+              className={cn(
+                "bg-white rounded-xl border p-4 text-left transition-all",
+                filterStatut === 'devis_etabli'
+                  ? 'border-blue-300 ring-2 ring-blue-100'
+                  : 'border-slate-200 hover:border-slate-300'
+              )}
+            >
+              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-3">
+                <FileText className="w-5 h-5 text-blue-500" />
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{stats.devis_etabli}</p>
+              <p className="text-sm text-slate-500">Devis établi</p>
+            </button>
 
-                <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-1">Description</p>
-                  <p className="text-gray-700">{selectedAnomalie.description_anomalie}</p>
-                </div>
+            <button
+              onClick={() => setFilterStatut('commandé')}
+              className={cn(
+                "bg-white rounded-xl border p-4 text-left transition-all",
+                filterStatut === 'commandé'
+                  ? 'border-cyan-300 ring-2 ring-cyan-100'
+                  : 'border-slate-200 hover:border-slate-300'
+              )}
+            >
+              <div className="w-10 h-10 bg-cyan-50 rounded-lg flex items-center justify-center mb-3">
+                <ShoppingCart className="w-5 h-5 text-cyan-500" />
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{stats.commandé}</p>
+              <p className="text-sm text-slate-500">Commandé</p>
+            </button>
 
-                {selectedAnomalie.notes && (
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600 mb-1">Notes</p>
-                    <p className="text-gray-700">{selectedAnomalie.notes}</p>
-                  </div>
-                )}
+            <button
+              onClick={() => setFilterStatut('travaux_effectues')}
+              className={cn(
+                "bg-white rounded-xl border p-4 text-left transition-all",
+                filterStatut === 'travaux_effectues'
+                  ? 'border-emerald-300 ring-2 ring-emerald-100'
+                  : 'border-slate-200 hover:border-slate-300'
+              )}
+            >
+              <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center mb-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{stats.travaux_effectues}</p>
+              <p className="text-sm text-slate-500">Terminé</p>
+            </button>
+          </div>
 
-                {selectedAnomalie.historique && selectedAnomalie.historique.length > 0 && (
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600 mb-3">Historique</p>
-                    <div className="space-y-2">
-                      {selectedAnomalie.historique.map((entry: any, idx: number) => (
-                        <div key={idx} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                          <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5"></div>
-                          <div className="flex-1">
-                            <p className="text-sm">
-                              <span className="font-semibold">{entry.ancien_statut}</span>
-                              {' → '}
-                              <span className="font-semibold text-emerald-600">{entry.nouveau_statut}</span>
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {new Date(entry.date).toLocaleString('fr-FR')}
-                            </p>
-                          </div>
+          {/* Active filter */}
+          {(filterStatut !== 'all' || filterPriorite !== 'all' || filterClient !== 'all') && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-slate-500">Filtres actifs :</span>
+              {filterStatut !== 'all' && (
+                <button
+                  onClick={() => setFilterStatut('all')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-sm font-medium"
+                >
+                  {getAllStatuts().find(s => s.value === filterStatut)?.label}
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {filterPriorite !== 'all' && (
+                <button
+                  onClick={() => setFilterPriorite('all')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-sm font-medium"
+                >
+                  Priorité: {filterPriorite}
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {filterClient !== 'all' && (
+                <button
+                  onClick={() => setFilterClient('all')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-sm font-medium"
+                >
+                  {filterClient}
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Anomalies List */}
+          {anomaliesFiltrees.length === 0 ? (
+            <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Aucune anomalie</h3>
+              <p className="text-slate-500">Les anomalies signalées apparaîtront ici</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {anomaliesFiltrees.map((anomalie) => (
+                <div
+                  key={anomalie.id}
+                  className="bg-white rounded-xl border border-slate-200 p-4 hover:border-slate-300 transition-colors"
+                >
+                  {/* Header */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                        <span className="font-semibold text-slate-900 truncate">{anomalie.clients?.nom}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-slate-500">
+                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="truncate">{anomalie.sites?.nom}</span>
+                      </div>
+                      {anomalie.centrales && (
+                        <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
+                          <Cpu className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span>
+                            {anomalie.centrales.type_equipement === 'automate' ? 'Automate' : 'Centrale'} {anomalie.centrales.numero} - {anomalie.centrales.modele}
+                          </span>
                         </div>
-                      ))}
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {getPrioriteBadge(anomalie.priorite)}
+                      {getStatutBadge(anomalie.statut)}
                     </div>
                   </div>
+
+                  {/* Description */}
+                  <p className="text-slate-700 text-sm mb-4 line-clamp-2">
+                    {anomalie.description_anomalie}
+                  </p>
+
+                  {/* Info & Actions */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-3 border-t border-slate-100">
+                    <div className="flex flex-wrap gap-4 text-sm text-slate-500">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        {new Date(anomalie.date_constat).toLocaleDateString('fr-FR')}
+                      </span>
+                      {anomalie.montant_devis && (
+                        <span className="flex items-center gap-1 font-semibold text-emerald-600">
+                          <DollarSign className="w-3.5 h-3.5" />
+                          {anomalie.montant_devis.toLocaleString('fr-FR')} €
+                        </span>
+                      )}
+                      {anomalie.reference_devis && (
+                        <span className="text-xs bg-slate-100 px-2 py-1 rounded">
+                          Réf: {anomalie.reference_devis}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 items-center w-full sm:w-auto">
+                      <select
+                        value={anomalie.statut}
+                        onChange={(e) => updateStatut(anomalie.id, e.target.value as Anomalie['statut'])}
+                        className="flex-1 sm:flex-none h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-emerald-500"
+                      >
+                        {getAllStatuts().map(statut => (
+                          <option key={statut.value} value={statut.value}>
+                            {statut.label}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => {
+                          setSelectedAnomalie(anomalie)
+                          setShowDetailModal(true)
+                        }}
+                        className="h-9 w-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                        title="Voir détails"
+                      >
+                        <Eye className="w-4 h-4 text-slate-600" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <BottomNav userRole={profile?.role || 'technicien'} />
+
+      {/* Detail Modal */}
+      {showDetailModal && selectedAnomalie && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 sticky top-0 bg-white">
+              <h2 className="text-lg font-bold text-slate-900">Détail de l'anomalie</h2>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Client / Site */}
+              <div>
+                <p className="text-sm font-medium text-slate-500 mb-1">Client / Site</p>
+                <p className="text-lg font-semibold text-slate-900">
+                  {selectedAnomalie.clients?.nom} - {selectedAnomalie.sites?.nom}
+                </p>
+              </div>
+
+              {/* Badges */}
+              <div className="flex flex-wrap gap-2">
+                {getPrioriteBadge(selectedAnomalie.priorite)}
+                {getStatutBadge(selectedAnomalie.statut)}
+              </div>
+
+              {/* Description */}
+              <div>
+                <p className="text-sm font-medium text-slate-500 mb-1">Description</p>
+                <p className="text-slate-700">{selectedAnomalie.description_anomalie}</p>
+              </div>
+
+              {/* Devis info */}
+              {(selectedAnomalie.montant_devis || selectedAnomalie.reference_devis) && (
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <p className="text-sm font-medium text-slate-500 mb-2">Informations devis</p>
+                  {selectedAnomalie.reference_devis && (
+                    <p className="text-slate-700">Référence: {selectedAnomalie.reference_devis}</p>
+                  )}
+                  {selectedAnomalie.montant_devis && (
+                    <p className="text-lg font-bold text-emerald-600">{selectedAnomalie.montant_devis.toLocaleString('fr-FR')} €</p>
+                  )}
+                </div>
+              )}
+
+              {/* Notes */}
+              {selectedAnomalie.notes && (
+                <div>
+                  <p className="text-sm font-medium text-slate-500 mb-1">Notes</p>
+                  <p className="text-slate-700">{selectedAnomalie.notes}</p>
+                </div>
+              )}
+
+              {/* Historique */}
+              {selectedAnomalie.historique && selectedAnomalie.historique.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-slate-500 mb-3">Historique</p>
+                  <div className="space-y-2">
+                    {selectedAnomalie.historique.map((entry: any, idx: number) => (
+                      <div key={idx} className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-slate-700">
+                            <span className="font-medium">{entry.ancien_statut}</span>
+                            {' → '}
+                            <span className="font-medium text-emerald-600">{entry.nouveau_statut}</span>
+                          </p>
+                          <p className="text-xs text-slate-400 mt-1">
+                            {new Date(entry.date).toLocaleString('fr-FR')}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Dates */}
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                <div>
+                  <p className="text-xs text-slate-400">Date de constat</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {new Date(selectedAnomalie.date_constat).toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+                {selectedAnomalie.date_devis && (
+                  <div>
+                    <p className="text-xs text-slate-400">Date devis</p>
+                    <p className="text-sm font-medium text-slate-900">
+                      {new Date(selectedAnomalie.date_devis).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
+                )}
+                {selectedAnomalie.date_commande && (
+                  <div>
+                    <p className="text-xs text-slate-400">Date commande</p>
+                    <p className="text-sm font-medium text-slate-900">
+                      {new Date(selectedAnomalie.date_commande).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
+                )}
+                {selectedAnomalie.date_travaux_effectues && (
+                  <div>
+                    <p className="text-xs text-slate-400">Travaux effectués</p>
+                    <p className="text-sm font-medium text-slate-900">
+                      {new Date(selectedAnomalie.date_travaux_effectues).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
                 )}
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
 
-      {/* Modal Édition */}
-      <EditAnomalieModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        anomalie={selectedAnomalie}
-        onSuccess={loadAnomalies}
-      />
+            <div className="px-6 py-4 border-t border-slate-200">
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="w-full h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

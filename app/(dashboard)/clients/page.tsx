@@ -3,6 +3,25 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import {
+  ArrowLeft,
+  Building2,
+  MapPin,
+  Plus,
+  Trash2,
+  ChevronDown,
+  ChevronRight,
+  Phone,
+  Mail,
+  Calendar,
+  X,
+  Search,
+  FileText
+} from 'lucide-react'
+import { Sidebar } from '@/components/layout/Sidebar'
+import { BottomNav } from '@/components/layout/BottomNav'
+import { Badge } from '@/components/ui/Badge'
+import { cn } from '@/lib/utils'
 
 interface Client {
   id: string
@@ -29,12 +48,13 @@ interface Intervention {
   date_intervention: string
   type: string
   statut: string
+  type_rapport?: string
 }
 
 export default function ClientsPage() {
   const router = useRouter()
   const supabase = createClient()
-  
+
   const [clients, setClients] = useState<Client[]>([])
   const [sites, setSites] = useState<{ [key: string]: Site[] }>({})
   const [interventions, setInterventions] = useState<{ [key: string]: Intervention[] }>({})
@@ -45,7 +65,9 @@ export default function ClientsPage() {
   const [expandedClients, setExpandedClients] = useState<Set<string>>(new Set())
   const [expandedSites, setExpandedSites] = useState<Set<string>>(new Set())
   const [userRole, setUserRole] = useState<string | null>(null)
-  
+  const [profile, setProfile] = useState<any>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+
   const [clientForm, setClientForm] = useState({
     nom: '',
     adresse_siege: '',
@@ -54,7 +76,7 @@ export default function ClientsPage() {
     telephone: '',
     email: '',
   })
-  
+
   const [siteForm, setSiteForm] = useState({
     nom: '',
     adresse: '',
@@ -74,14 +96,15 @@ export default function ClientsPage() {
       return
     }
 
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from('profiles')
-      .select('role')
+      .select('*')
       .eq('id', user.id)
       .single()
 
-    if (profile) {
-      setUserRole(profile.role)
+    if (profileData) {
+      setUserRole(profileData.role)
+      setProfile(profileData)
     }
   }
 
@@ -91,7 +114,7 @@ export default function ClientsPage() {
       .from('clients')
       .select('*')
       .order('nom')
-    
+
     if (data) {
       setClients(data)
       data.forEach(client => loadSites(client.id))
@@ -105,7 +128,7 @@ export default function ClientsPage() {
       .select('*')
       .eq('client_id', clientId)
       .order('nom')
-    
+
     if (data) {
       setSites(prev => ({ ...prev, [clientId]: data }))
       data.forEach(site => loadInterventions(site.id))
@@ -115,13 +138,23 @@ export default function ClientsPage() {
   async function loadInterventions(siteId: string) {
     const { data } = await supabase
       .from('interventions')
-      .select('id, date_intervention, type, statut')
+      .select('id, date_intervention, type, statut, type_rapport')
       .eq('site_id', siteId)
       .order('date_intervention', { ascending: false })
-    
+
     if (data) {
       setInterventions(prev => ({ ...prev, [siteId]: data }))
     }
+  }
+
+  function toggleClient(clientId: string) {
+    const newExpanded = new Set(expandedClients)
+    if (newExpanded.has(clientId)) {
+      newExpanded.delete(clientId)
+    } else {
+      newExpanded.add(clientId)
+    }
+    setExpandedClients(newExpanded)
   }
 
   function toggleSite(siteId: string) {
@@ -137,7 +170,7 @@ export default function ClientsPage() {
   async function handleSaveClient() {
     if (!clientForm.nom) return
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('clients')
       .insert([clientForm])
 
@@ -154,7 +187,7 @@ export default function ClientsPage() {
   async function handleSaveSite() {
     if (!siteForm.nom || !selectedClientId) return
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('sites')
       .insert([{ ...siteForm, client_id: selectedClientId }])
 
@@ -195,260 +228,357 @@ export default function ClientsPage() {
     }
   }
 
-  function toggleClient(clientId: string) {
-    const newExpanded = new Set(expandedClients)
-    if (newExpanded.has(clientId)) {
-      newExpanded.delete(clientId)
-    } else {
-      newExpanded.add(clientId)
-    }
-    setExpandedClients(newExpanded)
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push('/login')
   }
+
+  // Filter clients
+  const filteredClients = clients.filter(client => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      client.nom.toLowerCase().includes(query) ||
+      client.ville?.toLowerCase().includes(query) ||
+      client.email?.toLowerCase().includes(query)
+    )
+  })
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">
-        <div className="text-slate-800">Chargement...</div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 text-slate-800">
-      <nav className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/admin')}
-              className="text-slate-600 hover:text-slate-800"
-            >
-              ← Retour
-            </button>
-            <h1 className="text-xl font-bold">Gestion des clients</h1>
-          </div>
-          <button
-            onClick={() => setShowClientModal(true)}
-            className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white rounded-lg"
-          >
-            + Nouveau client
-          </button>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-slate-50 lg:flex">
+      <Sidebar userRole={userRole as any} userName={profile?.full_name} onLogout={handleLogout} />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {clients.length === 0 ? (
-          <div className="text-center py-12 text-slate-600">
-            Aucun client. Cliquez sur "Nouveau client" pour commencer.
+      <main className="flex-1 pb-24 lg:pb-0">
+        {/* Header */}
+        <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+          <div className="px-4 py-4 lg:px-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => router.push(userRole === 'admin' ? '/admin' : '/technicien')}
+                  className="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100"
+                >
+                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                <div>
+                  <h1 className="text-xl lg:text-2xl font-bold text-slate-900">Clients</h1>
+                  <p className="text-sm text-slate-500 hidden lg:block">{clients.length} client(s)</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowClientModal(true)}
+                className="h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                <span className="hidden sm:inline">Nouveau client</span>
+              </button>
+            </div>
+
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Rechercher un client..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-11 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              />
+            </div>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {clients.map(client => (
-              <div key={client.id} className="bg-white border border-gray-200 rounded-lg shadow-sm">
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    <button
-                      onClick={() => toggleClient(client.id)}
-                      className="text-slate-600 hover:text-slate-800"
-                    >
-                      <svg className={`w-5 h-5 transition-transform ${expandedClients.has(client.id) ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{client.nom}</h3>
-                      <p className="text-sm text-slate-600">
-                        {client.adresse_siege}, {client.code_postal} {client.ville}
-                      </p>
-                      <p className="text-sm text-slate-600">
-                        {client.telephone} • {client.email}
+        </header>
+
+        <div className="px-4 py-4 lg:px-8 lg:py-6">
+          {filteredClients.length === 0 ? (
+            <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Building2 className="w-8 h-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Aucun client</h3>
+              <p className="text-slate-500 mb-6">
+                {searchQuery ? 'Aucun résultat pour votre recherche' : 'Créez votre premier client'}
+              </p>
+              {!searchQuery && (
+                <button
+                  onClick={() => setShowClientModal(true)}
+                  className="inline-flex items-center gap-2 h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                  Nouveau client
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredClients.map(client => (
+                <div key={client.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                  {/* Client Header */}
+                  <div
+                    onClick={() => toggleClient(client.id)}
+                    className="w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 transition-colors text-left cursor-pointer"
+                  >
+                    <div className={cn(
+                      'w-10 h-10 rounded-lg flex items-center justify-center transition-transform',
+                      expandedClients.has(client.id) ? 'bg-emerald-50' : 'bg-slate-100'
+                    )}>
+                      {expandedClients.has(client.id) ? (
+                        <ChevronDown className="w-5 h-5 text-emerald-500" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-slate-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-emerald-500" />
+                        <h3 className="font-semibold text-slate-900 truncate">{client.nom}</h3>
+                      </div>
+                      <p className="text-sm text-slate-500 flex items-center gap-1 mt-0.5">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {client.adresse_siege ? `${client.adresse_siege}, ` : ''}{client.code_postal} {client.ville}
                       </p>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedClientId(client.id)
-                        setShowSiteModal(true)
-                      }}
-                      className="px-3 py-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded text-sm"
-                    >
-                      + Ajouter site
-                    </button>
-                    {userRole === 'admin' && (
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <Badge variant="info" size="sm">
+                        {sites[client.id]?.length || 0} site(s)
+                      </Badge>
                       <button
-                        onClick={() => handleDeleteClient(client.id)}
-                        className="px-3 py-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded text-sm"
+                        onClick={() => {
+                          setSelectedClientId(client.id)
+                          setShowSiteModal(true)
+                        }}
+                        className="h-8 w-8 flex items-center justify-center text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors"
                       >
-                        Supprimer
+                        <Plus className="w-4 h-4" />
                       </button>
-                    )}
+                      {userRole === 'admin' && (
+                        <button
+                          onClick={() => handleDeleteClient(client.id)}
+                          className="h-8 w-8 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {expandedClients.has(client.id) && sites[client.id] && (
-                  <div className="border-t border-gray-200 p-4 bg-gray-50">
-                    <h4 className="font-semibold mb-3">Sites ({sites[client.id]?.length || 0})</h4>
-                    {sites[client.id]?.length === 0 ? (
-                      <p className="text-slate-600 text-sm">Aucun site</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {sites[client.id]?.map(site => (
-                          <div key={site.id} className="bg-white border border-gray-200 rounded">
-                            <div className="p-3 flex items-center justify-between">
-                              <div className="flex items-center gap-3 flex-1">
-                                <button
-                                  onClick={() => toggleSite(site.id)}
-                                  className="text-slate-600 hover:text-slate-800"
-                                >
-                                  <svg className={`w-4 h-4 transition-transform ${expandedSites.has(site.id) ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                  </svg>
-                                </button>
-                                <div>
-                                  <p className="font-medium">{site.nom}</p>
-                                  <p className="text-sm text-slate-600">
+                  {/* Client Contact Info */}
+                  {expandedClients.has(client.id) && (
+                    <div className="px-4 pb-2">
+                      <div className="flex flex-wrap gap-4 text-sm text-slate-500 pl-13">
+                        {client.telephone && (
+                          <span className="flex items-center gap-1">
+                            <Phone className="w-3.5 h-3.5" />
+                            {client.telephone}
+                          </span>
+                        )}
+                        {client.email && (
+                          <span className="flex items-center gap-1">
+                            <Mail className="w-3.5 h-3.5" />
+                            {client.email}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sites */}
+                  {expandedClients.has(client.id) && sites[client.id] && (
+                    <div className="border-t border-slate-100 bg-slate-50/50">
+                      {sites[client.id].length === 0 ? (
+                        <div className="px-4 py-6 text-center text-slate-500 text-sm">
+                          Aucun site pour ce client
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-slate-100">
+                          {sites[client.id].map(site => (
+                            <div key={site.id}>
+                              <button
+                                onClick={() => toggleSite(site.id)}
+                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white transition-colors text-left"
+                              >
+                                <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center ml-6">
+                                  {expandedSites.has(site.id) ? (
+                                    <ChevronDown className="w-4 h-4 text-slate-400" />
+                                  ) : (
+                                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-slate-900">{site.nom}</p>
+                                  <p className="text-sm text-slate-500">
                                     {site.adresse}, {site.code_postal} {site.ville}
                                   </p>
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-slate-600">
-                                  {interventions[site.id]?.length || 0} intervention(s)
-                                </span>
-                                {userRole === 'admin' && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleDeleteSite(site.id, client.id)
-                                    }}
-                                    className="px-3 py-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded text-sm"
-                                  >
-                                    Supprimer
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                            
-                            {expandedSites.has(site.id) && interventions[site.id] && (
-                              <div className="border-t border-gray-200 p-3 bg-gray-50">
-                                <h5 className="text-sm font-semibold mb-2">Interventions</h5>
-                                {interventions[site.id]?.length === 0 ? (
-                                  <p className="text-slate-600 text-xs">Aucune intervention</p>
-                                ) : (
-                                  <div className="space-y-2">
-                                    {interventions[site.id]?.map(intervention => (
-                                      <div 
-                                        key={intervention.id} 
-                                        className="bg-white border border-gray-200 rounded p-2 cursor-pointer hover:bg-gray-50 transition"
-                                        onClick={() => router.push(`/intervention/${intervention.id}`)}
-                                      >
-                                        <div className="flex justify-between items-center">
-                                          <div>
-                                            <p className="text-sm">{new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}</p>
-                                            <p className="text-xs text-slate-600 capitalize">{intervention.type?.replace(/_/g, ' ')}</p>
+                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                  <span className="text-xs text-slate-400">
+                                    {interventions[site.id]?.length || 0} intervention(s)
+                                  </span>
+                                  {userRole === 'admin' && (
+                                    <button
+                                      onClick={() => handleDeleteSite(site.id, client.id)}
+                                      className="h-7 w-7 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                              </button>
+
+                              {/* Interventions */}
+                              {expandedSites.has(site.id) && interventions[site.id] && (
+                                <div className="bg-white border-t border-slate-100 px-4 py-3 ml-14">
+                                  {interventions[site.id].length === 0 ? (
+                                    <p className="text-sm text-slate-400">Aucune intervention</p>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      {interventions[site.id].map(intervention => (
+                                        <button
+                                          key={intervention.id}
+                                          onClick={() => {
+                                            const path = intervention.type_rapport === 'portable'
+                                              ? `/intervention-portable/${intervention.id}`
+                                              : `/intervention/${intervention.id}`
+                                            router.push(path)
+                                          }}
+                                          className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left"
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <FileText className="w-4 h-4 text-slate-400" />
+                                            <div>
+                                              <p className="text-sm font-medium text-slate-900">
+                                                {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
+                                              </p>
+                                              <p className="text-xs text-slate-500 capitalize">
+                                                {intervention.type?.replace(/_/g, ' ')}
+                                              </p>
+                                            </div>
                                           </div>
-                                          <span className={`px-2 py-1 rounded text-xs ${
-                                            intervention.statut === 'terminee' ? 'bg-green-100 text-green-700 border border-green-200' :
-                                            intervention.statut === 'en_cours' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                            intervention.statut === 'planifiee' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
-                                            'bg-gray-100 text-gray-700 border border-gray-200'
-                                          }`}>
-                                            {intervention.statut}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                                          <Badge
+                                            variant={
+                                              intervention.statut === 'terminee' ? 'success' :
+                                              intervention.statut === 'en_cours' ? 'info' : 'warning'
+                                            }
+                                            size="sm"
+                                          >
+                                            {intervention.statut === 'terminee' ? 'Terminée' :
+                                             intervention.statut === 'en_cours' ? 'En cours' : 'Planifiée'}
+                                          </Badge>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
 
+      <BottomNav userRole={userRole as any} />
+
+      {/* Modal Nouveau Client */}
       {showClientModal && (
-        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl">
-            <h2 className="text-xl font-bold mb-4">Nouveau client</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm mb-1">Nom *</label>
-                <input
-                  type="text"
-                  value={clientForm.nom}
-                  onChange={e => setClientForm({ ...clientForm, nom: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800"
-                />
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Adresse</label>
-                <input
-                  type="text"
-                  value={clientForm.adresse_siege}
-                  onChange={e => setClientForm({ ...clientForm, adresse_siege: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm mb-1">Code postal</label>
-                  <input
-                    type="text"
-                    value={clientForm.code_postal}
-                    onChange={e => setClientForm({ ...clientForm, code_postal: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm mb-1">Ville</label>
-                  <input
-                    type="text"
-                    value={clientForm.ville}
-                    onChange={e => setClientForm({ ...clientForm, ville: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Téléphone</label>
-                <input
-                  type="tel"
-                  value={clientForm.telephone}
-                  onChange={e => setClientForm({ ...clientForm, telephone: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800"
-                />
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Email</label>
-                <input
-                  type="email"
-                  value={clientForm.email}
-                  onChange={e => setClientForm({ ...clientForm, email: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800"
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <h2 className="text-lg font-bold text-slate-900">Nouveau client</h2>
               <button
                 onClick={() => {
                   setShowClientModal(false)
                   setClientForm({ nom: '', adresse_siege: '', ville: '', code_postal: '', telephone: '', email: '' })
                 }}
-                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-slate-800 rounded-lg"
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Nom *</label>
+                <input
+                  type="text"
+                  value={clientForm.nom}
+                  onChange={e => setClientForm({ ...clientForm, nom: e.target.value })}
+                  className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Adresse</label>
+                <input
+                  type="text"
+                  value={clientForm.adresse_siege}
+                  onChange={e => setClientForm({ ...clientForm, adresse_siege: e.target.value })}
+                  className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Code postal</label>
+                  <input
+                    type="text"
+                    value={clientForm.code_postal}
+                    onChange={e => setClientForm({ ...clientForm, code_postal: e.target.value })}
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Ville</label>
+                  <input
+                    type="text"
+                    value={clientForm.ville}
+                    onChange={e => setClientForm({ ...clientForm, ville: e.target.value })}
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Téléphone</label>
+                <input
+                  type="tel"
+                  value={clientForm.telephone}
+                  onChange={e => setClientForm({ ...clientForm, telephone: e.target.value })}
+                  className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={clientForm.email}
+                  onChange={e => setClientForm({ ...clientForm, email: e.target.value })}
+                  className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 py-4 border-t border-slate-200">
+              <button
+                onClick={() => {
+                  setShowClientModal(false)
+                  setClientForm({ nom: '', adresse_siege: '', ville: '', code_postal: '', telephone: '', email: '' })
+                }}
+                className="flex-1 h-11 border border-slate-200 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors"
               >
                 Annuler
               </button>
               <button
                 onClick={handleSaveClient}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white rounded-lg"
+                className="flex-1 h-11 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors"
               >
                 Enregistrer
               </button>
@@ -457,64 +587,77 @@ export default function ClientsPage() {
         </div>
       )}
 
+      {/* Modal Nouveau Site */}
       {showSiteModal && (
-        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl">
-            <h2 className="text-xl font-bold mb-4">Nouveau site</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm mb-1">Nom du site *</label>
-                <input
-                  type="text"
-                  value={siteForm.nom}
-                  onChange={e => setSiteForm({ ...siteForm, nom: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800"
-                />
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Adresse</label>
-                <input
-                  type="text"
-                  value={siteForm.adresse}
-                  onChange={e => setSiteForm({ ...siteForm, adresse: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm mb-1">Code postal</label>
-                  <input
-                    type="text"
-                    value={siteForm.code_postal}
-                    onChange={e => setSiteForm({ ...siteForm, code_postal: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm mb-1">Ville</label>
-                  <input
-                    type="text"
-                    value={siteForm.ville}
-                    onChange={e => setSiteForm({ ...siteForm, ville: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <h2 className="text-lg font-bold text-slate-900">Nouveau site</h2>
               <button
                 onClick={() => {
                   setShowSiteModal(false)
                   setSiteForm({ nom: '', adresse: '', ville: '', code_postal: '' })
                   setSelectedClientId(null)
                 }}
-                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-slate-800 rounded-lg"
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Nom du site *</label>
+                <input
+                  type="text"
+                  value={siteForm.nom}
+                  onChange={e => setSiteForm({ ...siteForm, nom: e.target.value })}
+                  className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Adresse</label>
+                <input
+                  type="text"
+                  value={siteForm.adresse}
+                  onChange={e => setSiteForm({ ...siteForm, adresse: e.target.value })}
+                  className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Code postal</label>
+                  <input
+                    type="text"
+                    value={siteForm.code_postal}
+                    onChange={e => setSiteForm({ ...siteForm, code_postal: e.target.value })}
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Ville</label>
+                  <input
+                    type="text"
+                    value={siteForm.ville}
+                    onChange={e => setSiteForm({ ...siteForm, ville: e.target.value })}
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 py-4 border-t border-slate-200">
+              <button
+                onClick={() => {
+                  setShowSiteModal(false)
+                  setSiteForm({ nom: '', adresse: '', ville: '', code_postal: '' })
+                  setSelectedClientId(null)
+                }}
+                className="flex-1 h-11 border border-slate-200 rounded-lg font-medium text-slate-600 hover:bg-slate-50 transition-colors"
               >
                 Annuler
               </button>
               <button
                 onClick={handleSaveSite}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white rounded-lg"
+                className="flex-1 h-11 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors"
               >
                 Enregistrer
               </button>

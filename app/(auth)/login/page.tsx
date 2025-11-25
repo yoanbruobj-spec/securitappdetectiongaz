@@ -3,12 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { motion } from 'framer-motion'
-import { Mail, Lock } from 'lucide-react'
+import { Mail, Lock, Loader2 } from 'lucide-react'
 import Image from 'next/image'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Card } from '@/components/ui/Card'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -22,7 +18,7 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    
+
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -30,27 +26,24 @@ export default function LoginPage() {
       })
 
       if (signInError) {
-        console.error('Erreur de connexion:', signInError)
-        setError(signInError.message)
+        setError('Email ou mot de passe incorrect')
         setLoading(false)
         return
       }
 
       if (data.user) {
-        // Récupérer le rôle de l'utilisateur
         const { data: profile } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', data.user.id)
           .single()
 
-        // Rediriger selon le rôle
         if (profile?.role === 'admin') {
           router.push('/admin')
         } else {
           router.push('/technicien')
         }
-        
+
         router.refresh()
       }
     } catch (err) {
@@ -60,93 +53,107 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A0E1A] relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5" />
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Mobile Header with Logo */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+        {/* Logo */}
+        <div className="mb-8 bg-slate-900 px-6 py-4 rounded-2xl">
+          <Image
+            src="/logo-securit.png"
+            alt="SÉCUR'IT"
+            width={180}
+            height={48}
+            priority
+            className="h-12 w-auto"
+          />
+        </div>
 
-      <motion.div
-        className="w-full max-w-md px-6 relative z-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <motion.div
-          className="text-center mb-12"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-        >
-          <div className="inline-flex items-center justify-center mb-6">
-            <Image
-              src="/logo-securit.png"
-              alt="SÉCUR'IT Logo"
-              width={200}
-              height={50}
-              priority
-              className="drop-shadow-2xl"
-            />
-          </div>
-          <p className="text-slate-400 text-lg">Gestion des interventions de sécurité</p>
-        </motion.div>
+        {/* Welcome Text */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+            Bienvenue
+          </h1>
+          <p className="text-slate-500">
+            Connectez-vous pour accéder à votre espace
+          </p>
+        </div>
 
-        <Card variant="glass" padding="lg">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Login Form */}
+        <div className="w-full max-w-sm">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm"
-              >
+              <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm font-medium">
                 {error}
-              </motion.div>
+              </div>
             )}
 
-            <Input
-              type="email"
-              label="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              icon={<Mail className="w-5 h-5" />}
-              placeholder="nom@entreprise.com"
-              required
-              autoComplete="email"
-            />
+            {/* Email Input */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Email
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="nom@entreprise.com"
+                  required
+                  autoComplete="email"
+                  className="w-full h-12 pl-11 pr-4 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                />
+              </div>
+            </div>
 
-            <Input
-              type="password"
-              label="Mot de passe"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              icon={<Lock className="w-5 h-5" />}
-              placeholder="••••••••"
-              required
-              autoComplete="current-password"
-            />
+            {/* Password Input */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Mot de passe
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
+                  className="w-full h-12 pl-11 pr-4 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                />
+              </div>
+            </div>
 
-            <Button
+            {/* Submit Button */}
+            <button
               type="submit"
-              variant="primary"
-              size="lg"
-              loading={loading}
-              className="w-full mt-8"
+              disabled={loading}
+              className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors mt-6"
             >
-              Se connecter
-            </Button>
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Connexion...
+                </>
+              ) : (
+                'Se connecter'
+              )}
+            </button>
           </form>
-        </Card>
+        </div>
+      </div>
 
-        <motion.p
-          className="text-center text-slate-500 text-sm mt-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
+      {/* Footer */}
+      <div className="py-6 text-center">
+        <p className="text-sm text-slate-400">
           © 2025 SÉCUR'IT - Tous droits réservés
-        </motion.p>
-      </motion.div>
+        </p>
+      </div>
     </div>
   )
 }
