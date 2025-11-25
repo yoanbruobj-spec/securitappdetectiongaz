@@ -35,7 +35,8 @@ export default function PlanningPage() {
   const [draggedPlanning, setDraggedPlanning] = useState<any>(null)
   const [viewMode, setViewMode] = useState<'global' | 'par_technicien'>('global')
   const [selectedTechnicienFilter, setSelectedTechnicienFilter] = useState<string>('')
-  const [mobileView, setMobileView] = useState<'calendar' | 'list'>('calendar')
+  const [mobileView, setMobileView] = useState<'calendar' | 'list' | 'agenda'>('agenda')
+  const [selectedDay, setSelectedDay] = useState<Date>(new Date())
 
   const [formData, setFormData] = useState({
     client_id: '',
@@ -317,6 +318,7 @@ export default function PlanningPage() {
 
   const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
   const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+  const dayNamesShort = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
 
   const getStatusColor = (statut: string) => {
     switch(statut) {
@@ -325,6 +327,65 @@ export default function PlanningPage() {
       case 'annulee': return 'bg-red-50 border-l-4 border-red-500 text-red-700'
       default: return 'bg-slate-50 border-l-4 border-slate-500 text-slate-700'
     }
+  }
+
+  const getStatusDot = (statut: string) => {
+    switch(statut) {
+      case 'planifiee': return 'bg-blue-500'
+      case 'en_cours': return 'bg-amber-500'
+      case 'annulee': return 'bg-red-500'
+      default: return 'bg-slate-500'
+    }
+  }
+
+  const getTypeLabel = (type: string) => {
+    const types: Record<string, string> = {
+      verification_periodique: 'Vérification',
+      maintenance_preventive: 'Maintenance',
+      reparation: 'Réparation',
+      mise_en_service: 'Mise en service',
+      diagnostic: 'Diagnostic',
+      formation: 'Formation'
+    }
+    return types[type] || type
+  }
+
+  // Get days for the week view (mobile)
+  const getWeekDays = () => {
+    const startOfWeek = new Date(currentDate)
+    const day = startOfWeek.getDay()
+    startOfWeek.setDate(startOfWeek.getDate() - day)
+
+    const days = []
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startOfWeek)
+      d.setDate(startOfWeek.getDate() + i)
+      days.push(d)
+    }
+    return days
+  }
+
+  // Get upcoming interventions grouped by date
+  const getUpcomingGroupedByDate = () => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const upcoming = planningInterventions
+      .filter(p => {
+        const pDate = new Date(p.date_intervention)
+        pDate.setHours(0, 0, 0, 0)
+        return pDate >= today
+      })
+      .sort((a, b) => new Date(a.date_intervention).getTime() - new Date(b.date_intervention).getTime())
+
+    const grouped: Record<string, any[]> = {}
+    upcoming.forEach(p => {
+      if (!grouped[p.date_intervention]) {
+        grouped[p.date_intervention] = []
+      }
+      grouped[p.date_intervention].push(p)
+    })
+    return grouped
   }
 
   if (loading) {
@@ -437,30 +498,218 @@ export default function PlanningPage() {
           </div>
 
           {/* Mobile view switch */}
-          <div className="lg:hidden flex bg-slate-100 rounded-lg p-1 mb-4">
+          <div className="lg:hidden flex bg-slate-100 rounded-xl p-1 mb-4">
+            <button
+              onClick={() => setMobileView('agenda')}
+              className={cn(
+                'flex-1 px-3 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1.5',
+                mobileView === 'agenda' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-600'
+              )}
+            >
+              <List className="w-4 h-4" />
+              Agenda
+            </button>
             <button
               onClick={() => setMobileView('calendar')}
               className={cn(
-                'flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1.5',
+                'flex-1 px-3 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1.5',
                 mobileView === 'calendar' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-600'
               )}
             >
               <CalendarIcon className="w-4 h-4" />
-              Calendrier
-            </button>
-            <button
-              onClick={() => setMobileView('list')}
-              className={cn(
-                'flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1.5',
-                mobileView === 'list' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-600'
-              )}
-            >
-              <List className="w-4 h-4" />
-              Liste
+              Mois
             </button>
           </div>
 
-          {/* List view mobile */}
+          {/* Agenda view mobile - Premium style */}
+          {mobileView === 'agenda' && (
+            <div className="lg:hidden">
+              {/* Week strip */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-3 mb-4 shadow-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <button
+                    onClick={() => {
+                      const prev = new Date(selectedDay)
+                      prev.setDate(prev.getDate() - 7)
+                      setSelectedDay(prev)
+                      setCurrentDate(prev)
+                    }}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 active:bg-slate-200 transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-slate-600" />
+                  </button>
+                  <span className="text-sm font-semibold text-slate-700">
+                    {monthNames[selectedDay.getMonth()]} {selectedDay.getFullYear()}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const next = new Date(selectedDay)
+                      next.setDate(next.getDate() + 7)
+                      setSelectedDay(next)
+                      setCurrentDate(next)
+                    }}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 active:bg-slate-200 transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5 text-slate-600" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-7 gap-1">
+                  {getWeekDays().map((day, i) => {
+                    const isSelected = day.toDateString() === selectedDay.toDateString()
+                    const isToday = day.toDateString() === new Date().toDateString()
+                    const dayPlanning = getPlanningForDate(day)
+                    const hasEvents = dayPlanning.length > 0
+
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setSelectedDay(day)}
+                        className={cn(
+                          'flex flex-col items-center py-2 rounded-xl transition-all touch-feedback',
+                          isSelected
+                            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                            : isToday
+                            ? 'bg-emerald-50 text-emerald-600'
+                            : 'hover:bg-slate-50'
+                        )}
+                      >
+                        <span className={cn(
+                          'text-[10px] font-medium mb-1',
+                          isSelected ? 'text-emerald-100' : 'text-slate-400'
+                        )}>
+                          {dayNamesShort[day.getDay()]}
+                        </span>
+                        <span className={cn(
+                          'text-lg font-semibold',
+                          !isSelected && !isToday && 'text-slate-700'
+                        )}>
+                          {day.getDate()}
+                        </span>
+                        {hasEvents && !isSelected && (
+                          <div className="flex gap-0.5 mt-1">
+                            {dayPlanning.slice(0, 3).map((p, idx) => (
+                              <span key={idx} className={cn('w-1.5 h-1.5 rounded-full', getStatusDot(p.statut))} />
+                            ))}
+                          </div>
+                        )}
+                        {hasEvents && isSelected && (
+                          <span className="text-[10px] mt-0.5 text-emerald-100">{dayPlanning.length}</span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Selected day interventions */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="text-sm font-semibold text-slate-500">
+                    {selectedDay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  </h3>
+                  {selectedDay.toDateString() !== new Date().toDateString() && (
+                    <button
+                      onClick={() => setSelectedDay(new Date())}
+                      className="text-xs text-emerald-600 font-medium"
+                    >
+                      Aujourd'hui
+                    </button>
+                  )}
+                </div>
+
+                {getPlanningForDate(selectedDay).length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CalendarIcon className="w-8 h-8 text-slate-300" />
+                    </div>
+                    <p className="text-slate-500 font-medium">Aucune intervention</p>
+                    <p className="text-slate-400 text-sm mt-1">Planifiez une nouvelle intervention</p>
+                    <button
+                      onClick={openCreateModal}
+                      className="mt-4 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-colors"
+                    >
+                      <Plus className="w-4 h-4 inline mr-1" />
+                      Nouveau
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {getPlanningForDate(selectedDay)
+                      .sort((a, b) => (a.heure_debut || '').localeCompare(b.heure_debut || ''))
+                      .map((planning, idx) => (
+                      <button
+                        key={planning.id}
+                        onClick={() => openEditModal(planning)}
+                        className="w-full bg-white rounded-2xl border border-slate-200 p-4 text-left hover:shadow-md hover:border-emerald-200 transition-all touch-feedback animate-fade-in-up"
+                        style={{ animationDelay: `${idx * 50}ms` }}
+                      >
+                        <div className="flex gap-3">
+                          {/* Time column */}
+                          <div className="flex flex-col items-center w-14 flex-shrink-0">
+                            {planning.heure_debut ? (
+                              <>
+                                <span className="text-lg font-bold text-slate-900">{planning.heure_debut.slice(0, 5)}</span>
+                                {planning.heure_fin && (
+                                  <span className="text-xs text-slate-400">{planning.heure_fin.slice(0, 5)}</span>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-sm text-slate-400">-</span>
+                            )}
+                          </div>
+
+                          {/* Separator */}
+                          <div className={cn('w-1 rounded-full flex-shrink-0', getStatusDot(planning.statut))} />
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-slate-900 truncate">
+                                  {planning.sites?.clients?.nom}
+                                </h4>
+                                <p className="text-sm text-slate-500 truncate">{planning.sites?.nom}</p>
+                              </div>
+                              <span className={cn(
+                                'px-2 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0',
+                                planning.statut === 'planifiee' ? 'bg-blue-100 text-blue-700' :
+                                planning.statut === 'en_cours' ? 'bg-amber-100 text-amber-700' :
+                                'bg-red-100 text-red-700'
+                              )}>
+                                {planning.statut === 'planifiee' ? 'Planifiée' :
+                                 planning.statut === 'en_cours' ? 'En cours' : 'Annulée'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                              <span className="px-2 py-0.5 bg-slate-100 rounded-md">
+                                {getTypeLabel(planning.type)}
+                              </span>
+                              {planning.techniciens.length > 0 && (
+                                <span className="flex items-center gap-1">
+                                  <Users className="w-3 h-3" />
+                                  {planning.techniciens.map((t: any) => t.profiles?.full_name?.split(' ')[0]).join(', ')}
+                                </span>
+                              )}
+                            </div>
+
+                            {planning.notes && (
+                              <p className="text-xs text-slate-400 mt-2 line-clamp-1">{planning.notes}</p>
+                            )}
+                          </div>
+
+                          <ChevronRight className="w-5 h-5 text-slate-300 flex-shrink-0 self-center" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Old list view - kept for reference */}
           {mobileView === 'list' && (
             <div className="lg:hidden space-y-2">
               {allPlanningThisMonth.length === 0 ? (
@@ -504,7 +753,7 @@ export default function PlanningPage() {
           )}
 
           {/* Calendar view */}
-          <div className={cn(mobileView === 'list' ? 'hidden lg:block' : '')}>
+          <div className={cn(mobileView !== 'calendar' ? 'hidden lg:block' : '')}>
             <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
               {/* Day headers */}
               <div className="grid grid-cols-7 bg-slate-50 border-b border-slate-200">
