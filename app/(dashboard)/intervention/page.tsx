@@ -689,29 +689,32 @@ export default function InterventionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-24 lg:pb-8">
       {/* Header avec titre et infos */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 lg:gap-4">
             <button
               onClick={() => router.push('/admin')}
-              className="flex items-center gap-2 text-slate-600 hover:text-slate-800 transition"
+              className="flex items-center gap-1 lg:gap-2 text-slate-600 hover:text-slate-800 transition"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              Retour
+              <span className="hidden sm:inline">Retour</span>
             </button>
-            <div className="h-6 w-px bg-gray-300"></div>
-            <h1 className="text-2xl font-bold text-slate-800">Nouveau Rapport - Détection Fixe</h1>
+            <div className="h-6 w-px bg-gray-300 hidden sm:block"></div>
+            <h1 className="text-lg lg:text-2xl font-bold text-slate-800">
+              <span className="hidden sm:inline">Nouveau Rapport - </span>Détection Fixe
+            </h1>
           </div>
           {planningInterventionId && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+            <div className="flex items-center gap-2 px-2 lg:px-3 py-1 lg:py-1.5 bg-green-50 border border-green-200 rounded-lg text-xs lg:text-sm text-green-700">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
               </svg>
-              Lié au planning
+              <span className="hidden sm:inline">Lié au planning</span>
+              <span className="sm:hidden">Planning</span>
             </div>
           )}
         </div>
@@ -721,48 +724,49 @@ export default function InterventionPage() {
       <StepIndicator steps={steps} currentStep={currentSection} onStepClick={handleStepClick} />
 
       {/* Contenu principal */}
-      <main className="max-w-7xl mx-auto px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-8">
         {/* Gestion des centrales */}
         {currentSection === 'centrale' && (
-          <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+          <div className="mb-4 lg:mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-3 lg:p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 lg:gap-3 overflow-x-auto">
                 {centrales.length > 1 ? (
                   <>
-                    <span className="text-sm font-medium text-slate-700">Centrale sélectionnée :</span>
+                    <span className="text-xs lg:text-sm font-medium text-slate-700 whitespace-nowrap">Centrale :</span>
                     <div className="flex gap-2">
                       {centrales.map((_, index) => (
                         <button
                           key={index}
                           onClick={() => setCurrentCentraleIndex(index)}
-                          className={`px-4 py-2 rounded-lg font-medium transition ${
+                          className={`px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
                             currentCentraleIndex === index
                               ? 'bg-blue-600 text-white shadow-md'
                               : 'bg-gray-100 text-slate-700 hover:bg-gray-200'
                           }`}
                         >
-                          Centrale {index + 1}
+                          {index + 1}
                         </button>
                       ))}
                     </div>
                   </>
                 ) : (
                   <div className="flex items-center gap-2 text-slate-700">
-                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
-                    <span className="font-medium">Configuration de la centrale</span>
+                    <span className="font-medium text-sm lg:text-base">Configuration de la centrale</span>
                   </div>
                 )}
               </div>
               <button
                 onClick={addCentrale}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition shadow-sm"
+                className="flex items-center justify-center gap-2 px-3 lg:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition shadow-sm"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                 </svg>
-                Ajouter une centrale
+                <span className="hidden sm:inline">Ajouter une centrale</span>
+                <span className="sm:hidden">Ajouter</span>
               </button>
             </div>
           </div>

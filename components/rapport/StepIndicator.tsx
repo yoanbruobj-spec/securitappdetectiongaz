@@ -19,7 +19,7 @@ export function StepIndicator({ steps, currentStep, onStepClick }: StepIndicator
   const currentIndex = steps.findIndex(s => s.id === currentStep)
 
   return (
-    <div className="w-full bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div className="w-full bg-white border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
         <div className="flex items-center justify-between gap-1 sm:gap-2 lg:gap-0">
           {steps.map((step, index) => {
