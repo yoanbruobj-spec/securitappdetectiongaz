@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { logoBlancBase64 } from '../utils/logoBlancBase64'
+import { logoBase64 } from '../utils/logoBase64'
 
 interface InterventionData {
   intervention: any
@@ -11,20 +12,38 @@ interface InterventionData {
 }
 
 // ============================================
-// PALETTE DE COULEURS MODERNE
+// FONCTION UTILITAIRE - Vérifier si une valeur est remplie
+// ============================================
+function hasValue(val: any): boolean {
+  if (val === null || val === undefined) return false
+  if (typeof val === 'string') {
+    const trimmed = val.trim()
+    return trimmed !== '' && trimmed !== 'N/A' && trimmed !== '-' && trimmed !== 'N/A '
+  }
+  return true
+}
+
+function formatValue(val: any, suffix?: string): string {
+  if (!hasValue(val)) return ''
+  const result = String(val).trim()
+  return suffix ? `${result} ${suffix}`.trim() : result
+}
+
+// ============================================
+// PALETTE DE COULEURS - STYLE OFFICIEL
 // ============================================
 const COLORS = {
-  primary: [220, 38, 38] as [number, number, number],      // Rouge SÉCUR'IT
-  primaryDark: [185, 28, 28] as [number, number, number],  // Rouge foncé
-  secondary: [30, 41, 59] as [number, number, number],     // Slate 800
-  accent: [59, 130, 246] as [number, number, number],      // Bleu
-  success: [22, 163, 74] as [number, number, number],      // Vert
-  warning: [234, 179, 8] as [number, number, number],      // Jaune
-  danger: [239, 68, 68] as [number, number, number],       // Rouge clair
-  dark: [15, 23, 42] as [number, number, number],          // Slate 900
-  gray: [100, 116, 139] as [number, number, number],       // Slate 500
-  lightGray: [241, 245, 249] as [number, number, number],  // Slate 100
+  primary: [180, 28, 28] as [number, number, number],       // Rouge SÉCUR'IT foncé
+  secondary: [30, 41, 59] as [number, number, number],      // Slate 800
+  accent: [37, 99, 235] as [number, number, number],        // Bleu officiel
+  success: [21, 128, 61] as [number, number, number],       // Vert foncé
+  warning: [161, 98, 7] as [number, number, number],        // Jaune foncé
+  danger: [185, 28, 28] as [number, number, number],        // Rouge foncé
+  dark: [15, 23, 42] as [number, number, number],           // Presque noir
+  gray: [71, 85, 105] as [number, number, number],          // Gris moyen
+  lightGray: [241, 245, 249] as [number, number, number],   // Gris très clair
   white: [255, 255, 255] as [number, number, number],
+  border: [203, 213, 225] as [number, number, number],      // Bordure grise
 }
 
 export async function generateInterventionPDF(data: InterventionData) {
@@ -59,397 +78,534 @@ export async function generateInterventionPDF(data: InterventionData) {
     ? (typeMapping[intervention.type] || intervention.type.replace(/_/g, ' '))
     : 'Intervention'
 
+  // Structure pour le sommaire
+  const sommaire: { titre: string; page: number }[] = []
+  let currentPage = 1
+
   // ============================================
-  // PAGE DE GARDE MODERNE
+  // PAGE 1 - PAGE DE GARDE OFFICIELLE
   // ============================================
 
-  // Fond dégradé en haut
+  // En-tête avec bandeau
   doc.setFillColor(...COLORS.primary)
-  doc.rect(0, 0, pageWidth, 85, 'F')
+  doc.rect(0, 0, pageWidth, 50, 'F')
 
-  // Forme décorative
-  doc.setFillColor(...COLORS.primaryDark)
-  doc.triangle(pageWidth - 60, 0, pageWidth, 0, pageWidth, 60, 'F')
-
-  // Logo centré
+  // Logo
   try {
-    doc.addImage(logoBlancBase64, 'PNG', (pageWidth - 90) / 2, 20, 90, 22)
+    doc.addImage(logoBlancBase64, 'PNG', (pageWidth - 80) / 2, 10, 80, 20)
   } catch {
     doc.setTextColor(...COLORS.white)
-    doc.setFontSize(28)
+    doc.setFontSize(24)
     doc.setFont('helvetica', 'bold')
-    doc.text("SÉCUR'IT", pageWidth / 2, 35, { align: 'center' })
+    doc.text("SÉCUR'IT", pageWidth / 2, 28, { align: 'center' })
   }
 
-  // Slogan
-  doc.setTextColor(255, 255, 255, 0.9)
-  doc.setFontSize(10)
-  doc.setFont('helvetica', 'normal')
-  doc.text('Détection Gaz & Sécurité', pageWidth / 2, 52, { align: 'center' })
-
-  // Coordonnées entreprise - bandeau gris
-  doc.setFillColor(...COLORS.lightGray)
-  doc.rect(0, 85, pageWidth, 25, 'F')
-
-  doc.setTextColor(...COLORS.gray)
-  doc.setFontSize(8)
-  doc.text('6 rue Georges BRASSENS, Zac des 4 saisons, 31140 Fonbeauzard', pageWidth / 2, 94, { align: 'center' })
-  doc.text('Tél: 06 13 84 53 98  |  Email: christophe.agnus@yahoo.fr', pageWidth / 2, 102, { align: 'center' })
-
-  // Titre principal
-  yPos = 130
-  doc.setTextColor(...COLORS.dark)
-  doc.setFontSize(24)
-  doc.setFont('helvetica', 'bold')
-  doc.text('RAPPORT D\'INTERVENTION', pageWidth / 2, yPos, { align: 'center' })
-
-  // Ligne décorative sous le titre
-  doc.setDrawColor(...COLORS.primary)
-  doc.setLineWidth(2)
-  doc.line(pageWidth / 2 - 45, yPos + 5, pageWidth / 2 + 45, yPos + 5)
-
-  // Badge type d'intervention
-  yPos += 20
-  const typeWidth = doc.getTextWidth(typeIntervention.toUpperCase()) + 20
-  doc.setFillColor(...COLORS.secondary)
-  doc.roundedRect((pageWidth - typeWidth) / 2, yPos - 6, typeWidth, 12, 6, 6, 'F')
+  // Sous-titre entreprise
   doc.setTextColor(...COLORS.white)
-  doc.setFontSize(10)
-  doc.setFont('helvetica', 'bold')
-  doc.text(typeIntervention.toUpperCase(), pageWidth / 2, yPos + 2, { align: 'center' })
-
-  // Carte d'informations principales
-  yPos += 25
-  const cardHeight = 95
-
-  // Ombre de la carte
-  doc.setFillColor(200, 200, 200)
-  doc.roundedRect(margin + 2, yPos + 2, pageWidth - 2 * margin, cardHeight, 8, 8, 'F')
-
-  // Carte blanche
-  doc.setFillColor(...COLORS.white)
-  doc.setDrawColor(...COLORS.lightGray)
-  doc.setLineWidth(1)
-  doc.roundedRect(margin, yPos, pageWidth - 2 * margin, cardHeight, 8, 8, 'FD')
-
-  // Contenu de la carte
-  const cardX = margin + 15
-  const cardX2 = pageWidth / 2 + 10
-  let cardY = yPos + 18
-
-  // Ligne 1: Client & Site
-  drawInfoField(doc, 'CLIENT', client?.nom || 'N/A', cardX, cardY)
-  drawInfoField(doc, 'SITE', site?.nom || 'N/A', cardX2, cardY)
-
-  cardY += 25
-
-  // Ligne 2: Adresse complète
-  const adresse = `${site?.adresse || ''}, ${site?.ville || ''}`.trim()
-  drawInfoField(doc, 'ADRESSE', adresse !== ',' ? adresse : 'N/A', cardX, cardY, pageWidth - 2 * margin - 30)
-
-  cardY += 25
-
-  // Ligne 3: Date & Technicien
-  drawInfoField(doc, 'DATE', dateStr, cardX, cardY)
-  drawInfoField(doc, 'TECHNICIEN', intervention.technicien || 'N/A', cardX2, cardY)
-
-  // Numéro de rapport en bas de page
-  doc.setTextColor(...COLORS.gray)
   doc.setFontSize(9)
-  doc.text(`Rapport N° ${intervention.id?.substring(0, 8).toUpperCase() || 'N/A'}`, pageWidth / 2, pageHeight - 30, { align: 'center' })
+  doc.setFont('helvetica', 'normal')
+  doc.text('Détection Gaz & Sécurité Industrielle', pageWidth / 2, 42, { align: 'center' })
 
+  // Coordonnées
+  yPos = 60
+  doc.setTextColor(...COLORS.gray)
   doc.setFontSize(8)
-  doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`, pageWidth / 2, pageHeight - 22, { align: 'center' })
+  doc.text('6 rue Georges BRASSENS, Zac des 4 saisons, 31140 Fonbeauzard', pageWidth / 2, yPos, { align: 'center' })
+  doc.text('Tél: 06 13 84 53 98  •  Email: christophe.agnus@yahoo.fr', pageWidth / 2, yPos + 5, { align: 'center' })
 
-  // ============================================
-  // PAGE 2 - DÉTAILS DE L'INTERVENTION
-  // ============================================
+  // Ligne séparatrice
+  doc.setDrawColor(...COLORS.border)
+  doc.setLineWidth(0.5)
+  doc.line(margin, yPos + 12, pageWidth - margin, yPos + 12)
 
-  doc.addPage()
-  yPos = margin
+  // Titre du document
+  yPos = 95
+  doc.setFillColor(...COLORS.lightGray)
+  doc.rect(margin, yPos - 8, pageWidth - 2 * margin, 25, 'F')
+  doc.setDrawColor(...COLORS.primary)
+  doc.setLineWidth(1)
+  doc.rect(margin, yPos - 8, pageWidth - 2 * margin, 25, 'S')
 
-  // En-tête de page
-  drawPageHeader(doc, 'DÉTAILS DE L\'INTERVENTION')
-  yPos = 45
+  doc.setTextColor(...COLORS.dark)
+  doc.setFontSize(18)
+  doc.setFont('helvetica', 'bold')
+  doc.text('RAPPORT D\'INTERVENTION', pageWidth / 2, yPos + 5, { align: 'center' })
 
-  // Section informations générales
-  yPos = drawSectionHeader(doc, 'Informations Générales', yPos, COLORS.accent)
-  yPos += 8
+  doc.setFontSize(11)
+  doc.setFont('helvetica', 'normal')
+  doc.setTextColor(...COLORS.primary)
+  doc.text(typeIntervention.toUpperCase(), pageWidth / 2, yPos + 13, { align: 'center' })
 
-  const infoData: string[][] = []
-  if (client?.nom) infoData.push(['Client', client.nom])
-  if (site?.nom) infoData.push(['Site', site.nom])
-  const adresseComplete = `${site?.adresse || ''}, ${site?.ville || ''}`.trim()
-  if (adresseComplete && adresseComplete !== ',') infoData.push(['Adresse', adresseComplete])
-  infoData.push(['Date d\'intervention', dateStr])
-  const horaires = `${intervention.heure_debut || ''} - ${intervention.heure_fin || ''}`.trim()
-  if (horaires && horaires !== '-') infoData.push(['Horaires', horaires])
-  if (intervention.technicien) infoData.push(['Technicien', intervention.technicien])
-  infoData.push(['Type d\'intervention', typeIntervention])
-  if (intervention.local) infoData.push(['Local', intervention.local])
-  if (intervention.contact_site) infoData.push(['Contact sur site', intervention.contact_site])
-  if (intervention.tel_contact) infoData.push(['Téléphone contact', intervention.tel_contact])
+  // Tableau d'informations principales
+  yPos = 135
+
+  doc.setTextColor(...COLORS.dark)
+  doc.setFontSize(11)
+  doc.setFont('helvetica', 'bold')
+  doc.text('INFORMATIONS GÉNÉRALES', margin, yPos)
+  doc.setDrawColor(...COLORS.primary)
+  doc.setLineWidth(0.8)
+  doc.line(margin, yPos + 2, margin + 55, yPos + 2)
+
+  yPos += 10
+
+  const infoTableData: string[][] = []
+  if (hasValue(client?.nom)) infoTableData.push(['Client', client.nom])
+  if (hasValue(site?.nom)) infoTableData.push(['Site', site.nom])
+  const adresseStr = `${site?.adresse || ''}, ${site?.ville || ''}`.trim().replace(/^,|,$/g, '').trim()
+  if (hasValue(adresseStr)) infoTableData.push(['Adresse', adresseStr])
+  if (hasValue(dateStr) && dateStr !== 'N/A') infoTableData.push(['Date d\'intervention', dateStr])
+  const horairesStr = `${intervention.heure_debut || ''} - ${intervention.heure_fin || ''}`.trim()
+  if (hasValue(horairesStr) && horairesStr !== '-') infoTableData.push(['Horaires', horairesStr])
+  if (hasValue(intervention.technicien)) infoTableData.push(['Technicien', intervention.technicien])
+  if (hasValue(intervention.local)) infoTableData.push(['Local / Zone', intervention.local])
+  if (hasValue(intervention.contact_site)) infoTableData.push(['Contact sur site', intervention.contact_site])
+  if (hasValue(intervention.tel_contact)) infoTableData.push(['Téléphone contact', intervention.tel_contact])
 
   autoTable(doc, {
     startY: yPos,
-    body: infoData,
+    body: infoTableData,
     theme: 'plain',
     styles: {
-      fontSize: 10,
-      cellPadding: { top: 6, bottom: 6, left: 10, right: 10 },
+      fontSize: 9,
+      cellPadding: 4,
+      lineColor: COLORS.border,
+      lineWidth: 0.3,
     },
     columnStyles: {
       0: {
         fontStyle: 'bold',
         fillColor: COLORS.lightGray,
         textColor: COLORS.secondary,
-        cellWidth: 55
+        cellWidth: 45
       },
       1: {
         textColor: COLORS.dark
       },
     },
-    alternateRowStyles: {
-      fillColor: [255, 255, 255]
+    margin: { left: margin, right: margin },
+    tableLineColor: COLORS.border,
+    tableLineWidth: 0.3,
+  })
+
+  // Numéro de rapport et date de génération
+  doc.setTextColor(...COLORS.gray)
+  doc.setFontSize(8)
+  doc.text(`Rapport N° ${intervention.id?.substring(0, 8).toUpperCase() || 'N/A'}`, margin, pageHeight - 25)
+  doc.text(`Document généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`, margin, pageHeight - 20)
+
+  // Pied de page
+  drawOfficialFooter(doc, 1)
+
+  // ============================================
+  // PAGE 2 - SOMMAIRE
+  // ============================================
+
+  doc.addPage()
+  currentPage = 2
+
+  drawOfficialHeader(doc, 'SOMMAIRE')
+  yPos = 50
+
+  // Le sommaire sera rempli à la fin
+  const sommairePageRef = currentPage
+  const sommaireYRef = yPos
+
+  // Placeholder pour le sommaire
+  doc.setTextColor(...COLORS.gray)
+  doc.setFontSize(10)
+  doc.setFont('helvetica', 'italic')
+  doc.text('(Sommaire généré automatiquement)', pageWidth / 2, yPos + 20, { align: 'center' })
+
+  drawOfficialFooter(doc, currentPage)
+
+  // ============================================
+  // PAGE 3 - SYNTHÈSE / RÉCAPITULATIF
+  // ============================================
+
+  doc.addPage()
+  currentPage = 3
+  sommaire.push({ titre: '1. Synthèse de l\'intervention', page: currentPage })
+
+  drawOfficialHeader(doc, 'SYNTHÈSE DE L\'INTERVENTION')
+  yPos = 50
+
+  // Résumé de l'intervention
+  yPos = drawOfficialSection(doc, '1.1 Résumé', yPos)
+
+  const resumeData = [
+    ['Type d\'intervention', typeIntervention],
+    ['Date', dateStr],
+    ['Nombre d\'équipements contrôlés', `${centrales.length} centrale(s) / automate(s)`],
+    ['Nombre total de détecteurs gaz', `${centrales.reduce((acc, c) => acc + (c.detecteurs_gaz?.length || 0), 0)}`],
+    ['Nombre total de détecteurs flamme', `${centrales.reduce((acc, c) => acc + (c.detecteurs_flamme?.length || 0), 0)}`],
+  ]
+
+  autoTable(doc, {
+    startY: yPos,
+    body: resumeData,
+    theme: 'plain',
+    styles: { fontSize: 9, cellPadding: 4, lineColor: COLORS.border, lineWidth: 0.3 },
+    columnStyles: {
+      0: { fontStyle: 'bold', fillColor: COLORS.lightGray, cellWidth: 60 },
     },
     margin: { left: margin, right: margin },
-    tableLineColor: [226, 232, 240],
-    tableLineWidth: 0.5,
   })
 
   yPos = (doc as any).lastAutoTable.finalY + 15
 
-  // Observations générales
-  if (intervention.observations_generales) {
-    yPos = checkPageBreak(doc, yPos, 50)
-    yPos = drawSectionHeader(doc, 'Observations Générales', yPos, COLORS.secondary)
-    yPos += 8
+  // Tableau récapitulatif des statuts
+  yPos = drawOfficialSection(doc, '1.2 État des équipements', yPos)
 
-    // Carte pour les observations
-    const obsLines = doc.splitTextToSize(intervention.observations_generales, pageWidth - 2 * margin - 20)
-    const obsHeight = Math.max(35, obsLines.length * 5 + 15)
+  const statutsData: any[][] = []
+
+  centrales.forEach((centrale, idx) => {
+    const marque = centrale.marque === 'Autre' && centrale.marque_personnalisee
+      ? centrale.marque_personnalisee
+      : centrale.marque
+
+    // Détecteurs gaz
+    if (centrale.detecteurs_gaz) {
+      centrale.detecteurs_gaz.forEach((det: any) => {
+        statutsData.push([
+          `Centrale ${idx + 1}`,
+          'Gaz',
+          `L${det.ligne} - ${det.marque} ${det.modele}`,
+          det.type_gaz || det.gaz || 'N/A',
+          det.statut_sensi || 'N/A',
+        ])
+      })
+    }
+
+    // Détecteurs flamme
+    if (centrale.detecteurs_flamme) {
+      centrale.detecteurs_flamme.forEach((det: any) => {
+        const statut = det.non_teste ? 'Non testé' : (det.asserv_operationnel ? 'OK' : 'NOK')
+        statutsData.push([
+          `Centrale ${idx + 1}`,
+          'Flamme',
+          `L${det.ligne} - ${det.marque} ${det.modele}`,
+          '-',
+          statut,
+        ])
+      })
+    }
+  })
+
+  if (statutsData.length > 0) {
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Équipement', 'Type', 'Détecteur', 'Gaz', 'Statut']],
+      body: statutsData,
+      theme: 'striped',
+      styles: { fontSize: 8, cellPadding: 3 },
+      headStyles: {
+        fillColor: COLORS.secondary,
+        textColor: COLORS.white,
+        fontStyle: 'bold',
+      },
+      columnStyles: {
+        4: {
+          fontStyle: 'bold',
+          halign: 'center',
+        }
+      },
+      didParseCell: function(data) {
+        if (data.section === 'body' && data.column.index === 4) {
+          const val = data.cell.raw as string
+          if (val === 'OK') {
+            data.cell.styles.textColor = COLORS.success
+          } else if (val === 'NOK' || val === 'À remplacer') {
+            data.cell.styles.textColor = COLORS.danger
+          } else if (val === 'Non testé') {
+            data.cell.styles.textColor = COLORS.warning
+          }
+        }
+      },
+      margin: { left: margin, right: margin },
+    })
+    yPos = (doc as any).lastAutoTable.finalY + 10
+  }
+
+  drawOfficialFooter(doc, currentPage)
+
+  // ============================================
+  // PAGE 4+ - OBSERVATIONS GÉNÉRALES
+  // ============================================
+
+  if (intervention.observations_generales) {
+    doc.addPage()
+    currentPage++
+    sommaire.push({ titre: '2. Observations générales', page: currentPage })
+
+    drawOfficialHeader(doc, 'OBSERVATIONS GÉNÉRALES')
+    yPos = 50
+
+    yPos = drawOfficialSection(doc, '2.1 Observations du technicien', yPos)
+
+    // Encadré pour les observations
+    const obsLines = doc.splitTextToSize(intervention.observations_generales, pageWidth - 2 * margin - 10)
+    const obsHeight = Math.max(40, obsLines.length * 5 + 15)
 
     doc.setFillColor(...COLORS.lightGray)
-    doc.roundedRect(margin, yPos, pageWidth - 2 * margin, obsHeight, 5, 5, 'F')
+    doc.setDrawColor(...COLORS.border)
+    doc.setLineWidth(0.5)
+    doc.rect(margin, yPos, pageWidth - 2 * margin, obsHeight, 'FD')
 
-    // Bordure gauche colorée
-    doc.setFillColor(...COLORS.accent)
-    doc.rect(margin, yPos, 4, obsHeight, 'F')
-
-    doc.setFontSize(10)
+    doc.setFontSize(9)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...COLORS.dark)
-    doc.text(obsLines, margin + 12, yPos + 10)
-    yPos += obsHeight + 10
+    doc.text(obsLines, margin + 5, yPos + 8)
+
+    drawOfficialFooter(doc, currentPage)
   }
 
   // ============================================
-  // CENTRALES ET DÉTECTEURS
+  // PAGES DÉTAILLÉES PAR CENTRALE
   // ============================================
 
   for (let i = 0; i < centrales.length; i++) {
     const centrale = centrales[i]
-
-    doc.addPage()
-    yPos = margin
-
-    // En-tête
-    const equipementType = centrale.type_equipement === 'automate' ? 'AUTOMATE' : 'CENTRALE'
+    const equipementType = centrale.type_equipement === 'automate' ? 'Automate' : 'Centrale'
     const marqueAffichee = centrale.marque === 'Autre' && centrale.marque_personnalisee
       ? centrale.marque_personnalisee
       : centrale.marque
 
-    drawPageHeader(doc, `${equipementType} ${i + 1} - ${marqueAffichee} ${centrale.modele}`)
-    yPos = 45
+    doc.addPage()
+    currentPage++
+    sommaire.push({ titre: `${sommaire.length + 1}. ${equipementType} ${i + 1} - ${marqueAffichee} ${centrale.modele}`, page: currentPage })
 
-    // Informations de la centrale
-    yPos = drawSectionHeader(doc, 'Informations Équipement', yPos, COLORS.accent)
-    yPos += 8
+    drawOfficialHeader(doc, `${equipementType.toUpperCase()} ${i + 1} - ${marqueAffichee} ${centrale.modele}`)
+    yPos = 50
 
-    const centraleData: string[][] = []
-    if (centrale.type_equipement) centraleData.push(["Type d'équipement", centrale.type_equipement === 'automate' ? 'Automate' : 'Centrale'])
-    if (centrale.marque) centraleData.push(['Marque', marqueAffichee])
-    if (centrale.modele) centraleData.push(['Modèle', centrale.modele])
-    if (centrale.numero_serie) centraleData.push(['N° de série', centrale.numero_serie])
-    if (centrale.firmware) centraleData.push(['Version firmware', centrale.firmware])
-    if (centrale.etat_general) centraleData.push(['État général', centrale.etat_general])
+    // ============================================
+    // INFORMATIONS DE L'ÉQUIPEMENT
+    // ============================================
 
-    if (centraleData.length > 0) {
-      autoTable(doc, {
-        startY: yPos,
-        body: centraleData,
-        theme: 'plain',
-        styles: { fontSize: 10, cellPadding: 5 },
-        columnStyles: {
-          0: { fontStyle: 'bold', fillColor: COLORS.lightGray, textColor: COLORS.secondary, cellWidth: 55 },
-          1: { textColor: COLORS.dark }
-        },
-        margin: { left: margin, right: margin },
-      })
-      yPos = (doc as any).lastAutoTable.finalY + 12
-    }
+    yPos = drawOfficialSection(doc, `${sommaire.length}.1 Identification de l'équipement`, yPos)
 
+    const equipData: string[][] = []
+    equipData.push(["Type d'équipement", equipementType])
+    if (hasValue(centrale.marque)) equipData.push(['Marque', marqueAffichee])
+    if (hasValue(centrale.modele)) equipData.push(['Modèle', centrale.modele])
+    if (hasValue(centrale.numero_serie)) equipData.push(['Numéro de série', centrale.numero_serie])
+    if (hasValue(centrale.firmware)) equipData.push(['Version firmware', centrale.firmware])
+    if (hasValue(centrale.etat_general)) equipData.push(['État général', centrale.etat_general])
+
+    autoTable(doc, {
+      startY: yPos,
+      body: equipData,
+      theme: 'plain',
+      styles: { fontSize: 9, cellPadding: 4, lineColor: COLORS.border, lineWidth: 0.3 },
+      columnStyles: {
+        0: { fontStyle: 'bold', fillColor: COLORS.lightGray, cellWidth: 50 },
+      },
+      margin: { left: margin, right: margin },
+    })
+    yPos = (doc as any).lastAutoTable.finalY + 10
+
+    // ============================================
     // AES
+    // ============================================
+
     if (centrale.aes_presente && (centrale.aes_modele || centrale.aes_statut || centrale.aes_ondulee !== undefined)) {
-      yPos = checkPageBreak(doc, yPos, 40)
-      yPos = drawSectionHeader(doc, 'Alimentation Électrique de Sécurité (AES)', yPos, COLORS.success)
-      yPos += 8
+      yPos = checkPageBreak(doc, yPos, 50, currentPage)
+      if (yPos === 50) {
+        currentPage++
+        drawOfficialHeader(doc, `${equipementType.toUpperCase()} ${i + 1} - SUITE`)
+      }
+
+      yPos = drawOfficialSection(doc, `${sommaire.length}.2 Alimentation Électrique de Sécurité (AES)`, yPos)
 
       const aesData: string[][] = []
-      if (centrale.aes_modele) aesData.push(['Modèle AES', centrale.aes_modele])
-      if (centrale.aes_statut) aesData.push(['Statut', centrale.aes_statut])
-      if (centrale.aes_ondulee !== undefined) aesData.push(['Alimentation ondulée', centrale.aes_ondulee ? 'Oui' : 'Non'])
+      if (hasValue(centrale.aes_modele)) aesData.push(['Modèle AES', centrale.aes_modele])
+      if (hasValue(centrale.aes_statut)) aesData.push(['Statut', centrale.aes_statut])
+      if (centrale.aes_ondulee !== undefined && centrale.aes_ondulee !== null) aesData.push(['Type alimentation', centrale.aes_ondulee ? 'Ondulée' : 'Non ondulée'])
 
       autoTable(doc, {
         startY: yPos,
         body: aesData,
         theme: 'plain',
-        styles: { fontSize: 9, cellPadding: 4 },
+        styles: { fontSize: 9, cellPadding: 4, lineColor: COLORS.border, lineWidth: 0.3 },
         columnStyles: {
-          0: { fontStyle: 'bold', fillColor: COLORS.lightGray, cellWidth: 55 },
+          0: { fontStyle: 'bold', fillColor: COLORS.lightGray, cellWidth: 50 },
         },
         margin: { left: margin, right: margin },
       })
-      yPos = (doc as any).lastAutoTable.finalY + 12
+      yPos = (doc as any).lastAutoTable.finalY + 10
     }
 
     // ============================================
-    // DÉTECTEURS GAZ - Design carte moderne
+    // DÉTECTEURS GAZ - INFORMATIONS COMPLÈTES
     // ============================================
 
     if (centrale.detecteurs_gaz && centrale.detecteurs_gaz.length > 0) {
-      yPos = checkPageBreak(doc, yPos, 40)
-      yPos = drawSectionHeader(doc, `Détecteurs Gaz (${centrale.detecteurs_gaz.length})`, yPos, COLORS.warning)
-      yPos += 10
+      yPos = checkPageBreak(doc, yPos, 60, currentPage)
+      if (yPos === 50) {
+        currentPage++
+        drawOfficialHeader(doc, `${equipementType.toUpperCase()} ${i + 1} - DÉTECTEURS GAZ`)
+      }
 
-      for (const detecteur of centrale.detecteurs_gaz) {
-        yPos = checkPageBreak(doc, yPos, 90)
+      yPos = drawOfficialSection(doc, `${sommaire.length}.3 Détecteurs de Gaz (${centrale.detecteurs_gaz.length} unité(s))`, yPos)
 
-        // Carte du détecteur
-        const cardStartY = yPos
+      for (let j = 0; j < centrale.detecteurs_gaz.length; j++) {
+        const detecteur = centrale.detecteurs_gaz[j]
 
-        // En-tête de la carte
+        yPos = checkPageBreak(doc, yPos, 120, currentPage)
+        if (yPos === 50) {
+          currentPage++
+          drawOfficialHeader(doc, `${equipementType.toUpperCase()} ${i + 1} - DÉTECTEURS GAZ (SUITE)`)
+        }
+
+        // Titre du détecteur
         doc.setFillColor(...COLORS.secondary)
-        doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 14, 4, 4, 'F')
-        // Masquer les coins arrondis du bas
-        doc.setFillColor(...COLORS.secondary)
-        doc.rect(margin, yPos + 7, pageWidth - 2 * margin, 7, 'F')
-
+        doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F')
         doc.setTextColor(...COLORS.white)
-        doc.setFontSize(10)
-        doc.setFont('helvetica', 'bold')
-        doc.text(`LIGNE ${detecteur.ligne}  •  ${detecteur.marque} ${detecteur.modele}`, margin + 8, yPos + 9)
-
-        // Badge gaz type
-        if (detecteur.type_gaz || detecteur.gaz) {
-          const gazType = detecteur.type_gaz || detecteur.gaz
-          const badgeWidth = doc.getTextWidth(gazType) + 12
-          doc.setFillColor(...COLORS.warning)
-          doc.roundedRect(pageWidth - margin - badgeWidth - 5, yPos + 3, badgeWidth, 8, 4, 4, 'F')
-          doc.setTextColor(...COLORS.dark)
-          doc.setFontSize(7)
-          doc.text(gazType, pageWidth - margin - badgeWidth / 2 - 5, yPos + 8.5, { align: 'center' })
-        }
-
-        yPos += 14
-
-        // Corps de la carte
-        doc.setFillColor(...COLORS.lightGray)
-        doc.rect(margin, yPos, pageWidth - 2 * margin, 65, 'F')
-
-        yPos += 8
-        const col1 = margin + 8
-        const col2 = pageWidth / 2
-
-        doc.setTextColor(...COLORS.gray)
-        doc.setFontSize(8)
-        doc.setFont('helvetica', 'bold')
-
-        // Infos principales
-        doc.text('N° SÉRIE', col1, yPos)
-        doc.text('GAMME DE MESURE', col2, yPos)
-
-        doc.setTextColor(...COLORS.dark)
         doc.setFontSize(9)
-        doc.setFont('helvetica', 'normal')
-        doc.text(detecteur.numero_serie || 'N/A', col1, yPos + 5)
-        doc.text(detecteur.gamme_mesure || 'N/A', col2, yPos + 5)
-
-        yPos += 15
-
-        // Étalonnage
-        doc.setTextColor(...COLORS.gray)
-        doc.setFontSize(8)
         doc.setFont('helvetica', 'bold')
-        doc.text('ÉTALONNAGE ZÉRO', col1, yPos)
-        doc.text('ÉTALONNAGE SENSIBILITÉ', col2, yPos)
-
-        yPos += 5
-        doc.setTextColor(...COLORS.dark)
-        doc.setFontSize(9)
-        doc.setFont('helvetica', 'normal')
-
-        const etalZero = `${detecteur.gaz_zero || 'N/A'} - ${detecteur.statut_zero || ''}`
-        doc.text(etalZero, col1, yPos)
-
-        const etalSensi = detecteur.valeur_apres_reglage
-          ? `Après: ${detecteur.valeur_apres_reglage} ${detecteur.unite_etal || ''}`
-          : 'N/A'
-        doc.text(etalSensi, col2, yPos)
-
-        // Statut avec badge
+        doc.text(`DÉTECTEUR GAZ N°${j + 1} - LIGNE ${detecteur.ligne}`, margin + 3, yPos + 5.5)
         yPos += 12
-        doc.setTextColor(...COLORS.gray)
-        doc.setFontSize(8)
-        doc.setFont('helvetica', 'bold')
-        doc.text('STATUT', col1, yPos)
 
-        if (detecteur.statut_sensi) {
-          const statusColor = detecteur.statut_sensi === 'OK' ? COLORS.success : COLORS.danger
-          doc.setFillColor(...statusColor)
-          doc.roundedRect(col1, yPos + 2, 25, 8, 4, 4, 'F')
-          doc.setTextColor(...COLORS.white)
-          doc.setFontSize(7)
-          doc.setFont('helvetica', 'bold')
-          doc.text(detecteur.statut_sensi, col1 + 12.5, yPos + 7, { align: 'center' })
+        // Tableau identification - seulement les champs remplis
+        const detGazData: string[][] = []
+        if (hasValue(detecteur.marque)) detGazData.push(['Marque', detecteur.marque])
+        if (hasValue(detecteur.modele)) detGazData.push(['Modèle', detecteur.modele])
+        if (hasValue(detecteur.numero_serie)) detGazData.push(['Numéro de série', detecteur.numero_serie])
+        const typeGazVal = detecteur.type_gaz || detecteur.gaz
+        if (hasValue(typeGazVal)) detGazData.push(['Type de gaz détecté', typeGazVal])
+        if (hasValue(detecteur.gamme_mesure)) detGazData.push(['Gamme de mesure', detecteur.gamme_mesure])
+        if (hasValue(detecteur.temps_reponse)) detGazData.push(['Temps de réponse (T90)', detecteur.temps_reponse])
+
+        autoTable(doc, {
+          startY: yPos,
+          body: detGazData,
+          theme: 'plain',
+          styles: { fontSize: 8, cellPadding: 3, lineColor: COLORS.border, lineWidth: 0.2 },
+          columnStyles: {
+            0: { fontStyle: 'bold', fillColor: COLORS.lightGray, cellWidth: 45 },
+          },
+          margin: { left: margin, right: pageWidth / 2 + 5 },
+        })
+
+        // Dates de remplacement (colonne droite) - seulement si remplies
+        const datesData: string[][] = []
+        if (hasValue(detecteur.date_remplacement)) {
+          datesData.push(['Date remplacement cellule', new Date(detecteur.date_remplacement).toLocaleDateString('fr-FR')])
+        }
+        if (hasValue(detecteur.date_prochain_remplacement)) {
+          datesData.push(['Prochain remplacement', new Date(detecteur.date_prochain_remplacement).toLocaleDateString('fr-FR')])
         }
 
-        // Dates de remplacement
-        if (detecteur.date_remplacement || detecteur.date_prochain_remplacement) {
-          doc.setTextColor(...COLORS.gray)
-          doc.setFontSize(8)
-          doc.setFont('helvetica', 'bold')
-          doc.text('REMPLACEMENT CELLULE', col2, yPos)
+        if (datesData.length > 0) {
+          autoTable(doc, {
+            startY: yPos,
+            body: datesData,
+            theme: 'plain',
+            styles: { fontSize: 8, cellPadding: 3, lineColor: COLORS.border, lineWidth: 0.2 },
+            columnStyles: {
+              0: { fontStyle: 'bold', fillColor: COLORS.lightGray, cellWidth: 45 },
+            },
+            margin: { left: pageWidth / 2 + 5, right: margin },
+          })
+        }
 
-          yPos += 5
-          doc.setTextColor(...COLORS.dark)
-          doc.setFontSize(8)
-          doc.setFont('helvetica', 'normal')
+        yPos = (doc as any).lastAutoTable.finalY + 8
 
-          if (detecteur.date_prochain_remplacement) {
-            const dateProch = new Date(detecteur.date_prochain_remplacement).toLocaleDateString('fr-FR')
-            doc.text(`Prochain: ${dateProch}`, col2, yPos)
+        // Données étalonnage zéro - seulement si remplies
+        const etalZeroData: string[][] = []
+        if (hasValue(detecteur.gaz_zero)) etalZeroData.push(['Gaz zéro utilisé', detecteur.gaz_zero])
+        if (hasValue(detecteur.statut_zero)) etalZeroData.push(['Statut', detecteur.statut_zero])
+
+        // Données étalonnage sensibilité - seulement si remplies
+        const etalSensiData: string[][] = []
+        if (hasValue(detecteur.gaz_etalon)) etalSensiData.push(['Gaz étalon', detecteur.gaz_etalon])
+        if (hasValue(detecteur.valeur_avant_reglage)) {
+          etalSensiData.push(['Valeur avant réglage', `${detecteur.valeur_avant_reglage} ${detecteur.unite_etal || ''}`.trim()])
+        }
+        if (hasValue(detecteur.valeur_apres_reglage)) {
+          etalSensiData.push(['Valeur après réglage', `${detecteur.valeur_apres_reglage} ${detecteur.unite_etal || ''}`.trim()])
+        }
+        if (hasValue(detecteur.coefficient)) etalSensiData.push(['Coefficient', detecteur.coefficient])
+        if (hasValue(detecteur.statut_sensi)) etalSensiData.push(['Statut', detecteur.statut_sensi])
+
+        // Afficher les sections étalonnage seulement si données présentes
+        const hasEtalZero = etalZeroData.length > 0
+        const hasEtalSensi = etalSensiData.length > 0
+
+        if (hasEtalZero || hasEtalSensi) {
+          // En-têtes étalonnage
+          if (hasEtalZero) {
+            doc.setFillColor(...COLORS.accent)
+            doc.rect(margin, yPos, hasEtalSensi ? (pageWidth - 2 * margin) / 2 - 3 : pageWidth - 2 * margin, 6, 'F')
+            doc.setTextColor(...COLORS.white)
+            doc.setFontSize(8)
+            doc.setFont('helvetica', 'bold')
+            doc.text('ÉTALONNAGE ZÉRO', margin + 3, yPos + 4)
           }
-        }
 
-        yPos = cardStartY + 85
+          if (hasEtalSensi) {
+            doc.setFillColor(...COLORS.accent)
+            doc.rect(hasEtalZero ? pageWidth / 2 + 2 : margin, yPos, hasEtalZero ? (pageWidth - 2 * margin) / 2 - 3 : pageWidth - 2 * margin, 6, 'F')
+            doc.setTextColor(...COLORS.white)
+            doc.setFontSize(8)
+            doc.setFont('helvetica', 'bold')
+            doc.text('ÉTALONNAGE SENSIBILITÉ', hasEtalZero ? pageWidth / 2 + 5 : margin + 3, yPos + 4)
+          }
+          yPos += 8
+
+          if (hasEtalZero) {
+            autoTable(doc, {
+              startY: yPos,
+              body: etalZeroData,
+              theme: 'plain',
+              styles: { fontSize: 8, cellPadding: 2, lineColor: COLORS.border, lineWidth: 0.2 },
+              columnStyles: {
+                0: { fontStyle: 'bold', fillColor: COLORS.lightGray, cellWidth: 35 },
+              },
+              margin: { left: margin, right: hasEtalSensi ? pageWidth / 2 + 5 : margin },
+            })
+          }
+
+          if (hasEtalSensi) {
+            const statutIndex = etalSensiData.findIndex(row => row[0] === 'Statut')
+            autoTable(doc, {
+              startY: yPos,
+              body: etalSensiData,
+              theme: 'plain',
+              styles: { fontSize: 8, cellPadding: 2, lineColor: COLORS.border, lineWidth: 0.2 },
+              columnStyles: {
+                0: { fontStyle: 'bold', fillColor: COLORS.lightGray, cellWidth: 40 },
+              },
+              margin: { left: hasEtalZero ? pageWidth / 2 + 5 : margin, right: margin },
+              didParseCell: function(data) {
+                if (data.section === 'body' && statutIndex >= 0 && data.row.index === statutIndex && data.column.index === 1) {
+                  const val = String(data.cell.raw)
+                  if (val === 'OK') {
+                    data.cell.styles.textColor = COLORS.success
+                    data.cell.styles.fontStyle = 'bold'
+                  } else if (val === 'NOK' || val === 'À remplacer') {
+                    data.cell.styles.textColor = COLORS.danger
+                    data.cell.styles.fontStyle = 'bold'
+                  }
+                }
+              },
+            })
+          }
+
+          yPos = (doc as any).lastAutoTable.finalY + 8
+        }
 
         // Seuils d'alarme
         if (detecteur.seuils && detecteur.seuils.length > 0) {
-          yPos = checkPageBreak(doc, yPos, 40)
-
-          doc.setFillColor(...COLORS.white)
-          doc.setDrawColor(...COLORS.lightGray)
-          doc.roundedRect(margin + 5, yPos, pageWidth - 2 * margin - 10, 8 + detecteur.seuils.length * 8, 3, 3, 'FD')
-
-          doc.setTextColor(...COLORS.secondary)
+          doc.setFillColor(...COLORS.warning)
+          doc.rect(margin, yPos, pageWidth - 2 * margin, 6, 'F')
+          doc.setTextColor(...COLORS.white)
           doc.setFontSize(8)
           doc.setFont('helvetica', 'bold')
-          doc.text('SEUILS D\'ALARME', margin + 10, yPos + 6)
+          doc.text('SEUILS D\'ALARME', margin + 3, yPos + 4)
+          yPos += 8
 
-          yPos += 10
-
-          const seuilsData = detecteur.seuils.map((seuil: any) => {
+          const seuilsTableData = detecteur.seuils.map((seuil: any) => {
             let asservStatus = 'Non'
             if (seuil.non_teste) asservStatus = 'Non testé'
             else if (seuil.asserv_operationnel) asservStatus = 'Oui'
@@ -464,19 +620,36 @@ export async function generateInterventionPDF(data: InterventionData) {
 
           autoTable(doc, {
             startY: yPos,
-            head: [['Seuil', 'Valeur', 'Asservissements', 'Opérationnel']],
-            body: seuilsData,
+            head: [['Niveau', 'Valeur', 'Asservissements', 'Asserv. opérationnel']],
+            body: seuilsTableData,
             theme: 'striped',
             styles: { fontSize: 8, cellPadding: 3 },
             headStyles: {
               fillColor: COLORS.secondary,
               textColor: COLORS.white,
               fontStyle: 'bold',
-              fontSize: 7
+              fontSize: 7,
             },
-            margin: { left: margin + 8, right: margin + 8 },
+            columnStyles: {
+              3: { halign: 'center', fontStyle: 'bold' }
+            },
+            didParseCell: function(data) {
+              if (data.section === 'body' && data.column.index === 3) {
+                const val = data.cell.raw as string
+                if (val === 'Oui') {
+                  data.cell.styles.textColor = COLORS.success
+                } else if (val === 'Non') {
+                  data.cell.styles.textColor = COLORS.danger
+                } else {
+                  data.cell.styles.textColor = COLORS.warning
+                }
+              }
+            },
+            margin: { left: margin, right: margin },
           })
-          yPos = (doc as any).lastAutoTable.finalY + 10
+          yPos = (doc as any).lastAutoTable.finalY + 12
+        } else {
+          yPos += 5
         }
       }
     }
@@ -486,110 +659,114 @@ export async function generateInterventionPDF(data: InterventionData) {
     // ============================================
 
     if (centrale.detecteurs_flamme && centrale.detecteurs_flamme.length > 0) {
-      yPos = checkPageBreak(doc, yPos, 40)
-      yPos = drawSectionHeader(doc, `Détecteurs Flamme (${centrale.detecteurs_flamme.length})`, yPos, COLORS.danger)
-      yPos += 10
+      yPos = checkPageBreak(doc, yPos, 60, currentPage)
+      if (yPos === 50) {
+        currentPage++
+        drawOfficialHeader(doc, `${equipementType.toUpperCase()} ${i + 1} - DÉTECTEURS FLAMME`)
+      }
 
-      for (const detecteur of centrale.detecteurs_flamme) {
-        yPos = checkPageBreak(doc, yPos, 50)
+      yPos = drawOfficialSection(doc, `${sommaire.length}.4 Détecteurs de Flamme (${centrale.detecteurs_flamme.length} unité(s))`, yPos)
 
-        // Carte du détecteur
-        doc.setFillColor(...COLORS.danger)
-        doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 12, 4, 4, 'F')
-        doc.rect(margin, yPos + 6, pageWidth - 2 * margin, 6, 'F')
+      for (let j = 0; j < centrale.detecteurs_flamme.length; j++) {
+        const detecteur = centrale.detecteurs_flamme[j]
 
-        doc.setTextColor(...COLORS.white)
-        doc.setFontSize(10)
-        doc.setFont('helvetica', 'bold')
-        doc.text(`LIGNE ${detecteur.ligne}  •  ${detecteur.marque} ${detecteur.modele}`, margin + 8, yPos + 8)
-
-        yPos += 12
-
-        // Corps
-        doc.setFillColor(...COLORS.lightGray)
-        doc.rect(margin, yPos, pageWidth - 2 * margin, 35, 'F')
-
-        yPos += 8
-        const col1 = margin + 8
-        const col2 = pageWidth / 2
-
-        doc.setTextColor(...COLORS.gray)
-        doc.setFontSize(8)
-        doc.setFont('helvetica', 'bold')
-        doc.text('N° SÉRIE', col1, yPos)
-        doc.text('TYPE CONNEXION', col2, yPos)
-
-        doc.setTextColor(...COLORS.dark)
-        doc.setFontSize(9)
-        doc.setFont('helvetica', 'normal')
-        doc.text(detecteur.numero_serie || 'N/A', col1, yPos + 5)
-        doc.text(detecteur.type_connexion || 'N/A', col2, yPos + 5)
-
-        yPos += 15
-
-        doc.setTextColor(...COLORS.gray)
-        doc.setFontSize(8)
-        doc.setFont('helvetica', 'bold')
-        doc.text('ASSERVISSEMENTS', col1, yPos)
-        doc.text('OPÉRATIONNEL', col2, yPos)
-
-        doc.setTextColor(...COLORS.dark)
-        doc.setFontSize(9)
-        doc.setFont('helvetica', 'normal')
-        doc.text(detecteur.asservissements || 'N/A', col1, yPos + 5)
-
-        // Badge statut
-        let status = 'Non'
-        let statusColor = COLORS.danger
-        if (detecteur.non_teste) {
-          status = 'Non testé'
-          statusColor = COLORS.warning
-        } else if (detecteur.asserv_operationnel) {
-          status = 'Oui'
-          statusColor = COLORS.success
+        yPos = checkPageBreak(doc, yPos, 60, currentPage)
+        if (yPos === 50) {
+          currentPage++
+          drawOfficialHeader(doc, `${equipementType.toUpperCase()} ${i + 1} - DÉTECTEURS FLAMME (SUITE)`)
         }
 
-        doc.setFillColor(...statusColor)
-        doc.roundedRect(col2, yPos + 1, 30, 8, 4, 4, 'F')
+        // Titre du détecteur
+        doc.setFillColor(...COLORS.danger)
+        doc.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F')
         doc.setTextColor(...COLORS.white)
-        doc.setFontSize(7)
+        doc.setFontSize(9)
         doc.setFont('helvetica', 'bold')
-        doc.text(status, col2 + 15, yPos + 6, { align: 'center' })
+        doc.text(`DÉTECTEUR FLAMME N°${j + 1} - LIGNE ${detecteur.ligne}`, margin + 3, yPos + 5.5)
+        yPos += 12
 
-        yPos += 25
+        // Tableau identification - seulement les champs remplis
+        let asservStatus = ''
+        if (detecteur.non_teste) asservStatus = 'Non testé'
+        else if (detecteur.asserv_operationnel === true) asservStatus = 'Oui'
+        else if (detecteur.asserv_operationnel === false) asservStatus = 'Non'
+
+        const detFlammeData: string[][] = []
+        if (hasValue(detecteur.marque)) detFlammeData.push(['Marque', detecteur.marque])
+        if (hasValue(detecteur.modele)) detFlammeData.push(['Modèle', detecteur.modele])
+        if (hasValue(detecteur.numero_serie)) detFlammeData.push(['Numéro de série', detecteur.numero_serie])
+        if (hasValue(detecteur.type_connexion)) detFlammeData.push(['Type de connexion', detecteur.type_connexion])
+        if (hasValue(detecteur.asservissements)) detFlammeData.push(['Asservissements', detecteur.asservissements])
+        if (hasValue(asservStatus)) detFlammeData.push(['Asservissement opérationnel', asservStatus])
+
+        if (detFlammeData.length > 0) {
+          const asservIndex = detFlammeData.findIndex(row => row[0] === 'Asservissement opérationnel')
+          autoTable(doc, {
+            startY: yPos,
+            body: detFlammeData,
+            theme: 'plain',
+            styles: { fontSize: 8, cellPadding: 3, lineColor: COLORS.border, lineWidth: 0.2 },
+            columnStyles: {
+              0: { fontStyle: 'bold', fillColor: COLORS.lightGray, cellWidth: 50 },
+            },
+            didParseCell: function(data) {
+              if (data.section === 'body' && asservIndex >= 0 && data.row.index === asservIndex && data.column.index === 1) {
+                const val = data.cell.raw as string
+                if (val === 'Oui') {
+                  data.cell.styles.textColor = COLORS.success
+                  data.cell.styles.fontStyle = 'bold'
+                } else if (val === 'Non') {
+                  data.cell.styles.textColor = COLORS.danger
+                  data.cell.styles.fontStyle = 'bold'
+                } else if (val === 'Non testé') {
+                  data.cell.styles.textColor = COLORS.warning
+                  data.cell.styles.fontStyle = 'bold'
+                }
+              }
+            },
+            margin: { left: margin, right: margin },
+          })
+          yPos = (doc as any).lastAutoTable.finalY + 12
+        }
       }
     }
 
     // ============================================
-    // OBSERVATIONS DE LA CENTRALE
+    // OBSERVATIONS / TRAVAUX / ANOMALIES
     // ============================================
 
-    const hasObservations = centrale.travaux_effectues || centrale.anomalies || centrale.recommandations || centrale.pieces_remplacees
+    const hasObs = centrale.travaux_effectues || centrale.anomalies || centrale.recommandations || centrale.pieces_remplacees
 
-    if (hasObservations) {
-      yPos = checkPageBreak(doc, yPos, 60)
-      yPos = drawSectionHeader(doc, 'Observations & Travaux', yPos, COLORS.secondary)
-      yPos += 10
+    if (hasObs) {
+      yPos = checkPageBreak(doc, yPos, 80, currentPage)
+      if (yPos === 50) {
+        currentPage++
+        drawOfficialHeader(doc, `${equipementType.toUpperCase()} ${i + 1} - OBSERVATIONS`)
+      }
+
+      yPos = drawOfficialSection(doc, `${sommaire.length}.5 Observations et travaux`, yPos)
 
       if (centrale.travaux_effectues) {
-        yPos = drawObservationCard(doc, 'Travaux effectués', centrale.travaux_effectues, yPos, COLORS.success)
+        yPos = drawObsBlock(doc, 'TRAVAUX EFFECTUÉS', centrale.travaux_effectues, yPos, COLORS.success)
       }
 
       if (centrale.anomalies) {
-        yPos = checkPageBreak(doc, yPos, 30)
-        yPos = drawObservationCard(doc, 'Anomalies constatées', centrale.anomalies, yPos, COLORS.danger)
+        yPos = checkPageBreak(doc, yPos, 30, currentPage)
+        yPos = drawObsBlock(doc, 'ANOMALIES CONSTATÉES', centrale.anomalies, yPos, COLORS.danger)
       }
 
       if (centrale.recommandations) {
-        yPos = checkPageBreak(doc, yPos, 30)
-        yPos = drawObservationCard(doc, 'Recommandations', centrale.recommandations, yPos, COLORS.accent)
+        yPos = checkPageBreak(doc, yPos, 30, currentPage)
+        yPos = drawObsBlock(doc, 'RECOMMANDATIONS', centrale.recommandations, yPos, COLORS.accent)
       }
 
       if (centrale.pieces_remplacees) {
-        yPos = checkPageBreak(doc, yPos, 30)
-        yPos = drawObservationCard(doc, 'Pièces remplacées', centrale.pieces_remplacees, yPos, COLORS.warning)
+        yPos = checkPageBreak(doc, yPos, 30, currentPage)
+        yPos = drawObsBlock(doc, 'PIÈCES REMPLACÉES', centrale.pieces_remplacees, yPos, COLORS.warning)
       }
     }
+
+    drawOfficialFooter(doc, currentPage)
   }
 
   // ============================================
@@ -598,11 +775,14 @@ export async function generateInterventionPDF(data: InterventionData) {
 
   if (photos && photos.length > 0) {
     doc.addPage()
-    drawPageHeader(doc, 'DOCUMENTATION PHOTOGRAPHIQUE')
-    yPos = 50
+    currentPage++
+    sommaire.push({ titre: `${sommaire.length + 1}. Documentation photographique`, page: currentPage })
+
+    drawOfficialHeader(doc, 'DOCUMENTATION PHOTOGRAPHIQUE')
+    yPos = 55
 
     const photosPerRow = 2
-    const photoWidth = (pageWidth - 2 * margin - 15) / photosPerRow
+    const photoWidth = (pageWidth - 2 * margin - 10) / photosPerRow
     const photoHeight = photoWidth * 0.75
     let currentX = margin
     let photosInRow = 0
@@ -610,67 +790,95 @@ export async function generateInterventionPDF(data: InterventionData) {
     for (const photo of photos) {
       if (photo.url) {
         try {
-          yPos = checkPageBreak(doc, yPos, photoHeight + 25)
+          yPos = checkPageBreak(doc, yPos, photoHeight + 20, currentPage)
+          if (yPos === 50) {
+            currentPage++
+            drawOfficialHeader(doc, 'DOCUMENTATION PHOTOGRAPHIQUE (SUITE)')
+            yPos = 55
+          }
 
-          // Cadre photo avec ombre
-          doc.setFillColor(220, 220, 220)
-          doc.roundedRect(currentX + 2, yPos + 2, photoWidth, photoHeight, 3, 3, 'F')
+          doc.setDrawColor(...COLORS.border)
+          doc.setLineWidth(0.5)
+          doc.rect(currentX, yPos, photoWidth, photoHeight, 'S')
 
-          doc.setFillColor(...COLORS.white)
-          doc.setDrawColor(...COLORS.lightGray)
-          doc.roundedRect(currentX, yPos, photoWidth, photoHeight, 3, 3, 'FD')
-
-          doc.addImage(photo.url, 'JPEG', currentX + 2, yPos + 2, photoWidth - 4, photoHeight - 4)
+          doc.addImage(photo.url, 'JPEG', currentX + 1, yPos + 1, photoWidth - 2, photoHeight - 2)
 
           if (photo.legende) {
-            doc.setFontSize(8)
+            doc.setFontSize(7)
             doc.setTextColor(...COLORS.gray)
             doc.setFont('helvetica', 'italic')
             const legendLines = doc.splitTextToSize(photo.legende, photoWidth - 4)
-            doc.text(legendLines, currentX + 2, yPos + photoHeight + 6)
+            doc.text(legendLines, currentX + 2, yPos + photoHeight + 4)
           }
 
           photosInRow++
-          currentX += photoWidth + 15
+          currentX += photoWidth + 10
 
           if (photosInRow >= photosPerRow) {
             photosInRow = 0
             currentX = margin
-            yPos += photoHeight + 25
+            yPos += photoHeight + 18
           }
         } catch (error) {
           console.error('Erreur ajout photo:', error)
         }
       }
     }
+
+    drawOfficialFooter(doc, currentPage)
   }
 
   // ============================================
-  // NUMÉROTATION DES PAGES
+  // REMPLIR LE SOMMAIRE (PAGE 2)
   // ============================================
 
-  const pageCount = doc.getNumberOfPages()
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i)
+  doc.setPage(sommairePageRef)
+  yPos = sommaireYRef
 
-    // Ligne de séparation pied de page
-    doc.setDrawColor(...COLORS.lightGray)
-    doc.setLineWidth(0.5)
-    doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15)
+  doc.setFillColor(...COLORS.lightGray)
+  doc.rect(margin, yPos, pageWidth - 2 * margin, sommaire.length * 10 + 15, 'F')
+
+  yPos += 8
+
+  sommaire.forEach((item, idx) => {
+    doc.setTextColor(...COLORS.dark)
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.text(item.titre, margin + 5, yPos)
+
+    // Points de conduite
+    const titleWidth = doc.getTextWidth(item.titre)
+    const pageNumWidth = doc.getTextWidth(String(item.page))
+    const dotsStart = margin + 5 + titleWidth + 2
+    const dotsEnd = pageWidth - margin - pageNumWidth - 10
+
+    doc.setTextColor(...COLORS.gray)
+    let dotX = dotsStart
+    while (dotX < dotsEnd) {
+      doc.text('.', dotX, yPos)
+      dotX += 2
+    }
 
     // Numéro de page
-    doc.setFontSize(8)
-    doc.setTextColor(...COLORS.gray)
-    doc.text(`Page ${i} sur ${pageCount}`, pageWidth - margin, pageHeight - 8, { align: 'right' })
-
-    // Nom entreprise
-    doc.setFont('helvetica', 'bold')
     doc.setTextColor(...COLORS.primary)
-    doc.text("SÉCUR'IT", margin, pageHeight - 8)
+    doc.setFont('helvetica', 'bold')
+    doc.text(String(item.page), pageWidth - margin - 5, yPos, { align: 'right' })
+
+    yPos += 10
+  })
+
+  // ============================================
+  // NUMÉROTATION FINALE DES PAGES
+  // ============================================
+
+  const totalPages = doc.getNumberOfPages()
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i)
+    drawOfficialFooter(doc, i, totalPages)
   }
 
   // ============================================
-  // SAUVEGARDE DU FICHIER
+  // SAUVEGARDE
   // ============================================
 
   const sanitizeFileName = (str: string) => {
@@ -694,97 +902,112 @@ export async function generateInterventionPDF(data: InterventionData) {
 // FONCTIONS UTILITAIRES
 // ============================================
 
-function drawPageHeader(doc: jsPDF, title: string) {
-  const pageWidth = doc.internal.pageSize.width
-
-  // Bandeau rouge
-  doc.setFillColor(...COLORS.primary)
-  doc.rect(0, 0, pageWidth, 35, 'F')
-
-  // Titre
-  doc.setTextColor(...COLORS.white)
-  doc.setFontSize(14)
-  doc.setFont('helvetica', 'bold')
-  doc.text(title, pageWidth / 2, 22, { align: 'center' })
-}
-
-function drawSectionHeader(doc: jsPDF, title: string, yPos: number, color: [number, number, number]): number {
+function drawOfficialHeader(doc: jsPDF, title: string) {
   const pageWidth = doc.internal.pageSize.width
   const margin = 15
 
-  // Pastille colorée
-  doc.setFillColor(...color)
-  doc.circle(margin + 4, yPos + 2, 4, 'F')
+  // Bandeau supérieur
+  doc.setFillColor(...COLORS.primary)
+  doc.rect(0, 0, pageWidth, 12, 'F')
 
-  // Titre
-  doc.setTextColor(...COLORS.dark)
-  doc.setFontSize(12)
-  doc.setFont('helvetica', 'bold')
-  doc.text(title, margin + 12, yPos + 5)
-
-  // Ligne
-  doc.setDrawColor(...color)
-  doc.setLineWidth(0.8)
-  const textWidth = doc.getTextWidth(title)
-  doc.line(margin + 14 + textWidth, yPos + 3, pageWidth - margin, yPos + 3)
-
-  return yPos + 12
-}
-
-function drawInfoField(doc: jsPDF, label: string, value: string, x: number, y: number, maxWidth?: number) {
-  doc.setTextColor(...COLORS.gray)
+  // Logo petit à gauche
+  doc.setTextColor(...COLORS.white)
   doc.setFontSize(8)
   doc.setFont('helvetica', 'bold')
-  doc.text(label, x, y - 3)
+  doc.text("SÉCUR'IT", margin, 8)
+
+  // Date à droite
+  doc.setFont('helvetica', 'normal')
+  doc.text(new Date().toLocaleDateString('fr-FR'), pageWidth - margin, 8, { align: 'right' })
+
+  // Titre de la section
+  doc.setFillColor(...COLORS.lightGray)
+  doc.rect(0, 12, pageWidth, 25, 'F')
 
   doc.setTextColor(...COLORS.dark)
-  doc.setFontSize(11)
-  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(14)
+  doc.setFont('helvetica', 'bold')
+  doc.text(title, pageWidth / 2, 28, { align: 'center' })
 
-  if (maxWidth) {
-    const lines = doc.splitTextToSize(value, maxWidth)
-    doc.text(lines[0] || value, x, y + 4)
-  } else {
-    doc.text(value, x, y + 4)
-  }
+  // Ligne sous le titre
+  doc.setDrawColor(...COLORS.primary)
+  doc.setLineWidth(1)
+  doc.line(margin, 37, pageWidth - margin, 37)
 }
 
-function drawObservationCard(doc: jsPDF, title: string, content: string, yPos: number, color: [number, number, number]): number {
+function drawOfficialFooter(doc: jsPDF, pageNum: number, totalPages?: number) {
+  const pageWidth = doc.internal.pageSize.width
+  const pageHeight = doc.internal.pageSize.height
+  const margin = 15
+
+  // Ligne de séparation
+  doc.setDrawColor(...COLORS.border)
+  doc.setLineWidth(0.5)
+  doc.line(margin, pageHeight - 18, pageWidth - margin, pageHeight - 18)
+
+  // Coordonnées
+  doc.setTextColor(...COLORS.gray)
+  doc.setFontSize(7)
+  doc.setFont('helvetica', 'normal')
+  doc.text('SÉCUR\'IT - 6 rue Georges BRASSENS, 31140 Fonbeauzard - Tél: 06 13 84 53 98', margin, pageHeight - 12)
+
+  // Numéro de page
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...COLORS.primary)
+  const pageText = totalPages ? `Page ${pageNum} / ${totalPages}` : `Page ${pageNum}`
+  doc.text(pageText, pageWidth - margin, pageHeight - 12, { align: 'right' })
+}
+
+function drawOfficialSection(doc: jsPDF, title: string, yPos: number): number {
+  const margin = 15
+
+  doc.setTextColor(...COLORS.secondary)
+  doc.setFontSize(11)
+  doc.setFont('helvetica', 'bold')
+  doc.text(title, margin, yPos)
+
+  doc.setDrawColor(...COLORS.primary)
+  doc.setLineWidth(0.5)
+  doc.line(margin, yPos + 2, margin + doc.getTextWidth(title), yPos + 2)
+
+  return yPos + 10
+}
+
+function drawObsBlock(doc: jsPDF, title: string, content: string, yPos: number, color: [number, number, number]): number {
   const pageWidth = doc.internal.pageSize.width
   const margin = 15
 
-  const lines = doc.splitTextToSize(content, pageWidth - 2 * margin - 25)
-  const cardHeight = Math.max(25, lines.length * 5 + 15)
-
-  // Fond
-  doc.setFillColor(...COLORS.lightGray)
-  doc.roundedRect(margin, yPos, pageWidth - 2 * margin, cardHeight, 4, 4, 'F')
+  const lines = doc.splitTextToSize(content, pageWidth - 2 * margin - 15)
+  const blockHeight = Math.max(20, lines.length * 4.5 + 12)
 
   // Bordure gauche colorée
   doc.setFillColor(...color)
-  doc.roundedRect(margin, yPos, 5, cardHeight, 2, 2, 'F')
-  doc.rect(margin + 2, yPos, 3, cardHeight, 'F')
+  doc.rect(margin, yPos, 4, blockHeight, 'F')
+
+  // Fond
+  doc.setFillColor(...COLORS.lightGray)
+  doc.rect(margin + 4, yPos, pageWidth - 2 * margin - 4, blockHeight, 'F')
 
   // Titre
   doc.setTextColor(...color)
-  doc.setFontSize(9)
+  doc.setFontSize(8)
   doc.setFont('helvetica', 'bold')
-  doc.text(title.toUpperCase(), margin + 12, yPos + 8)
+  doc.text(title, margin + 8, yPos + 6)
 
   // Contenu
   doc.setTextColor(...COLORS.dark)
-  doc.setFontSize(9)
+  doc.setFontSize(8)
   doc.setFont('helvetica', 'normal')
-  doc.text(lines, margin + 12, yPos + 15)
+  doc.text(lines, margin + 8, yPos + 12)
 
-  return yPos + cardHeight + 8
+  return yPos + blockHeight + 6
 }
 
-function checkPageBreak(doc: jsPDF, yPos: number, spaceNeeded: number): number {
+function checkPageBreak(doc: jsPDF, yPos: number, spaceNeeded: number, currentPage: number): number {
   const pageHeight = doc.internal.pageSize.height
   if (yPos + spaceNeeded > pageHeight - 25) {
     doc.addPage()
-    return 20
+    return 50 // Position après le header
   }
   return yPos
 }
