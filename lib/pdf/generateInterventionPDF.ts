@@ -194,9 +194,6 @@ export async function generateInterventionPDF(data: InterventionData) {
   doc.text(`Rapport N° ${intervention.id?.substring(0, 8).toUpperCase() || 'N/A'}`, margin, pageHeight - 25)
   doc.text(`Document généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`, margin, pageHeight - 20)
 
-  // Pied de page
-  drawOfficialFooter(doc, 1)
-
   // ============================================
   // PAGE 2 - SOMMAIRE
   // ============================================
@@ -216,8 +213,6 @@ export async function generateInterventionPDF(data: InterventionData) {
   doc.setFontSize(10)
   doc.setFont('helvetica', 'italic')
   doc.text('(Sommaire généré automatiquement)', pageWidth / 2, yPos + 20, { align: 'center' })
-
-  drawOfficialFooter(doc, currentPage)
 
   // ============================================
   // PAGE 3 - SYNTHÈSE / RÉCAPITULATIF
@@ -327,8 +322,6 @@ export async function generateInterventionPDF(data: InterventionData) {
     yPos = (doc as any).lastAutoTable.finalY + 10
   }
 
-  drawOfficialFooter(doc, currentPage)
-
   // ============================================
   // PAGE 4+ - OBSERVATIONS GÉNÉRALES
   // ============================================
@@ -356,8 +349,6 @@ export async function generateInterventionPDF(data: InterventionData) {
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...COLORS.dark)
     doc.text(obsLines, margin + 5, yPos + 8)
-
-    drawOfficialFooter(doc, currentPage)
   }
 
   // ============================================
@@ -765,8 +756,6 @@ export async function generateInterventionPDF(data: InterventionData) {
         yPos = drawObsBlock(doc, 'PIÈCES REMPLACÉES', centrale.pieces_remplacees, yPos, COLORS.warning)
       }
     }
-
-    drawOfficialFooter(doc, currentPage)
   }
 
   // ============================================
@@ -824,8 +813,6 @@ export async function generateInterventionPDF(data: InterventionData) {
         }
       }
     }
-
-    drawOfficialFooter(doc, currentPage)
   }
 
   // ============================================
