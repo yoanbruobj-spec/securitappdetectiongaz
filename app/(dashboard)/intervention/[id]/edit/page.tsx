@@ -106,6 +106,7 @@ export default function InterventionEditPage() {
   const [currentCentraleIndex, setCurrentCentraleIndex] = useState(0)
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Intervention data
   const [interventionId, setInterventionId] = useState('')
@@ -172,7 +173,7 @@ export default function InterventionEditPage() {
         setHeureDebut(interventionData.heure_debut || '')
         setHeureFin(interventionData.heure_fin || '')
         setTechnicien(interventionData.technicien || '')
-        
+
         // Convertir l'ENUM en texte français
         const typeReverseMap: { [key: string]: string } = {
           'maintenance_preventive': 'Maintenance préventive',
@@ -184,14 +185,14 @@ export default function InterventionEditPage() {
         }
         const typeFr = typeReverseMap[interventionData.type] || 'Maintenance préventive'
         setTypeIntervention([typeFr])
-        
+
         setClientId(interventionData.sites?.client_id || '')
         setSiteId(interventionData.site_id || '')
         setLocal(interventionData.local || '')
         setContactSite(interventionData.contact_site || '')
         setTelContact(interventionData.tel_contact || '')
         setEmailRapport(interventionData.email_rapport || '')
-        
+
         // Séparer observations et conclusion
         const obs = interventionData.observations_generales || ''
         const conclusionIndex = obs.indexOf('\n\nCONCLUSION:\n')
@@ -434,6 +435,7 @@ export default function InterventionEditPage() {
     setCentrales([...centrales, newCentrale])
     setCurrentCentraleIndex(centrales.length)
     setCurrentSection('centrale')
+    setMobileMenuOpen(false)
   }
 
   function addAutomate() {
@@ -463,6 +465,7 @@ export default function InterventionEditPage() {
     setCentrales([...centrales, newAutomate])
     setCurrentCentraleIndex(centrales.length)
     setCurrentSection('centrale')
+    setMobileMenuOpen(false)
   }
 
   function removeCentrale(index: number) {
@@ -508,7 +511,7 @@ export default function InterventionEditPage() {
             date_remplacement: '',
             date_prochain_remplacement: '',
             seuils: [],
-          }]
+          }],
         }
       }
       return c
@@ -518,25 +521,22 @@ export default function InterventionEditPage() {
   function removeDetecteurGaz(centraleIndex: number, detecteurIndex: number) {
     setCentrales(centrales.map((c, i) => {
       if (i === centraleIndex) {
-        return { ...c, detecteurs_gaz: c.detecteurs_gaz.filter((_, di) => di !== detecteurIndex) }
+        return {
+          ...c,
+          detecteurs_gaz: c.detecteurs_gaz.filter((_, j) => j !== detecteurIndex),
+        }
       }
       return c
     }))
   }
 
   function updateDetecteurGaz(centraleIndex: number, detecteurIndex: number, field: keyof DetecteurGaz, value: any) {
-    console.log('updateDetecteurGaz:', { centraleIndex, detecteurIndex, field, value })
-    setCentrales(prevCentrales => prevCentrales.map((c, i) => {
+    setCentrales(centrales.map((c, i) => {
       if (i === centraleIndex) {
-        const newDetecteurs = c.detecteurs_gaz.map((d, di) => {
-          if (di === detecteurIndex) {
-            const updated = { ...d, [field]: value }
-            console.log('Détecteur gaz updated:', updated)
-            return updated
-          }
-          return d
-        })
-        return { ...c, detecteurs_gaz: newDetecteurs }
+        return {
+          ...c,
+          detecteurs_gaz: c.detecteurs_gaz.map((d, j) => j === detecteurIndex ? { ...d, [field]: value } : d),
+        }
       }
       return c
     }))
@@ -547,13 +547,14 @@ export default function InterventionEditPage() {
       if (i === centraleIndex) {
         return {
           ...c,
-          detecteurs_gaz: c.detecteurs_gaz.map((d, di) => {
-            if (di === detecteurIndex) {
+          detecteurs_gaz: c.detecteurs_gaz.map((d, j) => {
+            if (j === detecteurIndex) {
+              const seuilNumber = d.seuils.length + 1
               return {
                 ...d,
                 seuils: [...d.seuils, {
                   id: Date.now().toString(),
-                  nom: `Seuil ${d.seuils.length + 1}`,
+                  nom: `Seuil ${seuilNumber}`,
                   valeur: '',
                   unite: 'ppm',
                   asservissements: '',
@@ -561,11 +562,11 @@ export default function InterventionEditPage() {
                   operationnel: true,
                   supervision: false,
                   non_teste: false,
-                }]
+                }],
               }
             }
             return d
-          })
+          }),
         }
       }
       return c
@@ -577,12 +578,15 @@ export default function InterventionEditPage() {
       if (i === centraleIndex) {
         return {
           ...c,
-          detecteurs_gaz: c.detecteurs_gaz.map((d, di) => {
-            if (di === detecteurIndex) {
-              return { ...d, seuils: d.seuils.filter((_, si) => si !== seuilIndex) }
+          detecteurs_gaz: c.detecteurs_gaz.map((d, j) => {
+            if (j === detecteurIndex) {
+              return {
+                ...d,
+                seuils: d.seuils.filter((_, k) => k !== seuilIndex),
+              }
             }
             return d
-          })
+          }),
         }
       }
       return c
@@ -594,15 +598,15 @@ export default function InterventionEditPage() {
       if (i === centraleIndex) {
         return {
           ...c,
-          detecteurs_gaz: c.detecteurs_gaz.map((d, di) => {
-            if (di === detecteurIndex) {
+          detecteurs_gaz: c.detecteurs_gaz.map((d, j) => {
+            if (j === detecteurIndex) {
               return {
                 ...d,
-                seuils: d.seuils.map((s, si) => si === seuilIndex ? { ...s, [field]: value } : s)
+                seuils: d.seuils.map((s, k) => k === seuilIndex ? { ...s, [field]: value } : s),
               }
             }
             return d
-          })
+          }),
         }
       }
       return c
@@ -630,7 +634,7 @@ export default function InterventionEditPage() {
             asserv_operationnel: true,
             operationnel: true,
             non_teste: false,
-          }]
+          }],
         }
       }
       return c
@@ -640,87 +644,42 @@ export default function InterventionEditPage() {
   function removeDetecteurFlamme(centraleIndex: number, detecteurIndex: number) {
     setCentrales(centrales.map((c, i) => {
       if (i === centraleIndex) {
-        return { ...c, detecteurs_flamme: c.detecteurs_flamme.filter((_, di) => di !== detecteurIndex) }
+        return {
+          ...c,
+          detecteurs_flamme: c.detecteurs_flamme.filter((_, j) => j !== detecteurIndex),
+        }
       }
       return c
     }))
   }
 
   function updateDetecteurFlamme(centraleIndex: number, detecteurIndex: number, field: keyof DetecteurFlamme, value: any) {
-    console.log('updateDetecteurFlamme:', { centraleIndex, detecteurIndex, field, value })
-    setCentrales(prevCentrales => {
-      const newCentrales = prevCentrales.map((c, i) => {
-        if (i === centraleIndex) {
-          const newDetecteurs = c.detecteurs_flamme.map((d, di) => {
-            if (di === detecteurIndex) {
-              const updated = { ...d, [field]: value }
-              console.log('Détecteur flamme updated:', updated)
-              return updated
-            }
-            return d
-          })
-          return { ...c, detecteurs_flamme: newDetecteurs }
+    setCentrales(centrales.map((c, i) => {
+      if (i === centraleIndex) {
+        return {
+          ...c,
+          detecteurs_flamme: c.detecteurs_flamme.map((d, j) => j === detecteurIndex ? { ...d, [field]: value } : d),
         }
-        return c
-      })
-      console.log('New centrales state:', newCentrales)
-      return newCentrales
-    })
-  }
-
-  function calculateCoefficient(centraleIndex: number, detecteurIndex: number) {
-    const detecteur = centrales[centraleIndex]?.detecteurs_gaz[detecteurIndex]
-    if (!detecteur) return
-
-    const theorique = parseFloat(detecteur.valeur_avant_reglage.replace(',', '.'))
-    const mesuree = parseFloat(detecteur.valeur_apres_reglage.replace(',', '.'))
-
-    if (!isNaN(theorique) && !isNaN(mesuree) && mesuree !== 0) {
-      const coef = (theorique / mesuree).toFixed(3)
-      updateDetecteurGaz(centraleIndex, detecteurIndex, 'coefficient', coef)
-    }
-  }
-
-  async function handleSaveAsNew() {
-    setLoading(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      // Créer une nouvelle intervention (même code que handleSave mais sans update)
-      await saveIntervention(user, true)
-    } catch (error: any) {
-      console.error('Erreur complète:', error)
-      alert('Erreur lors de la création : ' + error.message)
-    } finally {
-      setLoading(false)
-    }
+      }
+      return c
+    }))
   }
 
   async function handleSave() {
+    await saveIntervention(false)
+  }
+
+  async function handleSaveAsNew() {
+    await saveIntervention(true)
+  }
+
+  async function saveIntervention(isNew: boolean = false) {
     setLoading(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      // Mettre à jour l'intervention existante
-      await saveIntervention(user, false)
-    } catch (error: any) {
-      console.error('Erreur complète:', error)
-      alert('Erreur lors de la mise à jour : ' + error.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function saveIntervention(user: any, isNew: boolean) {
-      // Préparer les données
-      const observationsCompletes = [
-        observationsGenerales,
-        conclusion ? `\n\nCONCLUSION:\n${conclusion}` : ''
-      ].filter(Boolean).join('')
-
-      // Convertir le type d'intervention en format ENUM
+      // Map type to ENUM value
       const typeMap: { [key: string]: string } = {
         'Maintenance préventive': 'maintenance_preventive',
         'Maintenance corrective': 'maintenance_corrective',
@@ -731,64 +690,71 @@ export default function InterventionEditPage() {
       }
       const typeEnum = typeMap[typeIntervention[0]] || 'maintenance_preventive'
 
-      const interventionData = {
-        date_intervention: dateIntervention,
-        heure_debut: heureDebut,
-        heure_fin: heureFin,
-        technicien: technicien,
-        technicien_id: user.id,
-        type: typeEnum,
-        site_id: siteId,
-        local: local,
-        contact_site: contactSite,
-        tel_contact: telContact,
-        email_rapport: emailRapport,
-        observations_generales: observationsCompletes,
-        statut: 'planifiee' as const,
-      }
-
-      let interventionId: string
+      // Combiner observations et conclusion
+      const observationsComplete = conclusion
+        ? `${observationsGenerales}\n\nCONCLUSION:\n${conclusion}`
+        : observationsGenerales
 
       if (isNew) {
-        // Créer une nouvelle intervention
-        const { data: newIntervention, error: interventionError } = await supabase
+        // Créer nouvelle intervention
+        const { data: newIntervention, error: createError } = await supabase
           .from('interventions')
-          .insert(interventionData)
+          .insert({
+            site_id: siteId,
+            date_intervention: dateIntervention,
+            heure_debut: heureDebut,
+            heure_fin: heureFin,
+            technicien: technicien,
+            type: typeEnum,
+            local: local,
+            contact_site: contactSite,
+            tel_contact: telContact,
+            email_rapport: emailRapport,
+            observations_generales: observationsComplete,
+            statut: 'brouillon',
+            created_by: user.id,
+          })
           .select()
           .single()
 
-        if (interventionError) throw interventionError
-        interventionId = newIntervention.id
+        if (createError) throw createError
+        setInterventionId(newIntervention.id)
       } else {
-        // Mettre à jour l'intervention existante
-        const { error: interventionError } = await supabase
+        // Update existing intervention
+        const { error: updateError } = await supabase
           .from('interventions')
-          .update(interventionData)
+          .update({
+            site_id: siteId,
+            date_intervention: dateIntervention,
+            heure_debut: heureDebut,
+            heure_fin: heureFin,
+            technicien: technicien,
+            type: typeEnum,
+            local: local,
+            contact_site: contactSite,
+            tel_contact: telContact,
+            email_rapport: emailRapport,
+            observations_generales: observationsComplete,
+          })
           .eq('id', params.id)
 
-        if (interventionError) throw interventionError
-        interventionId = params.id as string
-
-        // Delete existing centrales and related data
-        const { error: deleteError } = await supabase
-          .from('centrales')
-          .delete()
-          .eq('intervention_id', params.id)
-
-        if (deleteError) throw deleteError
+        if (updateError) throw updateError
       }
 
-      // Insert updated centrales
-      for (const centrale of centrales) {
-        if (!centrale.marque) continue
+      // Delete existing centrales (cascade will handle related data)
+      if (!isNew) {
+        await supabase.from('centrales').delete().eq('intervention_id', params.id)
+      }
 
+      // Save centrales
+      for (const centrale of centrales) {
         const { data: centraleData, error: centraleError } = await supabase
           .from('centrales')
           .insert({
-            intervention_id: interventionId,
-            type_equipement: centrale.type_equipement || 'centrale',
-            marque: centrale.marque,
-            marque_personnalisee: centrale.marque_personnalisee || null,
+            intervention_id: isNew ? interventionId : params.id,
+            type_equipement: centrale.type_equipement,
+            marque: centrale.marque === 'Autre' ? centrale.marque_personnalisee : centrale.marque,
+            marque_personnalisee: centrale.marque_personnalisee,
             modele: centrale.modele,
             numero_serie: centrale.numero_serie,
             firmware: centrale.firmware,
@@ -864,7 +830,7 @@ export default function InterventionEditPage() {
 
           for (const seuil of detecteur.seuils) {
             if (!seuil.valeur) continue
-            
+
             await supabase.from('seuils_alarme').insert({
               detecteur_gaz_id: detecteurData.id,
               niveau: parseInt(seuil.nom.match(/\d+/)?.[0] || '1'),
@@ -918,7 +884,7 @@ export default function InterventionEditPage() {
           ordre: i,
           uploaded_by: user.id,
         })
-        
+
         if (insertPhotoError) {
           console.error('Erreur sauvegarde photo', i, ':', insertPhotoError)
         }
@@ -931,7 +897,13 @@ export default function InterventionEditPage() {
         alert('Intervention mise à jour avec succès !')
         router.push(`/intervention/${params.id}`)
       }
+  } catch (error: any) {
+    console.error('Erreur lors de la sauvegarde:', error)
+    alert('Erreur lors de la sauvegarde : ' + error.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   if (initialLoading) {
     return (
@@ -943,10 +915,167 @@ export default function InterventionEditPage() {
 
   const currentCentrale = centrales[currentCentraleIndex]
 
+  // Navigation items pour mobile
+  const navigationItems = [
+    { id: 'info', label: 'Info', icon: '📋' },
+    { id: 'client', label: 'Client', icon: '👤' },
+    ...centrales.map((c, i) => ({
+      id: `centrale-${i}`,
+      label: c.type_equipement === 'automate' ? `Auto ${i + 1}` : `Cent ${i + 1}`,
+      icon: c.type_equipement === 'automate' ? '⚙️' : '🔧'
+    })),
+    { id: 'conclusion', label: 'Conclusion', icon: '✅' },
+  ]
+
+  const handleNavClick = (id: string) => {
+    if (id === 'info') {
+      setCurrentSection('info')
+    } else if (id === 'client') {
+      setCurrentSection('client')
+    } else if (id === 'conclusion') {
+      setCurrentSection('conclusion')
+    } else if (id.startsWith('centrale-')) {
+      const index = parseInt(id.replace('centrale-', ''))
+      setCurrentCentraleIndex(index)
+      setCurrentSection('centrale')
+    }
+    setMobileMenuOpen(false)
+  }
+
+  const getCurrentNavId = () => {
+    if (currentSection === 'centrale') return `centrale-${currentCentraleIndex}`
+    return currentSection
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 lg:pb-0">
+      {/* Header Mobile avec navigation */}
+      <div className="lg:hidden sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between px-4 py-3">
+          <button
+            onClick={() => router.push(`/intervention/${params.id}`)}
+            className="p-2 -ml-2 text-slate-600"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <h1 className="font-semibold text-slate-800 truncate">Modifier Intervention</h1>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 -mr-2 text-slate-600"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Navigation horizontale scrollable sur mobile */}
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex px-2 pb-2 gap-1 min-w-max">
+            {navigationItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  getCurrentNavId() === item.id
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-slate-700 hover:bg-gray-200'
+                }`}
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Menu mobile déroulant */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setMobileMenuOpen(false)}>
+          <div
+            className="absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-lg text-slate-800">Navigation</h2>
+                <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-slate-500">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <nav className="p-4 space-y-2">
+              <button
+                onClick={() => handleNavClick('info')}
+                className={`w-full text-left px-4 py-3 rounded-xl transition font-medium ${
+                  currentSection === 'info' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-gray-100'
+                }`}
+              >
+                📋 Info intervention
+              </button>
+              <button
+                onClick={() => handleNavClick('client')}
+                className={`w-full text-left px-4 py-3 rounded-xl transition font-medium ${
+                  currentSection === 'client' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-gray-100'
+                }`}
+              >
+                👤 Client & Site
+              </button>
+
+              <div className="pt-2 border-t border-gray-200">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-4">Équipements</p>
+                {centrales.map((centrale, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleNavClick(`centrale-${index}`)}
+                    className={`w-full text-left px-4 py-3 rounded-xl transition font-medium ${
+                      currentSection === 'centrale' && currentCentraleIndex === index
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {centrale.type_equipement === 'automate' ? '⚙️ Automate' : '🔧 Centrale'} {index + 1}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={addCentrale}
+                  className="flex-1 px-3 py-3 rounded-xl bg-green-600 hover:bg-green-700 transition text-white text-sm font-medium"
+                >
+                  + Centrale
+                </button>
+                <button
+                  onClick={addAutomate}
+                  className="flex-1 px-3 py-3 rounded-xl bg-orange-600 hover:bg-orange-700 transition text-white text-sm font-medium"
+                >
+                  + Automate
+                </button>
+              </div>
+
+              <button
+                onClick={() => handleNavClick('conclusion')}
+                className={`w-full text-left px-4 py-3 rounded-xl transition font-medium ${
+                  currentSection === 'conclusion' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-gray-100'
+                }`}
+              >
+                ✅ Conclusion finale
+              </button>
+            </nav>
+          </div>
+        </div>
+      )}
+
       <div className="flex">
-        <aside className="w-64 min-h-screen bg-white border-r border-gray-300 shadow-sm p-6">
+        {/* Sidebar Desktop - cachée sur mobile */}
+        <aside className="hidden lg:block w-64 min-h-screen bg-white border-r border-gray-300 shadow-sm p-6 sticky top-0">
           <h2 className="text-xl font-bold mb-8 text-slate-800">Modifier Intervention</h2>
           <nav className="space-y-2">
             <button
@@ -965,7 +1094,7 @@ export default function InterventionEditPage() {
             >
               Client & Site
             </button>
-            
+
             {centrales.map((centrale, index) => (
               <button
                 key={index}
@@ -1030,19 +1159,21 @@ export default function InterventionEditPage() {
           </div>
         </aside>
 
-        <main className="flex-1 p-8 overflow-auto bg-gray-50">
+        {/* Main Content */}
+        <main className="flex-1 p-4 lg:p-8 overflow-auto bg-gray-50">
           {currentSection === 'info' && (
             <div className="max-w-4xl mx-auto">
-              <h1 className="text-3xl font-bold mb-8 text-slate-800">Informations Intervention</h1>
-              <div className="bg-white border border-gray-300 shadow-sm rounded-lg p-6 space-y-6">
-                <div className="grid grid-cols-3 gap-4">
+              <h1 className="text-2xl lg:text-3xl font-bold mb-6 lg:mb-8 text-slate-800">Informations Intervention</h1>
+              <div className="bg-white border border-gray-300 shadow-sm rounded-xl lg:rounded-lg p-4 lg:p-6 space-y-5 lg:space-y-6">
+                {/* Date et heures - 1 col mobile, 3 cols desktop */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-slate-700">Date intervention</label>
                     <input
                       type="date"
                       value={dateIntervention}
                       onChange={e => setDateIntervention(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                     />
                   </div>
                   <div>
@@ -1051,7 +1182,7 @@ export default function InterventionEditPage() {
                       type="time"
                       value={heureDebut}
                       onChange={e => setHeureDebut(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                     />
                   </div>
                   <div>
@@ -1060,7 +1191,7 @@ export default function InterventionEditPage() {
                       type="time"
                       value={heureFin}
                       onChange={e => setHeureFin(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                     />
                   </div>
                 </div>
@@ -1070,7 +1201,7 @@ export default function InterventionEditPage() {
                   <select
                     value={technicien}
                     onChange={e => setTechnicien(e.target.value)}
-                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                    className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                     required
                   >
                     <option value="">Sélectionner un technicien</option>
@@ -1083,10 +1214,10 @@ export default function InterventionEditPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-slate-700">Type d'intervention</label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <label className="block text-sm font-medium mb-3 text-slate-700">Type d'intervention</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {['Maintenance préventive', 'Maintenance corrective', 'Installation', 'Mise en service', 'Dépannage', 'Autre'].map(type => (
-                      <label key={type} className="flex items-center space-x-2 cursor-pointer text-slate-700">
+                      <label key={type} className="flex items-center gap-3 p-3 lg:p-2 bg-gray-50 rounded-xl lg:rounded-lg cursor-pointer hover:bg-gray-100 transition">
                         <input
                           type="checkbox"
                           checked={typeIntervention.includes(type)}
@@ -1097,9 +1228,9 @@ export default function InterventionEditPage() {
                               setTypeIntervention(typeIntervention.filter(t => t !== type))
                             }
                           }}
-                          className="w-4 h-4"
+                          className="w-5 h-5 lg:w-4 lg:h-4 rounded"
                         />
-                        <span>{type}</span>
+                        <span className="text-slate-700">{type}</span>
                       </label>
                     ))}
                   </div>
@@ -1110,14 +1241,14 @@ export default function InterventionEditPage() {
 
           {currentSection === 'client' && (
             <div className="max-w-4xl mx-auto">
-              <h1 className="text-3xl font-bold mb-8 text-slate-800">Client & Site</h1>
-              <div className="bg-white border border-gray-300 shadow-sm rounded-lg p-6 space-y-6">
+              <h1 className="text-2xl lg:text-3xl font-bold mb-6 lg:mb-8 text-slate-800">Client & Site</h1>
+              <div className="bg-white border border-gray-300 shadow-sm rounded-xl lg:rounded-lg p-4 lg:p-6 space-y-5 lg:space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-slate-700">Client</label>
                   <select
                     value={clientId}
                     onChange={e => setClientId(e.target.value)}
-                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                    className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                   >
                     <option value="">Sélectionner un client</option>
                     {clients.map(client => (
@@ -1132,7 +1263,7 @@ export default function InterventionEditPage() {
                     value={siteId}
                     onChange={e => setSiteId(e.target.value)}
                     disabled={!clientId}
-                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-slate-800"
+                    className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-slate-800 text-base"
                   >
                     <option value="">Sélectionner un site</option>
                     {sites.map(site => (
@@ -1148,18 +1279,19 @@ export default function InterventionEditPage() {
                     value={local}
                     onChange={e => setLocal(e.target.value)}
                     placeholder="Ex: Chaufferie, Local technique..."
-                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                    className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                {/* Contact - 1 col mobile, 3 cols desktop */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-slate-700">Contact sur site</label>
                     <input
                       type="text"
                       value={contactSite}
                       onChange={e => setContactSite(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                     />
                   </div>
                   <div>
@@ -1168,7 +1300,7 @@ export default function InterventionEditPage() {
                       type="tel"
                       value={telContact}
                       onChange={e => setTelContact(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                     />
                   </div>
                   <div>
@@ -1177,7 +1309,7 @@ export default function InterventionEditPage() {
                       type="email"
                       value={emailRapport}
                       onChange={e => setEmailRapport(e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                      className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                     />
                   </div>
                 </div>
@@ -1185,46 +1317,47 @@ export default function InterventionEditPage() {
             </div>
           )}
 
-          {/* Centrale section - reuse the same components from create page */}
+          {/* Centrale section */}
           {currentSection === 'centrale' && currentCentrale && (
             <div className="max-w-7xl mx-auto">
-              <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-slate-800">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 lg:mb-8">
+                <h1 className="text-2xl lg:text-3xl font-bold text-slate-800">
                   {currentCentrale.type_equipement === 'automate' ? 'Automate' : 'Centrale'} {currentCentraleIndex + 1}
                 </h1>
                 {centrales.length > 1 && (
                   <button
                     onClick={() => removeCentrale(currentCentraleIndex)}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm text-white"
+                    className="px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-xl lg:rounded-lg text-sm text-white font-medium"
                   >
                     Supprimer {currentCentrale.type_equipement === 'automate' ? 'cet automate' : 'cette centrale'}
                   </button>
                 )}
               </div>
 
-              <div className="bg-white border border-gray-300 shadow-sm rounded-lg p-6 space-y-8">
+              <div className="bg-white border border-gray-300 shadow-sm rounded-xl lg:rounded-lg p-4 lg:p-6 space-y-6 lg:space-y-8">
                 <div>
-                  <h2 className="text-xl font-bold mb-4 text-slate-800">Informations {currentCentrale.type_equipement === 'automate' ? 'automate' : 'centrale'}</h2>
+                  <h2 className="text-lg lg:text-xl font-bold mb-4 text-slate-800">Informations {currentCentrale.type_equipement === 'automate' ? 'automate' : 'centrale'}</h2>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-2 text-slate-700">Type d'équipement</label>
                       <select
                         value={currentCentrale.type_equipement}
                         onChange={e => updateCentrale(currentCentraleIndex, 'type_equipement', e.target.value)}
-                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                        className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                       >
                         <option value="centrale">Centrale</option>
                         <option value="automate">Automate</option>
                       </select>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* Marque/Modèle - 1 col mobile, 2 cols desktop */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2 text-slate-700">Marque</label>
                         <select
                           value={currentCentrale.marque}
                           onChange={e => updateCentrale(currentCentraleIndex, 'marque', e.target.value)}
-                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                          className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                         >
                           <option value="">Sélectionner une marque</option>
                           {Object.keys(CENTRALES_DATA).map(marque => (
@@ -1239,7 +1372,7 @@ export default function InterventionEditPage() {
                           value={currentCentrale.modele}
                           onChange={e => updateCentrale(currentCentraleIndex, 'modele', e.target.value)}
                           disabled={!currentCentrale.marque}
-                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-slate-800"
+                          className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-slate-800 text-base"
                         >
                           <option value="">Sélectionner un modèle</option>
                           {currentCentrale.marque && CENTRALES_DATA[currentCentrale.marque as keyof typeof CENTRALES_DATA]?.map(modele => (
@@ -1257,19 +1390,20 @@ export default function InterventionEditPage() {
                           value={currentCentrale.marque_personnalisee}
                           onChange={e => updateCentrale(currentCentraleIndex, 'marque_personnalisee', e.target.value)}
                           placeholder="Saisir la marque..."
-                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                          className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                         />
                       </div>
                     )}
 
-                    <div className="grid grid-cols-3 gap-4">
+                    {/* Série/Firmware/État - 1 col mobile, 3 cols desktop */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2 text-slate-700">N° de série</label>
                         <input
                           type="text"
                           value={currentCentrale.numero_serie}
                           onChange={e => updateCentrale(currentCentraleIndex, 'numero_serie', e.target.value)}
-                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                          className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                         />
                       </div>
                       <div>
@@ -1278,7 +1412,7 @@ export default function InterventionEditPage() {
                           type="text"
                           value={currentCentrale.firmware}
                           onChange={e => updateCentrale(currentCentraleIndex, 'firmware', e.target.value)}
-                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                          className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                         />
                       </div>
                       <div>
@@ -1286,7 +1420,7 @@ export default function InterventionEditPage() {
                         <select
                           value={currentCentrale.etat_general}
                           onChange={e => updateCentrale(currentCentraleIndex, 'etat_general', e.target.value)}
-                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                          className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                         >
                           <option value="Bon">Bon</option>
                           <option value="Acceptable">Acceptable</option>
@@ -1296,26 +1430,27 @@ export default function InterventionEditPage() {
                       </div>
                     </div>
 
+                    {/* Section AES */}
                     <div className="border-t border-gray-200 pt-4 mt-4">
-                      <label className="flex items-center space-x-2 mb-4 cursor-pointer text-slate-700">
+                      <label className="flex items-center gap-3 p-3 lg:p-2 bg-gray-50 rounded-xl lg:rounded-lg cursor-pointer">
                         <input
                           type="checkbox"
                           checked={currentCentrale.aes_presente}
                           onChange={e => updateCentrale(currentCentraleIndex, 'aes_presente', e.target.checked)}
-                          className="w-4 h-4"
+                          className="w-5 h-5 lg:w-4 lg:h-4"
                         />
-                        <span className="font-medium">AES (Alimentation de secours) présente</span>
+                        <span className="font-medium text-slate-700">AES (Alimentation de secours) présente</span>
                       </label>
 
                       {currentCentrale.aes_presente && (
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-gray-50 border border-gray-200 rounded-xl lg:rounded-lg p-4 mt-4 space-y-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-medium mb-2 text-slate-700">Modèle</label>
                               <select
                                 value={currentCentrale.aes_modele}
                                 onChange={e => updateCentrale(currentCentraleIndex, 'aes_modele', e.target.value)}
-                                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                                className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                               >
                                 <option value="">Sélectionner</option>
                                 {MODELES_BATTERIES.map(modele => (
@@ -1328,7 +1463,7 @@ export default function InterventionEditPage() {
                               <select
                                 value={currentCentrale.aes_statut}
                                 onChange={e => updateCentrale(currentCentraleIndex, 'aes_statut', e.target.value)}
-                                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                                className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                               >
                                 <option value="Bon">Bon</option>
                                 <option value="À surveiller">À surveiller</option>
@@ -1339,24 +1474,24 @@ export default function InterventionEditPage() {
                             </div>
                           </div>
 
-                          <label className="flex items-center space-x-2 cursor-pointer text-slate-700">
+                          <label className="flex items-center gap-3 p-2 cursor-pointer text-slate-700">
                             <input
                               type="checkbox"
                               checked={currentCentrale.aes_ondulee}
                               onChange={e => updateCentrale(currentCentraleIndex, 'aes_ondulee', e.target.checked)}
-                              className="w-4 h-4"
+                              className="w-5 h-5 lg:w-4 lg:h-4"
                             />
                             <span className="text-sm">Ondulée</span>
                           </label>
 
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-medium mb-2 text-slate-700">Date remplacement</label>
                               <input
                                 type="date"
                                 value={currentCentrale.aes_date_remplacement || ''}
                                 onChange={e => updateCentrale(currentCentraleIndex, 'aes_date_remplacement', e.target.value)}
-                                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                                className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                               />
                             </div>
                             <div>
@@ -1365,7 +1500,7 @@ export default function InterventionEditPage() {
                                 type="date"
                                 value={currentCentrale.aes_prochaine_echeance}
                                 onChange={e => updateCentrale(currentCentraleIndex, 'aes_prochaine_echeance', e.target.value)}
-                                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                                className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                               />
                             </div>
                           </div>
@@ -1377,429 +1512,440 @@ export default function InterventionEditPage() {
 
                 {/* Detecteurs Gaz section */}
                 <div className="border-t border-gray-200 pt-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-slate-800">Détecteurs Gaz</h2>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                    <h2 className="text-lg lg:text-xl font-bold text-slate-800">Détecteurs Gaz</h2>
                     <button
                       onClick={() => addDetecteurGaz(currentCentraleIndex)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+                      className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl lg:rounded-lg text-sm text-white font-medium"
                     >
                       + Ajouter détecteur gaz
                     </button>
                   </div>
 
                   {currentCentrale.detecteurs_gaz.length === 0 ? (
-                    <p className="text-slate-600 text-sm">Aucun détecteur gaz. Cliquez sur "+ Ajouter détecteur gaz" pour commencer.</p>
+                    <p className="text-slate-600 text-sm p-4 bg-gray-50 rounded-xl">Aucun détecteur gaz. Cliquez sur "+ Ajouter détecteur gaz" pour commencer.</p>
                   ) : (
                     <div className="space-y-4">
                       {currentCentrale.detecteurs_gaz.map((detecteur, detecteurIndex) => (
-                        <div key={detecteur.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                          <div className="flex justify-between items-center mb-3">
+                        <div key={detecteur.id} className="bg-gray-50 border border-gray-200 rounded-xl lg:rounded-lg p-4">
+                          <div className="flex justify-between items-center mb-4">
                             <h3 className="font-bold text-slate-800">Détecteur Gaz {detecteurIndex + 1}</h3>
-                            {currentCentrale.detecteurs_gaz.length > 0 && (
                             <button
                               onClick={() => removeDetecteurGaz(currentCentraleIndex, detecteurIndex)}
-                              className="text-red-600 hover:text-red-700 text-sm"
+                              className="text-red-600 hover:text-red-700 text-sm font-medium px-3 py-1"
                             >
                               Supprimer
                             </button>
-                          )}
-                        </div>
+                          </div>
 
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-4 gap-3">
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Ligne</label>
-                              <input
-                                type="text"
-                                value={detecteur.ligne}
-                                onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'ligne', e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Marque</label>
-                              <select
-                                value={detecteur.marque}
-                                onChange={e => {
-                                  updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'marque', e.target.value)
-                                  updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'modele', '')
-                                }}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              >
-                                <option value="">Sélectionner</option>
-                                {Object.keys(DETECTEURS_GAZ_DATA).map(marque => (
-                                  <option key={marque} value={marque}>{marque}</option>
-                                ))}
-                                <option value="Autre">Autre</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Modèle</label>
-                              {detecteur.marque === 'Autre' ? (
+                          <div className="space-y-4">
+                            {/* Ligne/Marque/Modèle/Série - Responsive grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                              <div>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Ligne</label>
                                 <input
                                   type="text"
-                                  value={detecteur.modele}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
-                                  placeholder="Saisir le modèle..."
-                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  value={detecteur.ligne}
+                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'ligne', e.target.value)}
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
-                              ) : (
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Marque</label>
                                 <select
-                                  value={detecteur.modele}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
-                                  disabled={!detecteur.marque}
-                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                  value={detecteur.marque}
+                                  onChange={e => {
+                                    updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'marque', e.target.value)
+                                    updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'modele', '')
+                                  }}
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                   <option value="">Sélectionner</option>
-                                  {detecteur.marque && DETECTEURS_GAZ_DATA[detecteur.marque as keyof typeof DETECTEURS_GAZ_DATA]?.map(modele => (
-                                    <option key={modele} value={modele}>{modele}</option>
+                                  {Object.keys(DETECTEURS_GAZ_DATA).map(marque => (
+                                    <option key={marque} value={marque}>{marque}</option>
                                   ))}
+                                  <option value="Autre">Autre</option>
                                 </select>
-                              )}
-                            </div>
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">N° série</label>
-                              <input
-                                type="text"
-                                value={detecteur.numero_serie}
-                                onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'numero_serie', e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Type de gaz</label>
-                              <select
-                                value={detecteur.type_gaz}
-                                onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'type_gaz', e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              >
-                                <option value="">Sélectionner</option>
-                                {ALL_GAZ.map(gaz => (
-                                  <option key={gaz.value} value={gaz.value}>{gaz.label}</option>
-                                ))}
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Type connexion</label>
-                              <select
-                                value={detecteur.type_connexion}
-                                onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'type_connexion', e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              >
-                                {TYPES_CONNEXION.map(type => (
-                                  <option key={type} value={type}>{type}</option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-
-                          {detecteur.type_connexion === 'Autre' && (
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Préciser connexion</label>
-                              <input
-                                type="text"
-                                value={detecteur.connexion_autre}
-                                onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'connexion_autre', e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                            </div>
-                          )}
-
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Gamme de mesure</label>
-                              <input
-                                type="text"
-                                value={detecteur.gamme_mesure}
-                                onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'gamme_mesure', e.target.value)}
-                                placeholder="Ex: 0-100 ppm"
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Temps de réponse</label>
-                              <input
-                                type="text"
-                                value={detecteur.temps_reponse}
-                                onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'temps_reponse', e.target.value)}
-                                placeholder="Ex: T90 < 30s"
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="border-t border-gray-300 pt-3">
-                            <h4 className="text-sm font-semibold mb-2">Test zéro</h4>
-                            <div className="grid grid-cols-4 gap-2">
+                              </div>
                               <div>
-                                <label className="block text-xs mb-1 text-slate-700">Gaz zéro</label>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Modèle</label>
+                                {detecteur.marque === 'Autre' ? (
+                                  <input
+                                    type="text"
+                                    value={detecteur.modele}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
+                                    placeholder="Saisir le modèle..."
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                ) : (
+                                  <select
+                                    value={detecteur.modele}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
+                                    disabled={!detecteur.marque}
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                  >
+                                    <option value="">Sélectionner</option>
+                                    {detecteur.marque && DETECTEURS_GAZ_DATA[detecteur.marque as keyof typeof DETECTEURS_GAZ_DATA]?.map(modele => (
+                                      <option key={modele} value={modele}>{modele}</option>
+                                    ))}
+                                  </select>
+                                )}
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">N° série</label>
+                                <input
+                                  type="text"
+                                  value={detecteur.numero_serie}
+                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'numero_serie', e.target.value)}
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Type gaz et connexion */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Type de gaz</label>
                                 <select
-                                  value={detecteur.gaz_zero}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'gaz_zero', e.target.value)}
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
+                                  value={detecteur.type_gaz}
+                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'type_gaz', e.target.value)}
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                  {GAZ_ETALON_ZERO.map(gaz => (
-                                    <option key={gaz} value={gaz}>{gaz}</option>
+                                  <option value="">Sélectionner</option>
+                                  {ALL_GAZ.map(gaz => (
+                                    <option key={gaz.value} value={gaz.value}>{gaz.label}</option>
                                   ))}
                                 </select>
                               </div>
                               <div>
-                                <label className="block text-xs mb-1 text-slate-700">Valeur avant</label>
-                                <input
-                                  type="text"
-                                  value={detecteur.valeur_avant}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_avant', e.target.value)}
-                                  placeholder="0,0"
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs mb-1 text-slate-700">Valeur après</label>
-                                <input
-                                  type="text"
-                                  value={detecteur.valeur_apres}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_apres', e.target.value)}
-                                  placeholder="0,0"
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs mb-1 text-slate-700">Statut</label>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Type connexion</label>
                                 <select
-                                  value={detecteur.statut_zero}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'statut_zero', e.target.value)}
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
+                                  value={detecteur.type_connexion}
+                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'type_connexion', e.target.value)}
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                  <option value="OK">OK</option>
-                                  <option value="Dérive">Dérive</option>
-                                  <option value="HS">HS</option>
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="border-t border-gray-300 pt-3">
-                            <h4 className="text-sm font-semibold mb-2">Étalonnage sensibilité</h4>
-                            <div className="grid grid-cols-6 gap-2">
-                              <div>
-                                <label className="block text-xs mb-1 text-slate-700">Gaz étalonnage</label>
-                                <input
-                                  type="text"
-                                  value={detecteur.gaz_sensi}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'gaz_sensi', e.target.value)}
-                                  placeholder="Ex: CO"
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs mb-1 text-slate-700">Valeur avant réglage</label>
-                                <input
-                                  type="text"
-                                  value={detecteur.valeur_avant_reglage}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_avant_reglage', e.target.value)}
-                                  placeholder="100"
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs mb-1 text-slate-700">Valeur après réglage</label>
-                                <input
-                                  type="text"
-                                  value={detecteur.valeur_apres_reglage}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_apres_reglage', e.target.value)}
-                                  placeholder="98"
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs mb-1 text-slate-700">Unité</label>
-                                <select
-                                  value={detecteur.unite_etal}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'unite_etal', e.target.value)}
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
-                                >
-                                  {UNITES_MESURE.map(unite => (
-                                    <option key={unite} value={unite}>{unite}</option>
+                                  {TYPES_CONNEXION.map(type => (
+                                    <option key={type} value={type}>{type}</option>
                                   ))}
                                 </select>
                               </div>
+                            </div>
+
+                            {detecteur.type_connexion === 'Autre' && (
                               <div>
-                                <label className="block text-xs mb-1 text-slate-700">Coefficient</label>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Préciser connexion</label>
                                 <input
                                   type="text"
-                                  value={detecteur.coefficient}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'coefficient', e.target.value)}
-                                  placeholder="1.020"
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
+                                  value={detecteur.connexion_autre}
+                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'connexion_autre', e.target.value)}
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
-                              </div>
-                              <div>
-                                <label className="block text-xs mb-1 text-slate-700">Statut</label>
-                                <select
-                                  value={detecteur.statut_sensi}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'statut_sensi', e.target.value)}
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
-                                >
-                                  <option value="OK">OK</option>
-                                  <option value="Dérive acceptable">Dérive acceptable</option>
-                                  <option value="Dérive limite">Dérive limite</option>
-                                  <option value="HS">HS</option>
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="border-t border-gray-300 pt-3">
-                            <div className="flex justify-between items-center mb-2">
-                              <h4 className="text-sm font-semibold">Seuils d'alarme</h4>
-                              <button
-                                onClick={() => addSeuil(currentCentraleIndex, detecteurIndex)}
-                                className="text-xs px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded"
-                              >
-                                + Ajouter seuil
-                              </button>
-                            </div>
-
-                            {detecteur.seuils.length === 0 ? (
-                              <p className="text-xs text-slate-600">Aucun seuil configuré</p>
-                            ) : (
-                              <div className="space-y-2">
-                                {detecteur.seuils.map((seuil, seuilIndex) => (
-                                  <div key={seuil.id} className="bg-white rounded p-3">
-                                    <div className="flex justify-between items-start mb-2">
-                                      <input
-                                        type="text"
-                                        value={seuil.nom}
-                                        onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'nom', e.target.value)}
-                                        className="font-medium bg-transparent border-b border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="Nom du seuil"
-                                      />
-                                      <button
-                                        onClick={() => removeSeuil(currentCentraleIndex, detecteurIndex, seuilIndex)}
-                                        className="text-red-600 hover:text-red-700 text-xs"
-                                      >
-                                        Supprimer
-                                      </button>
-                                    </div>
-                                    <div className="grid grid-cols-6 gap-2">
-                                      <div>
-                                        <label className="block text-xs mb-1 text-slate-700">Valeur</label>
-                                        <input
-                                          type="text"
-                                          value={seuil.valeur}
-                                          onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'valeur', e.target.value)}
-                                          className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
-                                        />
-                                      </div>
-                                      <div>
-                                        <label className="block text-xs mb-1 text-slate-700">Unité</label>
-                                        <select
-                                          value={seuil.unite}
-                                          onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'unite', e.target.value)}
-                                          className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
-                                        >
-                                          {UNITES_MESURE.map(unite => (
-                                            <option key={unite} value={unite}>{unite}</option>
-                                          ))}
-                                        </select>
-                                      </div>
-                                      <div className="col-span-2">
-                                        <label className="block text-xs mb-1 text-slate-700">Asservissements</label>
-                                        <input
-                                          type="text"
-                                          value={seuil.asservissements}
-                                          onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'asservissements', e.target.value)}
-                                          placeholder="Ex: Ventilation, Sirène..."
-                                          className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
-                                        />
-                                      </div>
-                                      <div>
-                                        <label className="block text-xs mb-1 text-slate-700">Asserv. OK</label>
-                                        <select
-                                          value={seuil.asserv_operationnel ? 'true' : 'false'}
-                                          onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'asserv_operationnel', e.target.value === 'true')}
-                                          className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
-                                        >
-                                          <option value="true">Oui</option>
-                                          <option value="false">Non</option>
-                                        </select>
-                                      </div>
-                                      <div>
-                                        <label className="block text-xs mb-1 text-slate-700">Flags</label>
-                                        <div className="flex gap-2 mt-1">
-                                          <label className="flex items-center space-x-1 cursor-pointer" title="Supervision">
-                                            <input
-                                              type="checkbox"
-                                              checked={seuil.supervision}
-                                              onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'supervision', e.target.checked)}
-                                              className="w-3 h-3"
-                                            />
-                                            <span className="text-xs">SUP</span>
-                                          </label>
-                                          <label className="flex items-center space-x-1 cursor-pointer" title="Non testé">
-                                            <input
-                                              type="checkbox"
-                                              checked={seuil.non_teste}
-                                              onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'non_teste', e.target.checked)}
-                                              className="w-3 h-3"
-                                            />
-                                            <span className="text-xs">NT</span>
-                                          </label>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
                               </div>
                             )}
-                          </div>
 
-                          <div className="border-t border-gray-300 pt-3 space-y-3">
-                            <div className="grid grid-cols-2 gap-4">
+                            {/* Gamme et temps */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div>
-                                <label className="block text-xs mb-1 text-slate-700">Date de remplacement</label>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Gamme de mesure</label>
                                 <input
-                                  type="date"
-                                  value={detecteur.date_remplacement || ''}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'date_remplacement', e.target.value)}
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
+                                  type="text"
+                                  value={detecteur.gamme_mesure}
+                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'gamme_mesure', e.target.value)}
+                                  placeholder="Ex: 0-100 ppm"
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs mb-1 text-slate-700">Prochain remplacement théorique</label>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Temps de réponse</label>
+                                <input
+                                  type="text"
+                                  value={detecteur.temps_reponse}
+                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'temps_reponse', e.target.value)}
+                                  placeholder="Ex: T90 < 30s"
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Test zéro */}
+                            <div className="border-t border-gray-300 pt-4">
+                              <h4 className="text-sm font-semibold mb-3 text-slate-800">Test zéro</h4>
+                              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                                <div className="col-span-2 lg:col-span-1">
+                                  <label className="block text-xs font-medium mb-1.5 text-slate-700">Gaz zéro</label>
+                                  <select
+                                    value={detecteur.gaz_zero}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'gaz_zero', e.target.value)}
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                  >
+                                    {GAZ_ETALON_ZERO.map(gaz => (
+                                      <option key={gaz} value={gaz}>{gaz}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium mb-1.5 text-slate-700">Valeur avant</label>
+                                  <input
+                                    type="text"
+                                    value={detecteur.valeur_avant}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_avant', e.target.value)}
+                                    placeholder="0,0"
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium mb-1.5 text-slate-700">Valeur après</label>
+                                  <input
+                                    type="text"
+                                    value={detecteur.valeur_apres}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_apres', e.target.value)}
+                                    placeholder="0,0"
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium mb-1.5 text-slate-700">Statut</label>
+                                  <select
+                                    value={detecteur.statut_zero}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'statut_zero', e.target.value)}
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                  >
+                                    <option value="OK">OK</option>
+                                    <option value="Dérive">Dérive</option>
+                                    <option value="HS">HS</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Étalonnage sensibilité */}
+                            <div className="border-t border-gray-300 pt-4">
+                              <h4 className="text-sm font-semibold mb-3 text-slate-800">Étalonnage sensibilité</h4>
+                              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                                <div>
+                                  <label className="block text-xs font-medium mb-1.5 text-slate-700">Gaz étalonnage</label>
+                                  <input
+                                    type="text"
+                                    value={detecteur.gaz_sensi}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'gaz_sensi', e.target.value)}
+                                    placeholder="Ex: CO"
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium mb-1.5 text-slate-700">Avant réglage</label>
+                                  <input
+                                    type="text"
+                                    value={detecteur.valeur_avant_reglage}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_avant_reglage', e.target.value)}
+                                    placeholder="100"
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium mb-1.5 text-slate-700">Après réglage</label>
+                                  <input
+                                    type="text"
+                                    value={detecteur.valeur_apres_reglage}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'valeur_apres_reglage', e.target.value)}
+                                    placeholder="98"
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium mb-1.5 text-slate-700">Unité</label>
+                                  <select
+                                    value={detecteur.unite_etal}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'unite_etal', e.target.value)}
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                  >
+                                    {UNITES_MESURE.map(unite => (
+                                      <option key={unite} value={unite}>{unite}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium mb-1.5 text-slate-700">Coefficient</label>
+                                  <input
+                                    type="text"
+                                    value={detecteur.coefficient}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'coefficient', e.target.value)}
+                                    placeholder="1.020"
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium mb-1.5 text-slate-700">Statut</label>
+                                  <select
+                                    value={detecteur.statut_sensi}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'statut_sensi', e.target.value)}
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                  >
+                                    <option value="OK">OK</option>
+                                    <option value="Dérive acceptable">Dérive acceptable</option>
+                                    <option value="Dérive limite">Dérive limite</option>
+                                    <option value="HS">HS</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Seuils d'alarme */}
+                            <div className="border-t border-gray-300 pt-4">
+                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-3">
+                                <h4 className="text-sm font-semibold text-slate-800">Seuils d'alarme</h4>
+                                <button
+                                  onClick={() => addSeuil(currentCentraleIndex, detecteurIndex)}
+                                  className="text-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl lg:rounded text-white font-medium"
+                                >
+                                  + Ajouter seuil
+                                </button>
+                              </div>
+
+                              {detecteur.seuils.length === 0 ? (
+                                <p className="text-xs text-slate-600 p-3 bg-white rounded-lg">Aucun seuil configuré</p>
+                              ) : (
+                                <div className="space-y-3">
+                                  {detecteur.seuils.map((seuil, seuilIndex) => (
+                                    <div key={seuil.id} className="bg-white rounded-xl lg:rounded p-4">
+                                      <div className="flex justify-between items-center mb-3">
+                                        <input
+                                          type="text"
+                                          value={seuil.nom}
+                                          onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'nom', e.target.value)}
+                                          className="font-medium bg-transparent border-b border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 py-1"
+                                          placeholder="Nom du seuil"
+                                        />
+                                        <button
+                                          onClick={() => removeSeuil(currentCentraleIndex, detecteurIndex, seuilIndex)}
+                                          className="text-red-600 hover:text-red-700 text-sm font-medium px-2"
+                                        >
+                                          Supprimer
+                                        </button>
+                                      </div>
+                                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                                        <div>
+                                          <label className="block text-xs font-medium mb-1.5 text-slate-700">Valeur</label>
+                                          <input
+                                            type="text"
+                                            value={seuil.valeur}
+                                            onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'valeur', e.target.value)}
+                                            className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-xs font-medium mb-1.5 text-slate-700">Unité</label>
+                                          <select
+                                            value={seuil.unite}
+                                            onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'unite', e.target.value)}
+                                            className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                          >
+                                            {UNITES_MESURE.map(unite => (
+                                              <option key={unite} value={unite}>{unite}</option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        <div className="col-span-2 lg:col-span-1">
+                                          <label className="block text-xs font-medium mb-1.5 text-slate-700">Asservissements</label>
+                                          <input
+                                            type="text"
+                                            value={seuil.asservissements}
+                                            onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'asservissements', e.target.value)}
+                                            placeholder="Ex: Sirène, Vanne..."
+                                            className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-wrap gap-4 mt-3">
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                            type="checkbox"
+                                            checked={seuil.asserv_operationnel}
+                                            onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'asserv_operationnel', e.target.checked)}
+                                            className="w-4 h-4"
+                                          />
+                                          <span className="text-xs text-slate-700">Asserv. OK</span>
+                                        </label>
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                            type="checkbox"
+                                            checked={seuil.operationnel}
+                                            onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'operationnel', e.target.checked)}
+                                            className="w-4 h-4"
+                                          />
+                                          <span className="text-xs text-slate-700">Opérationnel</span>
+                                        </label>
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                            type="checkbox"
+                                            checked={seuil.supervision}
+                                            onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'supervision', e.target.checked)}
+                                            className="w-4 h-4"
+                                          />
+                                          <span className="text-xs text-slate-700">Supervision</span>
+                                        </label>
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                            type="checkbox"
+                                            checked={seuil.non_teste}
+                                            onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'non_teste', e.target.checked)}
+                                            className="w-4 h-4"
+                                          />
+                                          <span className="text-xs text-slate-700">Non testé</span>
+                                        </label>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Statut détecteur */}
+                            <div className="border-t border-gray-300 pt-4">
+                              <div className="flex flex-wrap gap-4">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={detecteur.operationnel}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'operationnel', e.target.checked)}
+                                    className="w-5 h-5 lg:w-4 lg:h-4"
+                                  />
+                                  <span className="text-sm text-slate-700">Opérationnel</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={detecteur.non_teste}
+                                    onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'non_teste', e.target.checked)}
+                                    className="w-5 h-5 lg:w-4 lg:h-4"
+                                  />
+                                  <span className="text-sm text-slate-700">Non testé</span>
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* Dates remplacement */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
+                              <div>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Date remplacement</label>
+                                <input
+                                  type="date"
+                                  value={detecteur.date_remplacement}
+                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'date_remplacement', e.target.value)}
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Prochain remplacement</label>
                                 <input
                                   type="date"
                                   value={detecteur.date_prochain_remplacement}
                                   onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'date_prochain_remplacement', e.target.value)}
-                                  className="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs"
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded text-sm"
                                 />
                               </div>
                             </div>
-                            <div className="flex gap-4">
-                              <label className="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={detecteur.operationnel}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'operationnel', e.target.checked)}
-                                  className="w-4 h-4"
-                                />
-                                <span className="text-sm">Opérationnel</span>
-                              </label>
-                              <label className="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={detecteur.non_teste}
-                                  onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'non_teste', e.target.checked)}
-                                  className="w-4 h-4"
-                                />
-                                <span className="text-sm">Non testé</span>
-                              </label>
-                            </div>
                           </div>
-                        </div>
                         </div>
                       ))}
                     </div>
@@ -1807,202 +1953,201 @@ export default function InterventionEditPage() {
                 </div>
 
                 {/* Detecteurs Flamme section */}
-                <div className="border-t border-gray-300 pt-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-slate-800">Détecteurs Flamme</h2>
+                <div className="border-t border-gray-200 pt-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                    <h2 className="text-lg lg:text-xl font-bold text-slate-800">Détecteurs Flamme</h2>
                     <button
                       onClick={() => addDetecteurFlamme(currentCentraleIndex)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white"
+                      className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 rounded-xl lg:rounded-lg text-sm text-white font-medium"
                     >
                       + Ajouter détecteur flamme
                     </button>
                   </div>
 
                   {currentCentrale.detecteurs_flamme.length === 0 ? (
-                    <p className="text-slate-600 text-sm">Aucun détecteur flamme. Cliquez sur "+ Ajouter détecteur flamme" pour commencer.</p>
+                    <p className="text-slate-600 text-sm p-4 bg-gray-50 rounded-xl">Aucun détecteur flamme. Cliquez sur "+ Ajouter détecteur flamme" pour commencer.</p>
                   ) : (
                     <div className="space-y-4">
                       {currentCentrale.detecteurs_flamme.map((detecteur, detecteurIndex) => (
-                        <div key={detecteur.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                          <div className="flex justify-between items-center mb-3">
+                        <div key={detecteur.id} className="bg-gray-50 border border-gray-200 rounded-xl lg:rounded-lg p-4">
+                          <div className="flex justify-between items-center mb-4">
                             <h3 className="font-bold text-slate-800">Détecteur Flamme {detecteurIndex + 1}</h3>
-                            {currentCentrale.detecteurs_flamme.length > 0 && (
                             <button
                               onClick={() => removeDetecteurFlamme(currentCentraleIndex, detecteurIndex)}
-                              className="text-red-600 hover:text-red-700 text-sm"
+                              className="text-red-600 hover:text-red-700 text-sm font-medium px-3 py-1"
                             >
                               Supprimer
                             </button>
-                          )}
-                        </div>
+                          </div>
 
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-4 gap-3">
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Ligne</label>
-                              <input
-                                type="text"
-                                value={detecteur.ligne}
-                                onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'ligne', e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Marque</label>
-                              <select
-                                value={detecteur.marque}
-                                onChange={e => {
-                                  console.log('Marque flamme sélectionnée:', e.target.value)
-                                  updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'marque', e.target.value)
-                                  updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'modele', '')
-                                }}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                              >
-                                <option value="">Sélectionner</option>
-                                {Object.keys(DETECTEURS_FLAMME_DATA).map(marque => (
-                                  <option key={marque} value={marque}>{marque}</option>
-                                ))}
-                                <option value="Autre">Autre</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Modèle</label>
-                              {detecteur.marque === 'Autre' ? (
+                          <div className="space-y-4">
+                            {/* Ligne/Marque/Modèle/Série */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                              <div>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Ligne</label>
                                 <input
                                   type="text"
-                                  value={detecteur.modele}
-                                  onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
-                                  placeholder="Saisir le modèle..."
-                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  value={detecteur.ligne}
+                                  onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'ligne', e.target.value)}
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
-                              ) : (
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Marque</label>
                                 <select
-                                  value={detecteur.modele}
-                                  onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
-                                  disabled={!detecteur.marque}
-                                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                  value={detecteur.marque}
+                                  onChange={e => {
+                                    updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'marque', e.target.value)
+                                    updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'modele', '')
+                                  }}
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                   <option value="">Sélectionner</option>
-                                  {detecteur.marque && DETECTEURS_FLAMME_DATA[detecteur.marque as keyof typeof DETECTEURS_FLAMME_DATA]?.map(modele => (
-                                    <option key={modele} value={modele}>{modele}</option>
+                                  {Object.keys(DETECTEURS_FLAMME_DATA).map(marque => (
+                                    <option key={marque} value={marque}>{marque}</option>
                                   ))}
+                                  <option value="Autre">Autre</option>
                                 </select>
-                              )}
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Modèle</label>
+                                {detecteur.marque === 'Autre' ? (
+                                  <input
+                                    type="text"
+                                    value={detecteur.modele}
+                                    onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
+                                    placeholder="Saisir le modèle..."
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                ) : (
+                                  <select
+                                    value={detecteur.modele}
+                                    onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
+                                    disabled={!detecteur.marque}
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                  >
+                                    <option value="">Sélectionner</option>
+                                    {detecteur.marque && DETECTEURS_FLAMME_DATA[detecteur.marque as keyof typeof DETECTEURS_FLAMME_DATA]?.map(modele => (
+                                      <option key={modele} value={modele}>{modele}</option>
+                                    ))}
+                                  </select>
+                                )}
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">N° série</label>
+                                <input
+                                  type="text"
+                                  value={detecteur.numero_serie}
+                                  onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'numero_serie', e.target.value)}
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                              </div>
                             </div>
+
                             <div>
-                              <label className="block text-xs mb-1 text-slate-700">N° série</label>
+                              <label className="block text-xs font-medium mb-1.5 text-slate-700">Type connexion</label>
+                              <select
+                                value={detecteur.type_connexion}
+                                onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'type_connexion', e.target.value)}
+                                className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              >
+                                {TYPES_CONNEXION.map(type => (
+                                  <option key={type} value={type}>{type}</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {detecteur.type_connexion === 'Autre' && (
+                              <div>
+                                <label className="block text-xs font-medium mb-1.5 text-slate-700">Préciser type connexion</label>
+                                <input
+                                  type="text"
+                                  value={detecteur.connexion_autre || ''}
+                                  onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'connexion_autre', e.target.value)}
+                                  placeholder="Préciser..."
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                              </div>
+                            )}
+
+                            <div>
+                              <label className="block text-xs font-medium mb-1.5 text-slate-700">Asservissements</label>
                               <input
                                 type="text"
-                                value={detecteur.numero_serie}
-                                onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'numero_serie', e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={detecteur.asservissements}
+                                onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'asservissements', e.target.value)}
+                                placeholder="Ex: Extinction automatique, Sirène..."
+                                className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                               />
                             </div>
-                          </div>
 
-                          <div>
-                            <label className="block text-xs mb-1 text-slate-700">Type connexion</label>
-                            <select
-                              value={detecteur.type_connexion}
-                              onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'type_connexion', e.target.value)}
-                              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                              {TYPES_CONNEXION.map(type => (
-                                <option key={type} value={type}>{type}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          {detecteur.type_connexion === 'Autre' && (
-                            <div>
-                              <label className="block text-xs mb-1 text-slate-700">Préciser type connexion</label>
-                              <input
-                                type="text"
-                                value={detecteur.connexion_autre || ''}
-                                onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'connexion_autre', e.target.value)}
-                                placeholder="Préciser..."
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                            </div>
-                          )}
-
-                          <div>
-                            <label className="block text-xs mb-1 text-slate-700">Asservissements</label>
-                            <input
-                              type="text"
-                              value={detecteur.asservissements}
-                              onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'asservissements', e.target.value)}
-                              placeholder="Ex: Extinction automatique, Sirène..."
-                              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
-
-                          <div className="border-t border-gray-300 pt-3">
-                            <div className="flex gap-4">
-                              <label className="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={detecteur.asserv_operationnel}
-                                  onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'asserv_operationnel', e.target.checked)}
-                                  className="w-4 h-4"
-                                />
-                                <span className="text-sm">Asservissements opérationnels</span>
-                              </label>
-                              <label className="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={detecteur.non_teste}
-                                  onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'non_teste', e.target.checked)}
-                                  className="w-4 h-4"
-                                />
-                                <span className="text-sm">Non testé</span>
-                              </label>
+                            <div className="border-t border-gray-300 pt-4">
+                              <div className="flex flex-wrap gap-4">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={detecteur.asserv_operationnel}
+                                    onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'asserv_operationnel', e.target.checked)}
+                                    className="w-5 h-5 lg:w-4 lg:h-4"
+                                  />
+                                  <span className="text-sm text-slate-700">Asservissements opérationnels</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={detecteur.non_teste}
+                                    onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'non_teste', e.target.checked)}
+                                    className="w-5 h-5 lg:w-4 lg:h-4"
+                                  />
+                                  <span className="text-sm text-slate-700">Non testé</span>
+                                </label>
+                              </div>
                             </div>
                           </div>
-                        </div>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
 
+                {/* Conclusion Centrale */}
                 <div className="border-t border-gray-300 pt-6">
-                  <h2 className="text-xl font-bold mb-4 text-slate-800">Conclusion Centrale {currentCentraleIndex + 1}</h2>
+                  <h2 className="text-lg lg:text-xl font-bold mb-4 text-slate-800">Conclusion Centrale {currentCentraleIndex + 1}</h2>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm mb-2 text-slate-700">Travaux effectués</label>
+                      <label className="block text-sm font-medium mb-2 text-slate-700">Travaux effectués</label>
                       <textarea
                         value={currentCentrale.travaux_effectues}
                         onChange={e => updateCentrale(currentCentraleIndex, 'travaux_effectues', e.target.value)}
-                        rows={2}
-                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                        rows={3}
+                        className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-2 text-slate-700">Anomalies constatées</label>
+                      <label className="block text-sm font-medium mb-2 text-slate-700">Anomalies constatées</label>
                       <textarea
                         value={currentCentrale.anomalies}
                         onChange={e => updateCentrale(currentCentraleIndex, 'anomalies', e.target.value)}
-                        rows={2}
-                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                        rows={3}
+                        className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-2 text-slate-700">Recommandations</label>
+                      <label className="block text-sm font-medium mb-2 text-slate-700">Recommandations</label>
                       <textarea
                         value={currentCentrale.recommandations}
                         onChange={e => updateCentrale(currentCentraleIndex, 'recommandations', e.target.value)}
-                        rows={2}
-                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                        rows={3}
+                        className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm mb-2 text-slate-700">Pièces remplacées</label>
+                      <label className="block text-sm font-medium mb-2 text-slate-700">Pièces remplacées</label>
                       <textarea
                         value={currentCentrale.pieces_remplacees}
                         onChange={e => updateCentrale(currentCentraleIndex, 'pieces_remplacees', e.target.value)}
-                        rows={2}
-                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                        rows={3}
+                        className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                       />
                     </div>
                   </div>
@@ -2013,8 +2158,8 @@ export default function InterventionEditPage() {
 
           {currentSection === 'conclusion' && (
             <div className="max-w-4xl mx-auto">
-              <h1 className="text-3xl font-bold mb-8 text-slate-800">Conclusion Finale</h1>
-              <div className="bg-white border border-gray-300 shadow-sm rounded-lg p-6 space-y-6">
+              <h1 className="text-2xl lg:text-3xl font-bold mb-6 lg:mb-8 text-slate-800">Conclusion Finale</h1>
+              <div className="bg-white border border-gray-300 shadow-sm rounded-xl lg:rounded-lg p-4 lg:p-6 space-y-5 lg:space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-slate-700">Observations générales</label>
                   <textarea
@@ -2022,7 +2167,7 @@ export default function InterventionEditPage() {
                     onChange={e => setObservationsGenerales(e.target.value)}
                     rows={4}
                     placeholder="Observations générales sur l'intervention..."
-                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                    className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                   />
                 </div>
 
@@ -2033,7 +2178,7 @@ export default function InterventionEditPage() {
                     onChange={e => setConclusion(e.target.value)}
                     rows={4}
                     placeholder="Conclusion de l'intervention..."
-                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                    className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
                   />
                 </div>
 
@@ -2041,12 +2186,12 @@ export default function InterventionEditPage() {
                   <h3 className="text-lg font-semibold mb-4 text-slate-800">Photos</h3>
                   <div>
                     <label className="block">
-                      <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors">
-                        <svg className="w-12 h-12 text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl lg:rounded-lg p-6 lg:p-8 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors active:bg-gray-100">
+                        <svg className="w-10 h-10 lg:w-12 lg:h-12 text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <p className="text-slate-600 text-sm mb-1">Cliquer pour ajouter des photos</p>
+                        <p className="text-slate-600 text-sm mb-1">Appuyez pour ajouter des photos</p>
                         <p className="text-slate-500 text-xs">PNG, JPG jusqu'à 10MB</p>
                       </div>
                       <input
@@ -2067,17 +2212,17 @@ export default function InterventionEditPage() {
                       />
                     </label>
                     {photos.length > 0 && (
-                      <div className="grid grid-cols-4 gap-3 mt-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-4">
                         {photos.map((photo, index) => (
-                          <div key={index} className="relative group">
+                          <div key={index} className="relative group aspect-square">
                             <img
                               src={photo}
                               alt={`Photo ${index + 1}`}
-                              className="w-full h-32 object-cover rounded-lg"
+                              className="w-full h-full object-cover rounded-xl lg:rounded-lg"
                             />
                             <button
                               onClick={() => setPhotos(photos.filter((_, i) => i !== index))}
-                              className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 lg:w-6 lg:h-6 flex items-center justify-center shadow-lg"
                             >
                               ×
                             </button>
@@ -2088,7 +2233,8 @@ export default function InterventionEditPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-gray-300 pt-6">
+                {/* Bouton de sauvegarde visible uniquement sur desktop dans cette section */}
+                <div className="hidden lg:block border-t border-gray-300 pt-6">
                   <button
                     onClick={handleSave}
                     disabled={loading}
@@ -2101,6 +2247,23 @@ export default function InterventionEditPage() {
             </div>
           )}
         </main>
+      </div>
+
+      {/* Barre d'actions fixe en bas sur mobile */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex gap-3 z-40 shadow-lg">
+        <button
+          onClick={() => router.push(`/intervention/${params.id}`)}
+          className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium text-slate-800"
+        >
+          Annuler
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className="flex-[2] px-4 py-3 bg-green-600 hover:bg-green-700 rounded-xl font-semibold disabled:opacity-50 text-white"
+        >
+          {loading ? 'Mise à jour...' : 'Enregistrer'}
+        </button>
       </div>
     </div>
   )

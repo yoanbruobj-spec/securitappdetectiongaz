@@ -264,19 +264,39 @@ export default function ClientsPage() {
       }
 
       if (typeRapport === 'portable') {
-        // Générer PDF portable
-        const { data: portablesData } = await supabase
-          .from('portables')
-          .select(`
-            *,
-            portables_gaz (*),
-            portables_verifications (*)
-          `)
+        // Générer PDF portable - récupérer les données via portables_verifications
+        const { data: verificationsData } = await supabase
+          .from('portables_verifications')
+          .select('portable_id, alarme_sonore, alarme_visuelle, alarme_vibrante')
           .eq('intervention_id', interventionId)
+
+        let portablesComplets: any[] = []
+
+        if (verificationsData && verificationsData.length > 0) {
+          const portableIds = verificationsData.map(v => v.portable_id)
+
+          const { data: portablesData } = await supabase
+            .from('portables')
+            .select('*')
+            .in('id', portableIds)
+
+          const { data: gazData } = await supabase
+            .from('portables_gaz')
+            .select('*')
+            .eq('intervention_id', interventionId)
+
+          if (portablesData) {
+            portablesComplets = portablesData.map(portable => ({
+              ...portable,
+              portables_verifications: verificationsData.filter(v => v.portable_id === portable.id),
+              portables_gaz: gazData?.filter(g => g.portable_id === portable.id) || []
+            }))
+          }
+        }
 
         await generateInterventionPortablePDF({
           intervention: interventionData,
-          portables: portablesData || [],
+          portables: portablesComplets,
           site: interventionData.sites,
           client: interventionData.sites?.clients,
         })
