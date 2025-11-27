@@ -16,8 +16,12 @@ import {
   Calendar,
   X,
   Search,
-  FileText
+  FileText,
+  Download,
+  Loader2
 } from 'lucide-react'
+import { generateInterventionPDF } from '@/lib/pdf/generateInterventionPDF'
+import { generateInterventionPortablePDF } from '@/lib/pdf/generateInterventionPortablePDF'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { Badge } from '@/components/ui/Badge'
@@ -67,6 +71,7 @@ export default function ClientsPage() {
   const [userRole, setUserRole] = useState<string | null>(null)
   const [profile, setProfile] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [generatingPDFId, setGeneratingPDFId] = useState<string | null>(null)
 
   const [clientForm, setClientForm] = useState({
     nom: '',
@@ -231,6 +236,120 @@ export default function ClientsPage() {
   async function handleLogout() {
     await supabase.auth.signOut()
     router.push('/login')
+  }
+
+  async function handleGeneratePDF(interventionId: string, typeRapport?: string) {
+    try {
+      setGeneratingPDFId(interventionId)
+
+      // Charger l'intervention complète
+      const { data: interventionData } = await supabase
+        .from('interventions')
+        .select(`
+          *,
+          sites (
+            nom,
+            adresse,
+            ville,
+            client_id,
+            clients (nom)
+          )
+        `)
+        .eq('id', interventionId)
+        .single()
+
+      if (!interventionData) {
+        alert('Intervention non trouvée')
+        return
+      }
+
+      if (typeRapport === 'portable') {
+        // Générer PDF portable
+        const { data: portablesData } = await supabase
+          .from('portables')
+          .select(`
+            *,
+            portables_gaz (*),
+            portables_verifications (*)
+          `)
+          .eq('intervention_id', interventionId)
+
+        await generateInterventionPortablePDF({
+          intervention: interventionData,
+          portables: portablesData || [],
+          site: interventionData.sites,
+          client: interventionData.sites?.clients,
+        })
+      } else {
+        // Générer PDF fixe
+        const { data: centralesData } = await supabase
+          .from('centrales')
+          .select('*')
+          .eq('intervention_id', interventionId)
+
+        const centralesAvecDetecteurs = []
+
+        for (const centrale of centralesData || []) {
+          const { data: detecteursGaz } = await supabase
+            .from('detecteurs_gaz')
+            .select('*')
+            .eq('centrale_id', centrale.id)
+
+          const detecteursGazAvecSeuils = []
+          for (const detecteur of detecteursGaz || []) {
+            const { data: seuils } = await supabase
+              .from('seuils_alarme')
+              .select('*')
+              .eq('detecteur_gaz_id', detecteur.id)
+
+            detecteursGazAvecSeuils.push({
+              ...detecteur,
+              seuils: seuils || []
+            })
+          }
+
+          const { data: detecteursFlamme } = await supabase
+            .from('detecteurs_flamme')
+            .select('*')
+            .eq('centrale_id', centrale.id)
+
+          const { data: observations } = await supabase
+            .from('observations_centrales')
+            .select('*')
+            .eq('centrale_id', centrale.id)
+            .single()
+
+          centralesAvecDetecteurs.push({
+            ...centrale,
+            detecteurs_gaz: detecteursGazAvecSeuils,
+            detecteurs_flamme: detecteursFlamme || [],
+            travaux_effectues: observations?.travaux_effectues,
+            anomalies: observations?.anomalies_constatees,
+            recommandations: observations?.recommandations,
+            pieces_remplacees: observations?.pieces_remplacees,
+          })
+        }
+
+        const { data: photosData } = await supabase
+          .from('photos')
+          .select('*')
+          .eq('intervention_id', interventionId)
+
+        await generateInterventionPDF({
+          intervention: interventionData,
+          centrales: centralesAvecDetecteurs,
+          site: interventionData.sites,
+          client: interventionData.sites?.clients,
+          photos: photosData || [],
+        })
+      }
+
+    } catch (error) {
+      console.error('Erreur génération PDF:', error)
+      alert('Erreur lors de la génération du PDF')
+    } finally {
+      setGeneratingPDFId(null)
+    }
   }
 
   // Filter clients
@@ -440,38 +559,57 @@ export default function ClientsPage() {
                                   ) : (
                                     <div className="space-y-2">
                                       {interventions[site.id].map(intervention => (
-                                        <button
+                                        <div
                                           key={intervention.id}
-                                          onClick={() => {
-                                            const path = intervention.type_rapport === 'portable'
-                                              ? `/intervention-portable/${intervention.id}`
-                                              : `/intervention/${intervention.id}`
-                                            router.push(path)
-                                          }}
-                                          className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left"
+                                          className="flex items-center gap-2 p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors"
                                         >
-                                          <div className="flex items-center gap-2">
-                                            <FileText className="w-4 h-4 text-slate-400" />
-                                            <div>
-                                              <p className="text-sm font-medium text-slate-900">
-                                                {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
-                                              </p>
-                                              <p className="text-xs text-slate-500 capitalize">
-                                                {intervention.type?.replace(/_/g, ' ')}
-                                              </p>
-                                            </div>
-                                          </div>
-                                          <Badge
-                                            variant={
-                                              intervention.statut === 'terminee' ? 'success' :
-                                              intervention.statut === 'en_cours' ? 'info' : 'warning'
-                                            }
-                                            size="sm"
+                                          <button
+                                            onClick={() => {
+                                              const path = intervention.type_rapport === 'portable'
+                                                ? `/intervention-portable/${intervention.id}`
+                                                : `/intervention/${intervention.id}`
+                                              router.push(path)
+                                            }}
+                                            className="flex-1 flex items-center justify-between text-left"
                                           >
-                                            {intervention.statut === 'terminee' ? 'Terminée' :
-                                             intervention.statut === 'en_cours' ? 'En cours' : 'Planifiée'}
-                                          </Badge>
-                                        </button>
+                                            <div className="flex items-center gap-2">
+                                              <FileText className="w-4 h-4 text-slate-400" />
+                                              <div>
+                                                <p className="text-sm font-medium text-slate-900">
+                                                  {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
+                                                </p>
+                                                <p className="text-xs text-slate-500 capitalize">
+                                                  {intervention.type?.replace(/_/g, ' ')}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <Badge
+                                              variant={
+                                                intervention.statut === 'terminee' ? 'success' :
+                                                intervention.statut === 'en_cours' ? 'info' : 'warning'
+                                              }
+                                              size="sm"
+                                            >
+                                              {intervention.statut === 'terminee' ? 'Terminée' :
+                                               intervention.statut === 'en_cours' ? 'En cours' : 'Planifiée'}
+                                            </Badge>
+                                          </button>
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              handleGeneratePDF(intervention.id, intervention.type_rapport)
+                                            }}
+                                            disabled={generatingPDFId === intervention.id}
+                                            className="h-8 w-8 flex items-center justify-center text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
+                                            title="Télécharger le PDF"
+                                          >
+                                            {generatingPDFId === intervention.id ? (
+                                              <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                              <Download className="w-4 h-4" />
+                                            )}
+                                          </button>
+                                        </div>
                                       ))}
                                     </div>
                                   )}
