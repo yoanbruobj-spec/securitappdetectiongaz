@@ -467,16 +467,22 @@ export async function generateInterventionPDF(data: InterventionData) {
         if (hasValue(detecteur.gamme_mesure)) detGazData.push(['Gamme de mesure', detecteur.gamme_mesure])
         if (hasValue(detecteur.temps_reponse)) detGazData.push(['Temps de réponse (T90)', detecteur.temps_reponse])
 
-        autoTable(doc, {
-          startY: yPos,
-          body: detGazData,
-          theme: 'plain',
-          styles: { fontSize: 8, cellPadding: 3, lineColor: COLORS.border, lineWidth: 0.2 },
-          columnStyles: {
-            0: { fontStyle: 'bold', fillColor: COLORS.lightGray, cellWidth: 45 },
-          },
-          margin: { left: margin, right: pageWidth / 2 + 5 },
-        })
+        let detGazTableFinalY = yPos
+        let datesTableFinalY = yPos
+
+        if (detGazData.length > 0) {
+          autoTable(doc, {
+            startY: yPos,
+            body: detGazData,
+            theme: 'plain',
+            styles: { fontSize: 8, cellPadding: 3, lineColor: COLORS.border, lineWidth: 0.2 },
+            columnStyles: {
+              0: { fontStyle: 'bold', fillColor: COLORS.lightGray, cellWidth: 45 },
+            },
+            margin: { left: margin, right: pageWidth / 2 + 5 },
+          })
+          detGazTableFinalY = (doc as any).lastAutoTable.finalY
+        }
 
         // Dates de remplacement (colonne droite) - seulement si remplies
         const datesData: string[][] = []
@@ -498,9 +504,11 @@ export async function generateInterventionPDF(data: InterventionData) {
             },
             margin: { left: pageWidth / 2 + 5, right: margin },
           })
+          datesTableFinalY = (doc as any).lastAutoTable.finalY
         }
 
-        yPos = (doc as any).lastAutoTable.finalY + 8
+        // Prendre le maximum des deux tableaux pour éviter le chevauchement
+        yPos = Math.max(detGazTableFinalY, datesTableFinalY) + 8
 
         // Données étalonnage zéro - seulement si remplies
         const etalZeroData: string[][] = []
@@ -544,6 +552,9 @@ export async function generateInterventionPDF(data: InterventionData) {
           }
           yPos += 8
 
+          let zeroTableFinalY = yPos
+          let sensiTableFinalY = yPos
+
           if (hasEtalZero) {
             autoTable(doc, {
               startY: yPos,
@@ -555,6 +566,7 @@ export async function generateInterventionPDF(data: InterventionData) {
               },
               margin: { left: margin, right: hasEtalSensi ? pageWidth / 2 + 5 : margin },
             })
+            zeroTableFinalY = (doc as any).lastAutoTable.finalY
           }
 
           if (hasEtalSensi) {
@@ -581,9 +593,11 @@ export async function generateInterventionPDF(data: InterventionData) {
                 }
               },
             })
+            sensiTableFinalY = (doc as any).lastAutoTable.finalY
           }
 
-          yPos = (doc as any).lastAutoTable.finalY + 8
+          // Prendre le maximum des deux tableaux pour éviter le chevauchement
+          yPos = Math.max(zeroTableFinalY, sensiTableFinalY) + 8
         }
 
         // Seuils d'alarme
