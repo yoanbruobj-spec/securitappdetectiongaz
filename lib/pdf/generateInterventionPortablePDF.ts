@@ -446,6 +446,20 @@ export async function generateInterventionPortablePDF(data: PortableIntervention
     { align: 'center' }
   )
 
-  const fileName = `Rapport_Portable_${client?.nom || 'Intervention'}_${dateStr.replace(/\//g, '-')}.pdf`
+  // Fonction pour nettoyer les noms de fichiers (enlever les caractères spéciaux)
+  const sanitizeFileName = (str: string) => {
+    return str
+      .replace(/[<>:"/\\|?*]/g, '') // Caractères interdits Windows
+      .replace(/\s+/g, '_') // Espaces en underscores
+      .replace(/_+/g, '_') // Éviter les underscores multiples
+      .trim()
+  }
+
+  const clientName = sanitizeFileName(client?.nom || 'Client')
+  const siteName = sanitizeFileName(site?.nom || 'Site')
+  const localName = sanitizeFileName(intervention.local || 'Local')
+  const dateFormatted = dateStr.replace(/\//g, '-')
+
+  const fileName = `Portable_${dateFormatted}_${clientName}_${siteName}_${localName}.pdf`
   doc.save(fileName)
 }
