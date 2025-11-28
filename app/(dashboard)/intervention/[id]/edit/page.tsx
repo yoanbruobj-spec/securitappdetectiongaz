@@ -1162,7 +1162,7 @@ export default function InterventionEditPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-8 overflow-auto bg-gray-50">
+        <main className="flex-1 p-4 lg:p-8 bg-gray-50">
           {currentSection === 'info' && (
             <div className="max-w-4xl mx-auto">
               <h1 className="text-2xl lg:text-3xl font-bold mb-6 lg:mb-8 text-slate-800">Informations Intervention</h1>
