@@ -620,7 +620,7 @@ export default function InterventionPage() {
               valeur: seuil.valeur,
               unite: seuil.unite,
               asservissements: seuil.asservissements,
-              asserv_operationnel: seuil.asserv_operationnel === 'operationnel' || seuil.asserv_operationnel === true,
+              asserv_operationnel: seuil.asserv_operationnel,
               operationnel: seuil.operationnel,
               supervision: seuil.supervision,
               non_teste: seuil.non_teste,
@@ -641,7 +641,7 @@ export default function InterventionPage() {
             type_connexion: detecteur.type_connexion,
             connexion_autre: detecteur.connexion_autre,
             asservissements: detecteur.asservissements,
-            asserv_operationnel: detecteur.asserv_operationnel === 'operationnel' || detecteur.asserv_operationnel === true,
+            asserv_operationnel: detecteur.asserv_operationnel,
             non_teste: detecteur.non_teste,
           })
         }
@@ -1595,6 +1595,7 @@ export default function InterventionPage() {
                                           <option value="operationnel">Opérationnel</option>
                                           <option value="partiel">Partiel</option>
                                           <option value="non_operationnel">Non opérationnel</option>
+                                          <option value="non_teste">Non testé</option>
                                         </select>
                                       </div>
                                       <div>
@@ -1843,6 +1844,7 @@ export default function InterventionPage() {
                                   <option value="operationnel">Opérationnel</option>
                                   <option value="partiel">Partiellement opérationnel</option>
                                   <option value="non_operationnel">Non opérationnel</option>
+                                  <option value="non_teste">Non testé</option>
                                 </select>
                               </div>
                             </div>

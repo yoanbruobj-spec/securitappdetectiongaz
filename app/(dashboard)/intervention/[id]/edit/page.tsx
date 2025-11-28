@@ -852,7 +852,7 @@ export default function InterventionEditPage() {
               valeur: seuil.valeur,
               unite: seuil.unite,
               asservissements: seuil.asservissements,
-              asserv_operationnel: seuil.asserv_operationnel === 'operationnel' || seuil.asserv_operationnel === true,
+              asserv_operationnel: seuil.asserv_operationnel,
               operationnel: seuil.operationnel,
               supervision: seuil.supervision,
               non_teste: seuil.non_teste,
@@ -872,7 +872,7 @@ export default function InterventionEditPage() {
             type_connexion: detecteur.type_connexion,
             connexion_autre: detecteur.connexion_autre,
             asservissements: detecteur.asservissements,
-            asserv_operationnel: detecteur.asserv_operationnel === 'operationnel' || detecteur.asserv_operationnel === true,
+            asserv_operationnel: detecteur.asserv_operationnel,
             non_teste: detecteur.non_teste,
           })
         }
@@ -1882,6 +1882,7 @@ export default function InterventionEditPage() {
                                             <option value="operationnel">Opérationnel</option>
                                             <option value="partiel">Partiellement opérationnel</option>
                                             <option value="non_operationnel">Non opérationnel</option>
+                                            <option value="non_teste">Non testé</option>
                                           </select>
                                         </div>
                                         <label className="flex items-center gap-2 cursor-pointer">
@@ -2111,17 +2112,9 @@ export default function InterventionEditPage() {
                                     <option value="operationnel">Opérationnel</option>
                                     <option value="partiel">Partiellement opérationnel</option>
                                     <option value="non_operationnel">Non opérationnel</option>
+                                    <option value="non_teste">Non testé</option>
                                   </select>
                                 </div>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={detecteur.non_teste}
-                                    onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'non_teste', e.target.checked)}
-                                    className="w-5 h-5 lg:w-4 lg:h-4"
-                                  />
-                                  <span className="text-sm text-slate-700">Non testé</span>
-                                </label>
                               </div>
                             </div>
                           </div>

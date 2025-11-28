@@ -277,7 +277,7 @@ export async function generateInterventionPDF(data: InterventionData) {
     if (centrale.detecteurs_flamme) {
       centrale.detecteurs_flamme.forEach((det: any) => {
         let statut = 'NOK'
-        if (det.non_teste) {
+        if (det.asserv_operationnel === 'non_teste' || det.non_teste === true) {
           statut = 'Non testé'
         } else if (det.asserv_operationnel === true || det.asserv_operationnel === 'operationnel') {
           statut = 'OK'
@@ -637,7 +637,7 @@ export async function generateInterventionPDF(data: InterventionData) {
 
           const seuilsTableData = seuilsTries.map((seuil: any) => {
             let asservStatus = 'Non opérationnel'
-            if (seuil.non_teste) {
+            if (seuil.asserv_operationnel === 'non_teste' || seuil.non_teste === true) {
               asservStatus = 'Non testé'
             } else if (seuil.asserv_operationnel === true || seuil.asserv_operationnel === 'operationnel') {
               asservStatus = 'Opérationnel'
