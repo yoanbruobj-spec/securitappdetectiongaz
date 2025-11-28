@@ -706,6 +706,7 @@ export default function InterventionEditPage() {
           heure_debut: heureDebut,
           heure_fin: heureFin,
           technicien: technicien,
+          technicien_id: user.id,
           type: typeEnum,
           local: local,
           contact_site: contactSite,
