@@ -258,12 +258,13 @@ export async function generateInterventionPDF(data: InterventionData) {
     const marque = centrale.marque === 'Autre' && centrale.marque_personnalisee
       ? centrale.marque_personnalisee
       : centrale.marque
+    const equipementLabel = centrale.type_equipement === 'automate' ? `Automate ${idx + 1}` : `Centrale ${idx + 1}`
 
     // Détecteurs gaz
     if (centrale.detecteurs_gaz) {
       centrale.detecteurs_gaz.forEach((det: any) => {
         statutsData.push([
-          `Centrale ${idx + 1}`,
+          equipementLabel,
           'Gaz',
           `L${det.ligne} - ${det.marque} ${det.modele}`,
           det.type_gaz || det.gaz || 'N/A',
@@ -275,9 +276,18 @@ export async function generateInterventionPDF(data: InterventionData) {
     // Détecteurs flamme
     if (centrale.detecteurs_flamme) {
       centrale.detecteurs_flamme.forEach((det: any) => {
-        const statut = det.non_teste ? 'Non testé' : (det.asserv_operationnel ? 'OK' : 'NOK')
+        let statut = 'NOK'
+        if (det.non_teste) {
+          statut = 'Non testé'
+        } else if (typeof det.asserv_operationnel === 'string') {
+          if (det.asserv_operationnel === 'operationnel') statut = 'OK'
+          else if (det.asserv_operationnel === 'partiel') statut = 'Partiel'
+          else if (det.asserv_operationnel === 'non_operationnel') statut = 'NOK'
+        } else if (det.asserv_operationnel === true) {
+          statut = 'OK'
+        }
         statutsData.push([
-          `Centrale ${idx + 1}`,
+          equipementLabel,
           'Flamme',
           `L${det.ligne} - ${det.marque} ${det.modele}`,
           '-',
@@ -628,9 +638,16 @@ export async function generateInterventionPDF(data: InterventionData) {
           yPos += 8
 
           const seuilsTableData = seuilsTries.map((seuil: any) => {
-            let asservStatus = 'Non'
-            if (seuil.non_teste) asservStatus = 'Non testé'
-            else if (seuil.asserv_operationnel) asservStatus = 'Oui'
+            let asservStatus = 'Non opérationnel'
+            if (seuil.non_teste) {
+              asservStatus = 'Non testé'
+            } else if (typeof seuil.asserv_operationnel === 'string') {
+              if (seuil.asserv_operationnel === 'operationnel') asservStatus = 'Opérationnel'
+              else if (seuil.asserv_operationnel === 'partiel') asservStatus = 'Partiellement opérationnel'
+              else if (seuil.asserv_operationnel === 'non_operationnel') asservStatus = 'Non opérationnel'
+            } else if (seuil.asserv_operationnel === true) {
+              asservStatus = 'Opérationnel'
+            }
 
             return [
               seuil.niveau ? `Seuil ${seuil.niveau}` : (seuil.nom || 'N/A'),

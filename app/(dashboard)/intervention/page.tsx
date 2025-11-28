@@ -26,7 +26,7 @@ interface Seuil {
   valeur: string
   unite: string
   asservissements: string
-  asserv_operationnel: boolean
+  asserv_operationnel: string // 'operationnel' | 'partiel' | 'non_operationnel'
   operationnel: boolean
   supervision: boolean
   non_teste: boolean
@@ -73,7 +73,7 @@ interface DetecteurFlamme {
   temps_reponse: string
   statut_test: string
   asservissements: string
-  asserv_operationnel: boolean
+  asserv_operationnel: string // 'operationnel' | 'partiel' | 'non_operationnel'
   operationnel: boolean
   non_teste: boolean
 }
@@ -377,7 +377,7 @@ export default function InterventionPage() {
                   valeur: '',
                   unite: 'ppm',
                   asservissements: '',
-                  asserv_operationnel: true,
+                  asserv_operationnel: 'operationnel',
                   operationnel: true,
                   supervision: false,
                   non_teste: false,
@@ -447,7 +447,7 @@ export default function InterventionPage() {
             temps_reponse: '',
             statut_test: 'OK',
             asservissements: '',
-            asserv_operationnel: true,
+            asserv_operationnel: 'operationnel',
             operationnel: true,
             non_teste: false,
           }]
@@ -1586,14 +1586,15 @@ export default function InterventionPage() {
                                         />
                                       </div>
                                       <div>
-                                        <label className="block text-xs text-slate-700 mb-1">Asserv. OK</label>
+                                        <label className="block text-xs text-slate-700 mb-1">Asserv.</label>
                                         <select
-                                          value={seuil.asserv_operationnel ? 'true' : 'false'}
-                                          onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'asserv_operationnel', e.target.value === 'true')}
+                                          value={seuil.asserv_operationnel}
+                                          onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'asserv_operationnel', e.target.value)}
                                           className="w-full px-2 py-1 bg-white border border-gray-200 rounded text-xs text-slate-800"
                                         >
-                                          <option value="true">Oui</option>
-                                          <option value="false">Non</option>
+                                          <option value="operationnel">Opérationnel</option>
+                                          <option value="partiel">Partiel</option>
+                                          <option value="non_operationnel">Non opérationnel</option>
                                         </select>
                                       </div>
                                       <div>
@@ -1833,14 +1834,15 @@ export default function InterventionPage() {
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs text-slate-700 mb-1">Asserv. opérationnel</label>
+                                <label className="block text-xs text-slate-700 mb-1">Asservissements</label>
                                 <select
-                                  value={detecteur.asserv_operationnel ? 'true' : 'false'}
-                                  onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'asserv_operationnel', e.target.value === 'true')}
+                                  value={detecteur.asserv_operationnel}
+                                  onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'asserv_operationnel', e.target.value)}
                                   className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
                                 >
-                                  <option value="true">Oui</option>
-                                  <option value="false">Non</option>
+                                  <option value="operationnel">Opérationnel</option>
+                                  <option value="partiel">Partiellement opérationnel</option>
+                                  <option value="non_operationnel">Non opérationnel</option>
                                 </select>
                               </div>
                             </div>

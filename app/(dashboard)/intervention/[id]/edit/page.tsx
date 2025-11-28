@@ -22,7 +22,7 @@ interface Seuil {
   valeur: string
   unite: string
   asservissements: string
-  asserv_operationnel: boolean
+  asserv_operationnel: string // 'operationnel' | 'partiel' | 'non_operationnel'
   operationnel: boolean
   supervision: boolean
   non_teste: boolean
@@ -69,7 +69,7 @@ interface DetecteurFlamme {
   temps_reponse: string
   statut_test: string
   asservissements: string
-  asserv_operationnel: boolean
+  asserv_operationnel: string // 'operationnel' | 'partiel' | 'non_operationnel'
   operationnel: boolean
   non_teste: boolean
 }
@@ -282,7 +282,9 @@ export default function InterventionEditPage() {
               valeur: seuil.valeur || '',
               unite: seuil.unite || 'ppm',
               asservissements: seuil.asservissements || '',
-              asserv_operationnel: seuil.asserv_operationnel ?? true,
+              asserv_operationnel: typeof seuil.asserv_operationnel === 'boolean'
+                ? (seuil.asserv_operationnel ? 'operationnel' : 'non_operationnel')
+                : (seuil.asserv_operationnel || 'operationnel'),
               operationnel: seuil.operationnel ?? true,
               supervision: seuil.supervision ?? false,
               non_teste: seuil.non_teste ?? false,
@@ -304,7 +306,9 @@ export default function InterventionEditPage() {
           temps_reponse: detecteur.temps_reponse || '',
           statut_test: detecteur.statut_test || 'OK',
           asservissements: detecteur.asservissements || '',
-          asserv_operationnel: detecteur.asserv_operationnel ?? true,
+          asserv_operationnel: typeof detecteur.asserv_operationnel === 'boolean'
+            ? (detecteur.asserv_operationnel ? 'operationnel' : 'non_operationnel')
+            : (detecteur.asserv_operationnel || 'operationnel'),
           operationnel: detecteur.operationnel ?? true,
           non_teste: detecteur.non_teste ?? false,
         }))
@@ -558,7 +562,7 @@ export default function InterventionEditPage() {
                   valeur: '',
                   unite: 'ppm',
                   asservissements: '',
-                  asserv_operationnel: true,
+                  asserv_operationnel: 'operationnel',
                   operationnel: true,
                   supervision: false,
                   non_teste: false,
@@ -631,7 +635,7 @@ export default function InterventionEditPage() {
             temps_reponse: '',
             statut_test: 'OK',
             asservissements: '',
-            asserv_operationnel: true,
+            asserv_operationnel: 'operationnel',
             operationnel: true,
             non_teste: false,
           }],
@@ -1867,16 +1871,19 @@ export default function InterventionEditPage() {
                                           />
                                         </div>
                                       </div>
-                                      <div className="flex flex-wrap gap-4 mt-3">
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                          <input
-                                            type="checkbox"
-                                            checked={seuil.asserv_operationnel}
-                                            onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'asserv_operationnel', e.target.checked)}
-                                            className="w-4 h-4"
-                                          />
-                                          <span className="text-xs text-slate-700">Asserv. OK</span>
-                                        </label>
+                                      <div className="flex flex-wrap gap-4 mt-3 items-center">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-xs text-slate-700">Asserv.:</span>
+                                          <select
+                                            value={seuil.asserv_operationnel}
+                                            onChange={e => updateSeuil(currentCentraleIndex, detecteurIndex, seuilIndex, 'asserv_operationnel', e.target.value)}
+                                            className="px-2 py-1 text-xs bg-white border border-gray-300 rounded"
+                                          >
+                                            <option value="operationnel">Opérationnel</option>
+                                            <option value="partiel">Partiellement opérationnel</option>
+                                            <option value="non_operationnel">Non opérationnel</option>
+                                          </select>
+                                        </div>
                                         <label className="flex items-center gap-2 cursor-pointer">
                                           <input
                                             type="checkbox"
@@ -2093,16 +2100,19 @@ export default function InterventionEditPage() {
                             </div>
 
                             <div className="border-t border-gray-300 pt-4">
-                              <div className="flex flex-wrap gap-4">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={detecteur.asserv_operationnel}
-                                    onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'asserv_operationnel', e.target.checked)}
-                                    className="w-5 h-5 lg:w-4 lg:h-4"
-                                  />
-                                  <span className="text-sm text-slate-700">Asservissements opérationnels</span>
-                                </label>
+                              <div className="flex flex-wrap gap-4 items-center">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm text-slate-700">Asservissements:</span>
+                                  <select
+                                    value={detecteur.asserv_operationnel}
+                                    onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'asserv_operationnel', e.target.value)}
+                                    className="px-2 py-1.5 text-sm bg-white border border-gray-300 rounded-lg"
+                                  >
+                                    <option value="operationnel">Opérationnel</option>
+                                    <option value="partiel">Partiellement opérationnel</option>
+                                    <option value="non_operationnel">Non opérationnel</option>
+                                  </select>
+                                </div>
                                 <label className="flex items-center gap-2 cursor-pointer">
                                   <input
                                     type="checkbox"
