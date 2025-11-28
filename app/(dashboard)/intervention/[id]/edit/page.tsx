@@ -216,13 +216,6 @@ export default function InterventionEditPage() {
       const centralesWithDetails = []
 
       for (const centrale of centralesData || []) {
-        // Load AES data
-        const { data: aesData } = await supabase
-          .from('aes')
-          .select('*')
-          .eq('centrale_id', centrale.id)
-          .single()
-
         // Load observations
         const { data: observationsData } = await supabase
           .from('observations_centrales')
@@ -322,12 +315,12 @@ export default function InterventionEditPage() {
           numero_serie: centrale.numero_serie || '',
           firmware: centrale.firmware || '',
           etat_general: centrale.etat_general || 'Bon',
-          aes_presente: aesData ? aesData.presente : false,
-          aes_modele: aesData ? aesData.modele || '' : '',
-          aes_statut: aesData ? aesData.statut || 'Bon' : 'Bon',
-          aes_ondulee: aesData ? aesData.ondulee || false : false,
-          aes_date_remplacement: aesData ? aesData.date_remplacement || '' : '',
-          aes_prochaine_echeance: aesData ? aesData.prochaine_echeance || '' : '',
+          aes_presente: centrale.aes_presente || false,
+          aes_modele: centrale.aes_modele || '',
+          aes_statut: centrale.aes_statut || 'Bon',
+          aes_ondulee: centrale.aes_ondulee || false,
+          aes_date_remplacement: centrale.aes_date_remplacement || '',
+          aes_prochaine_echeance: centrale.aes_prochaine_echeance || '',
           detecteurs_gaz: detecteursWithSeuils,
           detecteurs_flamme: detecteursFlammeFormatted,
           observations: observationsData ? observationsData.observations || '' : '',
@@ -774,23 +767,17 @@ export default function InterventionEditPage() {
             numero_serie: centrale.numero_serie,
             firmware: centrale.firmware,
             etat_general: centrale.etat_general,
+            aes_presente: centrale.aes_presente,
+            aes_modele: centrale.aes_modele || null,
+            aes_statut: centrale.aes_statut || null,
+            aes_ondulee: centrale.aes_ondulee || false,
+            aes_date_remplacement: centrale.aes_date_remplacement || null,
+            aes_prochaine_echeance: centrale.aes_prochaine_echeance || null,
           })
           .select()
           .single()
 
         if (centraleError) throw centraleError
-
-        if (centrale.aes_presente) {
-          await supabase.from('aes').insert({
-            centrale_id: centraleData.id,
-            presente: true,
-            modele: centrale.aes_modele,
-            statut: centrale.aes_statut,
-            ondulee: centrale.aes_ondulee,
-            date_remplacement: centrale.aes_date_remplacement || null,
-            prochaine_echeance: centrale.aes_prochaine_echeance || null,
-          })
-        }
 
         if (centrale.observations || centrale.travaux_effectues || centrale.anomalies || centrale.recommandations || centrale.pieces_remplacees) {
           await supabase.from('observations_centrales').insert({
@@ -1366,13 +1353,13 @@ export default function InterventionEditPage() {
                     </div>
 
                     {/* Marque/Modèle - 1 col mobile, 2 cols desktop */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-20">
                       <div>
                         <label className="block text-sm font-medium mb-2 text-slate-700">Marque</label>
                         <select
                           value={currentCentrale.marque}
                           onChange={e => updateCentrale(currentCentraleIndex, 'marque', e.target.value)}
-                          className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base"
+                          className="w-full px-4 py-3 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-base cursor-pointer"
                         >
                           <option value="">Sélectionner une marque</option>
                           {Object.keys(CENTRALES_DATA).map(marque => (
