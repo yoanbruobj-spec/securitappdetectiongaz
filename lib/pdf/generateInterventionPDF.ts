@@ -260,9 +260,14 @@ export async function generateInterventionPDF(data: InterventionData) {
       : centrale.marque
     const equipementLabel = centrale.type_equipement === 'automate' ? `Automate ${idx + 1}` : `Centrale ${idx + 1}`
 
-    // Détecteurs gaz
+    // Détecteurs gaz - triés par numéro de ligne
     if (centrale.detecteurs_gaz) {
-      centrale.detecteurs_gaz.forEach((det: any) => {
+      const detecteursGazTries = [...centrale.detecteurs_gaz].sort((a: any, b: any) => {
+        const ligneA = parseInt(a.ligne) || 0
+        const ligneB = parseInt(b.ligne) || 0
+        return ligneA - ligneB
+      })
+      detecteursGazTries.forEach((det: any) => {
         statutsData.push([
           equipementLabel,
           'Gaz',
@@ -273,9 +278,14 @@ export async function generateInterventionPDF(data: InterventionData) {
       })
     }
 
-    // Détecteurs flamme
+    // Détecteurs flamme - triés par numéro de ligne
     if (centrale.detecteurs_flamme) {
-      centrale.detecteurs_flamme.forEach((det: any) => {
+      const detecteursFlammeTries = [...centrale.detecteurs_flamme].sort((a: any, b: any) => {
+        const ligneA = parseInt(a.ligne) || 0
+        const ligneB = parseInt(b.ligne) || 0
+        return ligneA - ligneB
+      })
+      detecteursFlammeTries.forEach((det: any) => {
         let statut = 'NOK'
         if (det.asserv_operationnel === 'non_teste' || det.non_teste === true) {
           statut = 'Non testé'
@@ -447,8 +457,15 @@ export async function generateInterventionPDF(data: InterventionData) {
 
       yPos = drawOfficialSection(doc, `${sommaire.length}.3 Détecteurs de Gaz (${centrale.detecteurs_gaz.length} unité(s))`, yPos)
 
-      for (let j = 0; j < centrale.detecteurs_gaz.length; j++) {
-        const detecteur = centrale.detecteurs_gaz[j]
+      // Trier les détecteurs gaz par numéro de ligne
+      const detecteursGazTriesDetail = [...centrale.detecteurs_gaz].sort((a: any, b: any) => {
+        const ligneA = parseInt(a.ligne) || 0
+        const ligneB = parseInt(b.ligne) || 0
+        return ligneA - ligneB
+      })
+
+      for (let j = 0; j < detecteursGazTriesDetail.length; j++) {
+        const detecteur = detecteursGazTriesDetail[j]
 
         yPos = checkPageBreak(doc, yPos, 120, currentPage)
         if (yPos === 50) {
@@ -704,8 +721,15 @@ export async function generateInterventionPDF(data: InterventionData) {
 
       yPos = drawOfficialSection(doc, `${sommaire.length}.4 Détecteurs de Flamme (${centrale.detecteurs_flamme.length} unité(s))`, yPos)
 
-      for (let j = 0; j < centrale.detecteurs_flamme.length; j++) {
-        const detecteur = centrale.detecteurs_flamme[j]
+      // Trier les détecteurs flamme par numéro de ligne
+      const detecteursFlammeTriesDetail = [...centrale.detecteurs_flamme].sort((a: any, b: any) => {
+        const ligneA = parseInt(a.ligne) || 0
+        const ligneB = parseInt(b.ligne) || 0
+        return ligneA - ligneB
+      })
+
+      for (let j = 0; j < detecteursFlammeTriesDetail.length; j++) {
+        const detecteur = detecteursFlammeTriesDetail[j]
 
         yPos = checkPageBreak(doc, yPos, 60, currentPage)
         if (yPos === 50) {
@@ -724,9 +748,15 @@ export async function generateInterventionPDF(data: InterventionData) {
 
         // Tableau identification - seulement les champs remplis
         let asservStatus = ''
-        if (detecteur.non_teste) asservStatus = 'Non testé'
-        else if (detecteur.asserv_operationnel === true) asservStatus = 'Oui'
-        else if (detecteur.asserv_operationnel === false) asservStatus = 'Non'
+        if (detecteur.asserv_operationnel === 'non_teste' || detecteur.non_teste === true) {
+          asservStatus = 'Non testé'
+        } else if (detecteur.asserv_operationnel === true || detecteur.asserv_operationnel === 'operationnel') {
+          asservStatus = 'Opérationnel'
+        } else if (detecteur.asserv_operationnel === 'partiel') {
+          asservStatus = 'Partiellement opérationnel'
+        } else if (detecteur.asserv_operationnel === false || detecteur.asserv_operationnel === 'non_operationnel') {
+          asservStatus = 'Non opérationnel'
+        }
 
         const detFlammeData: string[][] = []
         if (hasValue(detecteur.marque)) detFlammeData.push(['Marque', detecteur.marque])
@@ -749,13 +779,16 @@ export async function generateInterventionPDF(data: InterventionData) {
             didParseCell: function(data) {
               if (data.section === 'body' && asservIndex >= 0 && data.row.index === asservIndex && data.column.index === 1) {
                 const val = data.cell.raw as string
-                if (val === 'Oui') {
+                if (val === 'Opérationnel') {
                   data.cell.styles.textColor = COLORS.success
                   data.cell.styles.fontStyle = 'bold'
-                } else if (val === 'Non') {
+                } else if (val === 'Non opérationnel') {
                   data.cell.styles.textColor = COLORS.danger
                   data.cell.styles.fontStyle = 'bold'
                 } else if (val === 'Non testé') {
+                  data.cell.styles.textColor = COLORS.warning
+                  data.cell.styles.fontStyle = 'bold'
+                } else if (val === 'Partiellement opérationnel') {
                   data.cell.styles.textColor = COLORS.warning
                   data.cell.styles.fontStyle = 'bold'
                 }
