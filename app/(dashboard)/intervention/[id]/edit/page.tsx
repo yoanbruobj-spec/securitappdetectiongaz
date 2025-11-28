@@ -711,7 +711,7 @@ export default function InterventionEditPage() {
             tel_contact: telContact,
             email_rapport: emailRapport,
             observations_generales: observationsComplete,
-            statut: 'brouillon',
+            statut: 'planifiee',
             created_by: user.id,
           })
           .select()
