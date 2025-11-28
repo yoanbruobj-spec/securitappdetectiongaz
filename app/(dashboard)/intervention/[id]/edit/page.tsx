@@ -1542,7 +1542,7 @@ export default function InterventionEditPage() {
 
                           <div className="space-y-4">
                             {/* Ligne/Marque/Modèle/Série - Responsive grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 relative z-30">
                               <div>
                                 <label className="block text-xs font-medium mb-1.5 text-slate-700">Ligne</label>
                                 <input
@@ -1560,7 +1560,7 @@ export default function InterventionEditPage() {
                                     updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'marque', e.target.value)
                                     updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'modele', '')
                                   }}
-                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                                 >
                                   <option value="">Sélectionner</option>
                                   {Object.keys(DETECTEURS_GAZ_DATA).map(marque => (
@@ -1584,7 +1584,7 @@ export default function InterventionEditPage() {
                                     value={detecteur.modele}
                                     onChange={e => updateDetecteurGaz(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
                                     disabled={!detecteur.marque}
-                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
                                   >
                                     <option value="">Sélectionner</option>
                                     {detecteur.marque && DETECTEURS_GAZ_DATA[detecteur.marque as keyof typeof DETECTEURS_GAZ_DATA]?.map(modele => (
@@ -1988,7 +1988,7 @@ export default function InterventionEditPage() {
 
                           <div className="space-y-4">
                             {/* Ligne/Marque/Modèle/Série */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 relative z-30">
                               <div>
                                 <label className="block text-xs font-medium mb-1.5 text-slate-700">Ligne</label>
                                 <input
@@ -2006,7 +2006,7 @@ export default function InterventionEditPage() {
                                     updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'marque', e.target.value)
                                     updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'modele', '')
                                   }}
-                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                                 >
                                   <option value="">Sélectionner</option>
                                   {Object.keys(DETECTEURS_FLAMME_DATA).map(marque => (
@@ -2030,7 +2030,7 @@ export default function InterventionEditPage() {
                                     value={detecteur.modele}
                                     onChange={e => updateDetecteurFlamme(currentCentraleIndex, detecteurIndex, 'modele', e.target.value)}
                                     disabled={!detecteur.marque}
-                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                    className="w-full px-3 py-2.5 lg:py-2 bg-white border border-gray-300 rounded-xl lg:rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
                                   >
                                     <option value="">Sélectionner</option>
                                     {detecteur.marque && DETECTEURS_FLAMME_DATA[detecteur.marque as keyof typeof DETECTEURS_FLAMME_DATA]?.map(modele => (
