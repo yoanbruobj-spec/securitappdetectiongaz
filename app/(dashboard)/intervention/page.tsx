@@ -545,17 +545,24 @@ export default function InterventionPage() {
             numero_serie: centrale.numero_serie,
             firmware: centrale.firmware,
             etat_general: centrale.etat_general,
-            aes_presente: centrale.aes_presente,
-            aes_modele: centrale.aes_modele || null,
-            aes_statut: centrale.aes_statut || null,
-            aes_ondulee: centrale.aes_ondulee || false,
-            aes_date_remplacement: centrale.aes_date_remplacement || null,
-            aes_prochaine_echeance: centrale.aes_prochaine_echeance || null,
           })
           .select()
           .single()
 
         if (centraleError) throw centraleError
+
+        // Sauvegarder AES dans la table séparée
+        if (centrale.aes_presente) {
+          await supabase.from('aes').upsert({
+            centrale_id: centraleData.id,
+            presente: true,
+            modele: centrale.aes_modele || null,
+            statut: centrale.aes_statut || null,
+            ondulee: centrale.aes_ondulee || false,
+            date_remplacement: centrale.aes_date_remplacement || null,
+            prochaine_echeance: centrale.aes_prochaine_echeance || null,
+          })
+        }
 
         if (centrale.observations || centrale.travaux_effectues || centrale.anomalies || centrale.recommandations) {
           await supabase.from('observations_centrales').insert({

@@ -216,12 +216,19 @@ export default function InterventionEditPage() {
       const centralesWithDetails = []
 
       for (const centrale of centralesData || []) {
+        // Load AES data
+        const { data: aesData } = await supabase
+          .from('aes')
+          .select('*')
+          .eq('centrale_id', centrale.id)
+          .maybeSingle()
+
         // Load observations
         const { data: observationsData } = await supabase
           .from('observations_centrales')
           .select('*')
           .eq('centrale_id', centrale.id)
-          .single()
+          .maybeSingle()
 
         // Load detecteurs gaz
         const { data: detecteursGazData } = await supabase
@@ -315,12 +322,12 @@ export default function InterventionEditPage() {
           numero_serie: centrale.numero_serie || '',
           firmware: centrale.firmware || '',
           etat_general: centrale.etat_general || 'Bon',
-          aes_presente: centrale.aes_presente || false,
-          aes_modele: centrale.aes_modele || '',
-          aes_statut: centrale.aes_statut || 'Bon',
-          aes_ondulee: centrale.aes_ondulee || false,
-          aes_date_remplacement: centrale.aes_date_remplacement || '',
-          aes_prochaine_echeance: centrale.aes_prochaine_echeance || '',
+          aes_presente: aesData?.presente || false,
+          aes_modele: aesData?.modele || '',
+          aes_statut: aesData?.statut || 'Bon',
+          aes_ondulee: aesData?.ondulee || false,
+          aes_date_remplacement: aesData?.date_remplacement || '',
+          aes_prochaine_echeance: aesData?.prochaine_echeance || '',
           detecteurs_gaz: detecteursWithSeuils,
           detecteurs_flamme: detecteursFlammeFormatted,
           observations: observationsData ? observationsData.observations || '' : '',
@@ -767,17 +774,24 @@ export default function InterventionEditPage() {
             numero_serie: centrale.numero_serie,
             firmware: centrale.firmware,
             etat_general: centrale.etat_general,
-            aes_presente: centrale.aes_presente,
-            aes_modele: centrale.aes_modele || null,
-            aes_statut: centrale.aes_statut || null,
-            aes_ondulee: centrale.aes_ondulee || false,
-            aes_date_remplacement: centrale.aes_date_remplacement || null,
-            aes_prochaine_echeance: centrale.aes_prochaine_echeance || null,
           })
           .select()
           .single()
 
         if (centraleError) throw centraleError
+
+        // Sauvegarder AES dans la table séparée
+        if (centrale.aes_presente) {
+          await supabase.from('aes').upsert({
+            centrale_id: centraleData.id,
+            presente: true,
+            modele: centrale.aes_modele || null,
+            statut: centrale.aes_statut || null,
+            ondulee: centrale.aes_ondulee || false,
+            date_remplacement: centrale.aes_date_remplacement || null,
+            prochaine_echeance: centrale.aes_prochaine_echeance || null,
+          })
+        }
 
         if (centrale.observations || centrale.travaux_effectues || centrale.anomalies || centrale.recommandations || centrale.pieces_remplacees) {
           await supabase.from('observations_centrales').insert({
