@@ -474,7 +474,7 @@ export default function InterventionEditPage() {
   }
 
   function updateCentrale(index: number, field: keyof Centrale, value: any) {
-    setCentrales(centrales.map((c, i) => i === index ? { ...c, [field]: value } : c))
+    setCentrales(prevCentrales => prevCentrales.map((c, i) => i === index ? { ...c, [field]: value } : c))
   }
 
   function addDetecteurGaz(centraleIndex: number) {
@@ -528,7 +528,7 @@ export default function InterventionEditPage() {
   }
 
   function updateDetecteurGaz(centraleIndex: number, detecteurIndex: number, field: keyof DetecteurGaz, value: any) {
-    setCentrales(centrales.map((c, i) => {
+    setCentrales(prevCentrales => prevCentrales.map((c, i) => {
       if (i === centraleIndex) {
         return {
           ...c,
@@ -591,7 +591,7 @@ export default function InterventionEditPage() {
   }
 
   function updateSeuil(centraleIndex: number, detecteurIndex: number, seuilIndex: number, field: keyof Seuil, value: any) {
-    setCentrales(centrales.map((c, i) => {
+    setCentrales(prevCentrales => prevCentrales.map((c, i) => {
       if (i === centraleIndex) {
         return {
           ...c,
@@ -651,7 +651,7 @@ export default function InterventionEditPage() {
   }
 
   function updateDetecteurFlamme(centraleIndex: number, detecteurIndex: number, field: keyof DetecteurFlamme, value: any) {
-    setCentrales(centrales.map((c, i) => {
+    setCentrales(prevCentrales => prevCentrales.map((c, i) => {
       if (i === centraleIndex) {
         return {
           ...c,
