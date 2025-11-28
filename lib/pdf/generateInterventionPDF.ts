@@ -467,7 +467,13 @@ export async function generateInterventionPDF(data: InterventionData) {
       for (let j = 0; j < detecteursGazTriesDetail.length; j++) {
         const detecteur = detecteursGazTriesDetail[j]
 
-        yPos = checkPageBreak(doc, yPos, 120, currentPage)
+        // Calculer l'espace total nécessaire pour le détecteur ET ses seuils
+        // Estimation: titre (12) + identification (50) + étalonnage (50) + seuils (header 8 + tableau header 10 + lignes)
+        const nbSeuils = detecteur.seuils?.length || 0
+        const seuilsHeight = nbSeuils > 0 ? (8 + 10 + nbSeuils * 12 + 12) : 0
+        const totalSpaceNeeded = 120 + seuilsHeight
+
+        yPos = checkPageBreak(doc, yPos, totalSpaceNeeded, currentPage)
         if (yPos === 50) {
           currentPage++
           drawOfficialHeader(doc, `${equipementType.toUpperCase()} ${i + 1} - DÉTECTEURS GAZ (SUITE)`)
@@ -625,7 +631,7 @@ export async function generateInterventionPDF(data: InterventionData) {
           yPos = Math.max(zeroTableFinalY, sensiTableFinalY) + 8
         }
 
-        // Seuils d'alarme
+        // Seuils d'alarme (l'espace a déjà été réservé avec le détecteur)
         if (detecteur.seuils && detecteur.seuils.length > 0) {
           // Trier les seuils par niveau (1, 2, 3)
           const seuilsTries = [...detecteur.seuils].sort((a: any, b: any) => {
@@ -633,16 +639,6 @@ export async function generateInterventionPDF(data: InterventionData) {
             const niveauB = b.niveau || 0
             return niveauA - niveauB
           })
-
-          // Calculer l'espace nécessaire pour le tableau complet (header + lignes)
-          const seuilsTableHeight = 8 + 10 + (seuilsTries.length * 12) // header bandeau + en-tête tableau + lignes
-
-          // Vérifier s'il y a assez de place, sinon saut de page
-          yPos = checkPageBreak(doc, yPos, seuilsTableHeight, currentPage)
-          if (yPos === 50) {
-            currentPage++
-            drawOfficialHeader(doc, `${equipementType.toUpperCase()} ${i + 1} - SEUILS D'ALARME`)
-          }
 
           doc.setFillColor(...COLORS.warning)
           doc.rect(margin, yPos, pageWidth - 2 * margin, 6, 'F')
