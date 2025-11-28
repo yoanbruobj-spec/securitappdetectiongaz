@@ -695,29 +695,39 @@ export default function InterventionEditPage() {
         ? `${observationsGenerales}\n\nCONCLUSION:\n${conclusion}`
         : observationsGenerales
 
+      // Variable pour stocker l'ID de l'intervention (nouveau ou existant)
+      let currentInterventionId = params.id
+
       if (isNew) {
         // Créer nouvelle intervention
+        const insertData = {
+          site_id: siteId,
+          date_intervention: dateIntervention,
+          heure_debut: heureDebut,
+          heure_fin: heureFin,
+          technicien: technicien,
+          type: typeEnum,
+          local: local,
+          contact_site: contactSite,
+          tel_contact: telContact,
+          email_rapport: emailRapport,
+          observations_generales: observationsComplete,
+          statut: 'planifiee',
+          created_by: user.id,
+        }
+        console.log('Données insertion intervention:', JSON.stringify(insertData, null, 2))
+
         const { data: newIntervention, error: createError } = await supabase
           .from('interventions')
-          .insert({
-            site_id: siteId,
-            date_intervention: dateIntervention,
-            heure_debut: heureDebut,
-            heure_fin: heureFin,
-            technicien: technicien,
-            type: typeEnum,
-            local: local,
-            contact_site: contactSite,
-            tel_contact: telContact,
-            email_rapport: emailRapport,
-            observations_generales: observationsComplete,
-            statut: 'planifiee',
-            created_by: user.id,
-          })
+          .insert(insertData)
           .select()
           .single()
 
-        if (createError) throw createError
+        if (createError) {
+          console.error('Erreur création intervention:', JSON.stringify(createError, null, 2))
+          throw createError
+        }
+        currentInterventionId = newIntervention.id
         setInterventionId(newIntervention.id)
       } else {
         // Update existing intervention
@@ -741,9 +751,9 @@ export default function InterventionEditPage() {
         if (updateError) throw updateError
       }
 
-      // Delete existing centrales (cascade will handle related data)
+      // Delete existing centrales (cascade will handle related data) - seulement pour update
       if (!isNew) {
-        await supabase.from('centrales').delete().eq('intervention_id', params.id)
+        await supabase.from('centrales').delete().eq('intervention_id', currentInterventionId)
       }
 
       // Save centrales
@@ -751,7 +761,7 @@ export default function InterventionEditPage() {
         const { data: centraleData, error: centraleError } = await supabase
           .from('centrales')
           .insert({
-            intervention_id: isNew ? interventionId : params.id,
+            intervention_id: currentInterventionId,
             type_equipement: centrale.type_equipement,
             marque: centrale.marque === 'Autre' ? centrale.marque_personnalisee : centrale.marque,
             marque_personnalisee: centrale.marque_personnalisee,
@@ -779,7 +789,7 @@ export default function InterventionEditPage() {
 
         if (centrale.observations || centrale.travaux_effectues || centrale.anomalies || centrale.recommandations || centrale.pieces_remplacees) {
           await supabase.from('observations_centrales').insert({
-            intervention_id: interventionId,
+            intervention_id: currentInterventionId,
             centrale_id: centraleData.id,
             travaux_effectues: centrale.travaux_effectues || null,
             anomalies_constatees: centrale.anomalies || null,
@@ -868,7 +878,7 @@ export default function InterventionEditPage() {
         const { error: deletePhotosError } = await supabase
           .from('photos')
           .delete()
-          .eq('intervention_id', params.id)
+          .eq('intervention_id', currentInterventionId)
 
         if (deletePhotosError) {
           console.error('Erreur suppression photos:', deletePhotosError)
@@ -879,7 +889,7 @@ export default function InterventionEditPage() {
       console.log('Sauvegarde de', photos.length, 'photos')
       for (let i = 0; i < photos.length; i++) {
         const { error: insertPhotoError } = await supabase.from('photos').insert({
-          intervention_id: interventionId,
+          intervention_id: currentInterventionId,
           url: photos[i],
           ordre: i,
           uploaded_by: user.id,
@@ -892,10 +902,10 @@ export default function InterventionEditPage() {
 
       if (isNew) {
         alert('Nouvelle intervention créée avec succès !')
-        router.push(`/intervention/${interventionId}`)
+        router.push(`/intervention/${currentInterventionId}`)
       } else {
         alert('Intervention mise à jour avec succès !')
-        router.push(`/intervention/${params.id}`)
+        router.push(`/intervention/${currentInterventionId}`)
       }
   } catch (error: any) {
     console.error('Erreur lors de la sauvegarde:', error)
