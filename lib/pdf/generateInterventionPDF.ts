@@ -279,12 +279,10 @@ export async function generateInterventionPDF(data: InterventionData) {
         let statut = 'NOK'
         if (det.non_teste) {
           statut = 'Non testé'
-        } else if (typeof det.asserv_operationnel === 'string') {
-          if (det.asserv_operationnel === 'operationnel') statut = 'OK'
-          else if (det.asserv_operationnel === 'partiel') statut = 'Partiel'
-          else if (det.asserv_operationnel === 'non_operationnel') statut = 'NOK'
-        } else if (det.asserv_operationnel === true) {
+        } else if (det.asserv_operationnel === true || det.asserv_operationnel === 'operationnel') {
           statut = 'OK'
+        } else if (det.asserv_operationnel === 'partiel') {
+          statut = 'Partiel'
         }
         statutsData.push([
           equipementLabel,
@@ -641,12 +639,10 @@ export async function generateInterventionPDF(data: InterventionData) {
             let asservStatus = 'Non opérationnel'
             if (seuil.non_teste) {
               asservStatus = 'Non testé'
-            } else if (typeof seuil.asserv_operationnel === 'string') {
-              if (seuil.asserv_operationnel === 'operationnel') asservStatus = 'Opérationnel'
-              else if (seuil.asserv_operationnel === 'partiel') asservStatus = 'Partiellement opérationnel'
-              else if (seuil.asserv_operationnel === 'non_operationnel') asservStatus = 'Non opérationnel'
-            } else if (seuil.asserv_operationnel === true) {
+            } else if (seuil.asserv_operationnel === true || seuil.asserv_operationnel === 'operationnel') {
               asservStatus = 'Opérationnel'
+            } else if (seuil.asserv_operationnel === 'partiel') {
+              asservStatus = 'Partiellement opérationnel'
             }
 
             return [
@@ -675,12 +671,14 @@ export async function generateInterventionPDF(data: InterventionData) {
             didParseCell: function(data) {
               if (data.section === 'body' && data.column.index === 3) {
                 const val = data.cell.raw as string
-                if (val === 'Oui') {
+                if (val === 'Opérationnel') {
                   data.cell.styles.textColor = COLORS.success
-                } else if (val === 'Non') {
+                } else if (val === 'Non opérationnel') {
                   data.cell.styles.textColor = COLORS.danger
-                } else {
+                } else if (val === 'Partiellement opérationnel') {
                   data.cell.styles.textColor = COLORS.warning
+                } else {
+                  data.cell.styles.textColor = COLORS.secondary
                 }
               }
             },

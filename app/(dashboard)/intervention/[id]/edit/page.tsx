@@ -852,7 +852,7 @@ export default function InterventionEditPage() {
               valeur: seuil.valeur,
               unite: seuil.unite,
               asservissements: seuil.asservissements,
-              asserv_operationnel: seuil.asserv_operationnel,
+              asserv_operationnel: seuil.asserv_operationnel === 'operationnel' || seuil.asserv_operationnel === true,
               operationnel: seuil.operationnel,
               supervision: seuil.supervision,
               non_teste: seuil.non_teste,
@@ -872,7 +872,7 @@ export default function InterventionEditPage() {
             type_connexion: detecteur.type_connexion,
             connexion_autre: detecteur.connexion_autre,
             asservissements: detecteur.asservissements,
-            asserv_operationnel: detecteur.asserv_operationnel,
+            asserv_operationnel: detecteur.asserv_operationnel === 'operationnel' || detecteur.asserv_operationnel === true,
             non_teste: detecteur.non_teste,
           })
         }
