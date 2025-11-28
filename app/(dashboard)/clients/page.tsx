@@ -53,6 +53,7 @@ interface Intervention {
   type: string
   statut: string
   type_rapport?: string
+  local?: string
 }
 
 export default function ClientsPage() {
@@ -143,7 +144,7 @@ export default function ClientsPage() {
   async function loadInterventions(siteId: string) {
     const { data } = await supabase
       .from('interventions')
-      .select('id, date_intervention, type, statut, type_rapport')
+      .select('id, date_intervention, type, statut, type_rapport, local')
       .eq('site_id', siteId)
       .order('date_intervention', { ascending: false })
 
@@ -597,6 +598,7 @@ export default function ClientsPage() {
                                               <div>
                                                 <p className="text-sm font-medium text-slate-900">
                                                   {new Date(intervention.date_intervention).toLocaleDateString('fr-FR')}
+                                                  {intervention.local && <span className="text-slate-500 font-normal"> - {intervention.local}</span>}
                                                 </p>
                                                 <p className="text-xs text-slate-500 capitalize">
                                                   {intervention.type?.replace(/_/g, ' ')}
